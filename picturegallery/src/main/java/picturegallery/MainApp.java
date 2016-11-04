@@ -33,9 +33,15 @@ public class MainApp extends Application {
     }
 
     /*
+     * generate JavaFX project:
      * https://github.com/javafx-maven-plugin/javafx-basic-archetype
      * https://github.com/javafx-maven-plugin/javafx-maven-plugin
      * create jar: run "mvn jfx:jar"
+     */
+    /*
+     * EMF within Maven project
+     * http://mapasuta.sourceforge.net/maven/site/maven-emfgen-plugin/usage.html
+     * https://www.eclipse.org/forums/index.php?t=msg&th=134237
      */
     public void start(Stage stage) throws Exception {
     	BorderPane root = new BorderPane();
@@ -45,6 +51,8 @@ public class MainApp extends Application {
     	iv.setSmooth(true);
     	iv.setCache(true);
     	iv.setFitWidth(100);
+    	// https://stackoverflow.com/questions/21501090/set-maximum-size-for-javafx-imageview => muss noch optimiert werden!
+    	iv.fitWidthProperty().bind(root.widthProperty());
     	root.setCenter(iv);
 
     	VBox left = new VBox();
