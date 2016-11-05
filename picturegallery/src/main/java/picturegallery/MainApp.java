@@ -46,7 +46,7 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
     	BorderPane root = new BorderPane();
 
-    	ImageView iv = new ImageView();
+    	final ImageView iv = new ImageView();
     	iv.setPreserveRatio(true);
     	iv.setSmooth(true);
     	iv.setCache(true);
@@ -56,15 +56,15 @@ public class MainApp extends Application {
     	root.setCenter(iv);
 
     	VBox left = new VBox();
-    	Label label = new Label("Hello!");
+    	final Label label = new Label("Hello!");
     	left.getChildren().add(label);
     	Button but = new Button("Load");
     	but.setOnAction(new  EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-		        List<String> pictures = new ArrayList<>();
+		        final List<String> pictures = new ArrayList<>();
 		        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
-		        String baseDir = Settings.getBasePath();
+		        final String baseDir = Settings.getBasePath();
 		        System.out.println(baseDir);
 		        try {
 					Files.walkFileTree(Paths.get(baseDir), new SimpleFileVisitor<Path>() {
