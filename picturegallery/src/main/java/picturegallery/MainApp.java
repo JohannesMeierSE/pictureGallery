@@ -1,5 +1,8 @@
 package picturegallery;
 
+import gallery.GalleryFactory;
+import gallery.PictureLibrary;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -101,6 +104,8 @@ public class MainApp extends Application {
 		        } else {
 		        	System.out.println("no pictures found!");
 		        }
+		        PictureLibrary gal = GalleryFactory.eINSTANCE.createPictureLibrary();
+		        System.out.println(gal.toString());
 			}
 		});
     	left.getChildren().add(but);

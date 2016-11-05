@@ -23,6 +23,8 @@
 
 	<build>
 		<finalName>picturegallery</finalName>
+		<!-- https://stackoverflow.com/questions/270445/maven-compile-with-multiple-src-directories -->
+		<sourceDirectory>src/main/java/, src-gen/main/java/</sourceDirectory>
 
 		<plugins>
 
@@ -40,38 +42,6 @@
 					<allPermissions>true</allPermissions>
 
 				</configuration>
-			</plugin>
-
-			<!-- to generate the EMF sourcecode -->
-			<!-- http://mapasuta.sourceforge.net/maven/site/maven-emfgen-plugin/usage.html -->
-			<plugin>
-				<groupId>net.sf.mapasuta.build.maven.plugins</groupId>
-				<artifactId>maven-emfgen-plugin</artifactId>
-				<configuration>
-					<!-- http://mapasuta.sourceforge.net/maven/site/maven-emfgen-plugin/configuration.html -->
-					<eclipseDir>/opt/eclipse/eclipse-modeling</eclipseDir>
-					<!-- Hack (tatsächliche Version: 4.4.0): https://www.eclipse.org/forums/index.php?t=msg&th=134237 -->
-					<eclipseVersion>3.3.0</eclipseVersion>
-					<baseName>gallery</baseName>
-					<genSrc>gallery</genSrc>
-					<genModel>model.genmodel</genModel>
-					<metaModels>
-						<metaModel>${basedir}/src/main/resources/model/model.ecore</metaModel>
-					</metaModels>
-					<outputDirectory>${basedir}/src-gen/main/java</outputDirectory>
-					<packageUris>
-						<packageUri>http://gallery/1.0</packageUri>
-					</packageUris>
-					<prefixName>gallery</prefixName>
-				</configuration>
-				<executions>
-					<execution>
-						<id>generate-mm-sources</id>
-						<goals>
-							<goal>genmodel</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 
 		</plugins>
@@ -94,6 +64,15 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
+		</dependency>
+
+		<!-- EMF stuff -->
+
+		<!-- https://mvnrepository.com/artifact/org.eclipse.emf/org.eclipse.emf.ecore -->
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.ecore</artifactId>
+			<version>2.11.1-v20150805-0538</version>
 		</dependency>
 
 	</dependencies>
