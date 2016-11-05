@@ -14,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -21,8 +22,13 @@ import javafx.stage.Stage;
 import picturegallery.persistency.Settings;
 
 public class MainApp extends Application {
+	private ImageView iv;
 
-    public static void main(String[] args) throws Exception {
+	private PictureCollection base;
+	private PictureCollection currentCollectionToShow;
+	private int indexInCurrentCollection;
+
+	public static void main(String[] args) throws Exception {
         launch(args);
     }
 
@@ -40,7 +46,7 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
     	BorderPane root = new BorderPane();
 
-    	final ImageView iv = new ImageView();
+    	iv = new ImageView();
     	iv.setPreserveRatio(true);
     	iv.setSmooth(true);
     	iv.setCache(true);
@@ -49,6 +55,9 @@ public class MainApp extends Application {
     	iv.fitWidthProperty().bind(root.widthProperty());
     	root.setCenter(iv);
 
+    	final String baseDir = Settings.getBasePath();
+    	base = Logic.createEmptyLibrary(baseDir);
+
     	VBox left = new VBox();
     	final Label label = new Label("Hello!");
     	left.getChildren().add(label);
@@ -56,23 +65,11 @@ public class MainApp extends Application {
     	but.setOnAction(new  EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-		        final String baseDir = Settings.getBasePath();
-		        PictureCollection base = Logic.createEmptyLibrary(baseDir);
-
 		        Logic.loadDirectory(base, true);
 
-		        Picture firstPicture = Logic.findFirstPicture(base);
-		        if (firstPicture != null) {
-					Image im = null;
-					try {
-						im = new Image(new File(firstPicture.getFullPath()).toURI().toURL().toString());
-					} catch (MalformedURLException e) {
-						e.printStackTrace();
-					}
-					iv.setImage(im);
-		        } else {
-		        	System.out.println("no pictures found!");
-		        }
+		        currentCollectionToShow = Logic.findFirstNonEmptyCollection(base);
+		        indexInCurrentCollection = -1;
+		        changeIndex(0);
 			}
 		});
     	left.getChildren().add(but);
@@ -86,8 +83,22 @@ public class MainApp extends Application {
     	scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
     		@Override
     		public void handle(KeyEvent event) {
-    			System.out.println(event.getText());
-    			label.setText(event.getText());
+    			String message = event.getText() + "|||" + event.getCharacter() + "|||" + event.getCode();
+    			System.out.println(message);
+				label.setText(message);
+
+				int size = currentCollectionToShow.getPictures().size();
+
+				// ->
+				if (event.getCode() == KeyCode.RIGHT) {
+					int newIndex = ( indexInCurrentCollection + 1 ) % size;
+					changeIndex(newIndex);
+				}
+				// <-
+				if (event.getCode() == KeyCode.LEFT) {
+					int newIndex = ( indexInCurrentCollection + size - 1 ) % size;
+					changeIndex(newIndex);
+				}
     		}
     	});
 
@@ -95,4 +106,34 @@ public class MainApp extends Application {
         stage.setScene(scene);
         stage.show();
     }
+
+	private void showPicture(Picture newPicture) {
+		if (newPicture != null) {
+			currentCollectionToShow = newPicture.getCollection();
+			Image im = null;
+			try {
+				im = new Image(new File(newPicture.getFullPath()).toURI().toURL().toString());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+			iv.setImage(im);
+        } else {
+        	System.out.println("no pictures found!");
+        }
+	}
+
+	private void changeIndex(int newIndex) {
+		if (indexInCurrentCollection == newIndex) {
+			System.out.println("same index as before: " + newIndex);
+			return;
+		}
+		if (newIndex >= currentCollectionToShow.getPictures().size()) {
+			throw new IllegalArgumentException();
+		}
+		if (newIndex < 0) {
+			throw new IllegalArgumentException();
+		}
+		indexInCurrentCollection = newIndex;
+		showPicture(currentCollectionToShow.getPictures().get(indexInCurrentCollection));
+	}
 }

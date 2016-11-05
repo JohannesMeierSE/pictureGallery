@@ -88,11 +88,24 @@ public class Logic {
 		if (!col.getPictures().isEmpty()) {
 			return col.getPictures().get(0);
 		}
-		// recursive deapth-first-search
+		// recursive depth-first-search
 		for (PictureCollection sub : col.getSubCollections()) {
 			Picture current = findFirstPicture(sub);
 			if (current != null) {
 				return current;
+			}
+		}
+		return null;
+	}
+
+	public static PictureCollection findFirstNonEmptyCollection(PictureCollection col) {
+		if (!col.getPictures().isEmpty()) {
+			return col;
+		}
+		for (PictureCollection sub : col.getSubCollections()) {
+			PictureCollection res = findFirstNonEmptyCollection(sub);
+			if (res != null) {
+				return res;
 			}
 		}
 		return null;
