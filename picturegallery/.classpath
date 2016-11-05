@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+  <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
+  <classpathentry kind="src" path="src-gen/main/java" including="**/*.java"/>
   <classpathentry kind="src" path="src/main/resources" excluding="**/*.java"/>
   <classpathentry kind="output" path="target/classes"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
@@ -7,4 +9,5 @@
   <classpathentry kind="var" path="M2_REPO/com/miglayout/miglayout-core/5.0/miglayout-core-5.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.6/commons-lang-2.6.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/eclipse/emf/org.eclipse.emf.ecore/2.11.1-v20150805-0538/org.eclipse.emf.ecore-2.11.1-v20150805-0538.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/eclipse/emf/org.eclipse.emf.common/2.11.0-v20150805-0538/org.eclipse.emf.common-2.11.0-v20150805-0538.jar"/>
 </classpath>

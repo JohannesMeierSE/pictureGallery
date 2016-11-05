@@ -7,7 +7,6 @@
 	<groupId>picturegallery</groupId>
 	<artifactId>picturegallery</artifactId>
 	<name>picturegallery</name>
-
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
 
@@ -19,6 +18,7 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<build>
@@ -27,6 +27,28 @@
 		<sourceDirectory>src/main/java/, src-gen/main/java/</sourceDirectory>
 
 		<plugins>
+
+			<!-- to handle several source directories: https://stackoverflow.com/questions/7071470/maven-does-not-add-classpath-to-eclipse-project -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.12</version>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/main/java</source>
+								<source>src-gen/main/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<!-- for creating a working JavaFX-JAR -->
 			<plugin>
@@ -73,6 +95,12 @@
 			<groupId>org.eclipse.emf</groupId>
 			<artifactId>org.eclipse.emf.ecore</artifactId>
 			<version>2.11.1-v20150805-0538</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.eclipse.emf/org.eclipse.emf.common -->
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.common</artifactId>
+			<version>2.11.0-v20150805-0538</version>
 		</dependency>
 
 	</dependencies>
