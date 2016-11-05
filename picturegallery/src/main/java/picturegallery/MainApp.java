@@ -16,13 +16,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import picturegallery.persistency.Settings;
 
 public class MainApp extends Application {
 	private ImageView iv;
+	private Label labelCollection;
+	private Label labelIndex;
 
 	private PictureCollection base;
 	private PictureCollection currentCollectionToShow;
@@ -44,7 +46,7 @@ public class MainApp extends Application {
      * https://www.eclipse.org/forums/index.php?t=msg&th=134237
      */
     public void start(Stage stage) throws Exception {
-    	BorderPane root = new BorderPane();
+    	StackPane root = new StackPane();
 
     	iv = new ImageView();
     	iv.setPreserveRatio(true);
@@ -53,27 +55,28 @@ public class MainApp extends Application {
     	iv.setFitWidth(100);
     	// https://stackoverflow.com/questions/21501090/set-maximum-size-for-javafx-imageview => muss noch optimiert werden!
     	iv.fitWidthProperty().bind(root.widthProperty());
-    	root.setCenter(iv);
+    	root.getChildren().add(iv);
 
     	final String baseDir = Settings.getBasePath();
     	base = Logic.createEmptyLibrary(baseDir);
 
-    	VBox left = new VBox();
-    	final Label label = new Label("Hello!");
-    	left.getChildren().add(label);
-    	Button but = new Button("Load");
-    	but.setOnAction(new  EventHandler<ActionEvent>() {
+    	VBox vBox = new VBox();
+    	labelCollection = new Label("Collection name");
+    	vBox.getChildren().add(labelCollection);
+    	labelIndex = new Label("index");
+    	vBox.getChildren().add(labelIndex);
+    	Button loadButton = new Button("Load");
+    	loadButton.setOnAction(new  EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 		        Logic.loadDirectory(base, true);
 
-		        currentCollectionToShow = Logic.findFirstNonEmptyCollection(base);
-		        indexInCurrentCollection = -1;
-		        changeIndex(0);
+		        PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
+		        changeCollection(newCol);
 			}
 		});
-    	left.getChildren().add(but);
-    	root.setLeft(left);
+    	vBox.getChildren().add(loadButton);
+    	root.getChildren().add(vBox);
 
     	Scene scene = new Scene(root, 400, 200);
     	scene.getStylesheets().add("/styles/styles.css");
@@ -83,21 +86,25 @@ public class MainApp extends Application {
     	scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
     		@Override
     		public void handle(KeyEvent event) {
-    			String message = event.getText() + "|||" + event.getCharacter() + "|||" + event.getCode();
-    			System.out.println(message);
-				label.setText(message);
+//    			String message = event.getText() + "|||" + event.getCharacter() + "|||" + event.getCode();
+//    			System.out.println(message);
+//				label.setText(message);
 
 				int size = currentCollectionToShow.getPictures().size();
 
-				// ->
+				// next picture
 				if (event.getCode() == KeyCode.RIGHT) {
 					int newIndex = ( indexInCurrentCollection + 1 ) % size;
 					changeIndex(newIndex);
 				}
-				// <-
+				// previous picture
 				if (event.getCode() == KeyCode.LEFT) {
 					int newIndex = ( indexInCurrentCollection + size - 1 ) % size;
 					changeIndex(newIndex);
+				}
+				// hide information
+				if (event.getCode() == KeyCode.H) {
+					vBox.setVisible(! vBox.isVisible());
 				}
     		}
     	});
@@ -109,7 +116,6 @@ public class MainApp extends Application {
 
 	private void showPicture(Picture newPicture) {
 		if (newPicture != null) {
-			currentCollectionToShow = newPicture.getCollection();
 			Image im = null;
 			try {
 				im = new Image(new File(newPicture.getFullPath()).toURI().toURL().toString());
@@ -118,7 +124,7 @@ public class MainApp extends Application {
 			}
 			iv.setImage(im);
         } else {
-        	System.out.println("no pictures found!");
+        	throw new IllegalArgumentException();
         }
 	}
 
@@ -134,6 +140,17 @@ public class MainApp extends Application {
 			throw new IllegalArgumentException();
 		}
 		indexInCurrentCollection = newIndex;
+		labelIndex.setText(indexInCurrentCollection + " / " + currentCollectionToShow.getPictures().size());
 		showPicture(currentCollectionToShow.getPictures().get(indexInCurrentCollection));
+	}
+
+	private void changeCollection(PictureCollection newCollection) {
+		if (newCollection == null || newCollection.getPictures().isEmpty() || newCollection == currentCollectionToShow) {
+			throw new IllegalArgumentException();
+		}
+		currentCollectionToShow = newCollection;
+		labelCollection.setText(currentCollectionToShow.getFullPath());
+        indexInCurrentCollection = -1;
+        changeIndex(0);
 	}
 }
