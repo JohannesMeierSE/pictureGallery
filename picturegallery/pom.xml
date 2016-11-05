@@ -16,11 +16,17 @@
 		<name>privateOrganization</name>
 	</organization>
 
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
 	<build>
 		<finalName>picturegallery</finalName>
 
 		<plugins>
 
+			<!-- for creating a working JavaFX-JAR -->
 			<plugin>
 				<groupId>com.zenjava</groupId>
 				<artifactId>javafx-maven-plugin</artifactId>
@@ -34,6 +40,38 @@
 					<allPermissions>true</allPermissions>
 
 				</configuration>
+			</plugin>
+
+			<!-- to generate the EMF sourcecode -->
+			<!-- http://mapasuta.sourceforge.net/maven/site/maven-emfgen-plugin/usage.html -->
+			<plugin>
+				<groupId>net.sf.mapasuta.build.maven.plugins</groupId>
+				<artifactId>maven-emfgen-plugin</artifactId>
+				<configuration>
+					<!-- http://mapasuta.sourceforge.net/maven/site/maven-emfgen-plugin/configuration.html -->
+					<eclipseDir>/opt/eclipse/eclipse-modeling</eclipseDir>
+					<!-- Hack (tatsächliche Version: 4.4.0): https://www.eclipse.org/forums/index.php?t=msg&th=134237 -->
+					<eclipseVersion>3.3.0</eclipseVersion>
+					<baseName>gallery</baseName>
+					<genSrc>gallery</genSrc>
+					<genModel>model.genmodel</genModel>
+					<metaModels>
+						<metaModel>${basedir}/src/main/resources/model/model.ecore</metaModel>
+					</metaModels>
+					<outputDirectory>${basedir}/src-gen/main/java</outputDirectory>
+					<packageUris>
+						<packageUri>http://gallery/1.0</packageUri>
+					</packageUris>
+					<prefixName>gallery</prefixName>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate-mm-sources</id>
+						<goals>
+							<goal>genmodel</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="gallery" nsURI="http://gallery/1.0" nsPrefix="gallery">
+  <eClassifiers xsi:type="ecore:EClass" name="PictureCollection" eSuperTypes="#//PathElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="subCollections" upperBound="-1"
+        eType="#//PictureCollection" containment="true" eOpposite="#//PictureCollection/superCollection"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superCollection" eType="#//PictureCollection"
+        eOpposite="#//PictureCollection/subCollections"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="pictures" upperBound="-1"
+        eType="#//Picture" containment="true" eOpposite="#//Picture/collection"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="library" eType="#//PictureLibrary"
+        eOpposite="#//PictureLibrary/baseCollection"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Picture" abstract="true" eSuperTypes="#//PathElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="collection" lowerBound="1"
+        eType="#//PictureCollection" eOpposite="#//PictureCollection/pictures"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileExtension" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RealPicture" eSuperTypes="#//Picture">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="linkedBy" upperBound="-1"
+        eType="#//LinkedPicture" eOpposite="#//LinkedPicture/realPicture"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="LinkedPicture" eSuperTypes="#//Picture">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="realPicture" lowerBound="1"
+        eType="#//RealPicture" eOpposite="#//RealPicture/linkedBy"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PathElement" abstract="true">
+    <eOperations name="getFullPath" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PictureLibrary">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="basePath" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="baseCollection" lowerBound="1"
+        eType="#//PictureCollection" containment="true" eOpposite="#//PictureCollection/library"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+</ecore:EPackage>
