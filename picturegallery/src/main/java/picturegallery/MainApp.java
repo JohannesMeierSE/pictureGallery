@@ -1,19 +1,11 @@
 package picturegallery;
 
 import gallery.GalleryFactory;
+import gallery.PictureCollection;
 import gallery.PictureLibrary;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -65,38 +57,26 @@ public class MainApp extends Application {
     	but.setOnAction(new  EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-		        final List<String> pictures = new ArrayList<>();
-		        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
 		        final String baseDir = Settings.getBasePath();
-		        System.out.println(baseDir);
-		        try {
-					Files.walkFileTree(Paths.get(baseDir), new SimpleFileVisitor<Path>() {
-					    @Override
-						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-					    	// ignore sub-folders, but accept the initial base path!
-					    	if (dir.toString().equals(baseDir)) {
-					    		return FileVisitResult.CONTINUE;
-					    	}
-							return FileVisitResult.SKIP_SUBTREE;
-						}
+		        String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
+		        String dirName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1);
+		        System.out.println(baseDir + " == " + parentDir + " + " + dirName);
 
-						@Override
-					    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-							String name = file.toString();
-					        System.out.println("file: " + name);
-					        if (name.endsWith(".png") || name.endsWith(".jpg")) {
-					        	pictures.add(file.toString());
-					        }
-					        return FileVisitResult.CONTINUE;
-					    }
-					});
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-		        if (!pictures.isEmpty()) {
+		        PictureLibrary lib = GalleryFactory.eINSTANCE.createPictureLibrary();
+		        lib.setBasePath(parentDir);
+		        lib.setName("TestLibrary");
+
+		        PictureCollection base = GalleryFactory.eINSTANCE.createPictureCollection();
+		        base.setLibrary(lib);
+		        lib.setBaseCollection(base);
+		        base.setName(dirName);
+
+		        Logic.loadDirectory(base, true);
+
+		        if (!base.getPictures().isEmpty()) {
 					Image im = null;
 					try {
-						im = new Image(new File(pictures.get(0)).toURI().toURL().toString());
+						im = new Image(new File(base.getPictures().get(0).getFullPath()).toURI().toURL().toString());
 					} catch (MalformedURLException e) {
 						e.printStackTrace();
 					}
@@ -104,8 +84,6 @@ public class MainApp extends Application {
 		        } else {
 		        	System.out.println("no pictures found!");
 		        }
-		        PictureLibrary gal = GalleryFactory.eINSTANCE.createPictureLibrary();
-		        System.out.println(gal.toString());
 			}
 		});
     	left.getChildren().add(but);
