@@ -14,8 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.emf.common.util.ECollections;
 
 public class Logic {
 	public static void loadDirectory(PictureCollection currentCollection, boolean recursive) {
@@ -61,6 +63,7 @@ public class Logic {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        sortCollection(currentCollection);
         if (recursive) {
         	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
         		loadDirectory(newSubCollection, recursive);
@@ -109,5 +112,25 @@ public class Logic {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Changes the order of the pictures in the collection (ascending names) => works in-place!
+	 * @param col
+	 */
+	public static void sortCollection(PictureCollection col) {
+		// http://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/common/util/ECollections.html#sort(org.eclipse.emf.common.util.EList)
+		ECollections.sort(col.getPictures(), new Comparator<Picture>() {
+			@Override
+			public int compare(Picture o1, Picture o2) {
+				if (o1 == o2) {
+					return 0;
+				}
+				if (o1.getName() == o2.getName()) {
+					throw new IllegalStateException();
+				}
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
 	}
 }

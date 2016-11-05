@@ -23,12 +23,14 @@ import picturegallery.persistency.Settings;
 
 public class MainApp extends Application {
 	private ImageView iv;
-	private Label labelCollection;
+	private Label labelCollectionPath;
 	private Label labelIndex;
+	private Label labelPictureName;
 
 	private PictureCollection base;
 	private PictureCollection currentCollectionToShow;
 	private int indexInCurrentCollection;
+	private VBox vBox;
 
 	public static void main(String[] args) throws Exception {
         launch(args);
@@ -60,11 +62,15 @@ public class MainApp extends Application {
     	final String baseDir = Settings.getBasePath();
     	base = Logic.createEmptyLibrary(baseDir);
 
-    	VBox vBox = new VBox();
-    	labelCollection = new Label("Collection name");
-    	vBox.getChildren().add(labelCollection);
+    	vBox = new VBox();
+
+    	labelCollectionPath = new Label("Collection name");
+    	handleLabel(labelCollectionPath);
     	labelIndex = new Label("index");
-    	vBox.getChildren().add(labelIndex);
+    	handleLabel(labelIndex);
+    	labelPictureName = new Label("picture name");
+    	handleLabel(labelPictureName);
+
     	Button loadButton = new Button("Load");
     	loadButton.setOnAction(new  EventHandler<ActionEvent>() {
 			@Override
@@ -78,7 +84,7 @@ public class MainApp extends Application {
     	vBox.getChildren().add(loadButton);
     	root.getChildren().add(vBox);
 
-    	Scene scene = new Scene(root, 400, 200);
+    	Scene scene = new Scene(root, 600, 600);
     	scene.getStylesheets().add("/styles/styles.css");
 
     	// https://stackoverflow.com/questions/23163189/keylistener-javafx
@@ -114,6 +120,12 @@ public class MainApp extends Application {
         stage.show();
     }
 
+	private void handleLabel(Label label) {
+    	// https://assylias.wordpress.com/2013/12/08/383/
+		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);");
+    	vBox.getChildren().add(label);
+	}
+
 	private void showPicture(Picture newPicture) {
 		if (newPicture != null) {
 			Image im = null;
@@ -123,6 +135,7 @@ public class MainApp extends Application {
 				e.printStackTrace();
 			}
 			iv.setImage(im);
+			labelPictureName.setText(newPicture.getName());
         } else {
         	throw new IllegalArgumentException();
         }
@@ -140,7 +153,7 @@ public class MainApp extends Application {
 			throw new IllegalArgumentException();
 		}
 		indexInCurrentCollection = newIndex;
-		labelIndex.setText(indexInCurrentCollection + " / " + currentCollectionToShow.getPictures().size());
+		labelIndex.setText((indexInCurrentCollection + 1) + " / " + currentCollectionToShow.getPictures().size());
 		showPicture(currentCollectionToShow.getPictures().get(indexInCurrentCollection));
 	}
 
@@ -149,7 +162,7 @@ public class MainApp extends Application {
 			throw new IllegalArgumentException();
 		}
 		currentCollectionToShow = newCollection;
-		labelCollection.setText(currentCollectionToShow.getFullPath());
+		labelCollectionPath.setText(currentCollectionToShow.getFullPath());
         indexInCurrentCollection = -1;
         changeIndex(0);
 	}
