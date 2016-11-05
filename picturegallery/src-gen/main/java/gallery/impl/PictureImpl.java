@@ -2,18 +2,17 @@
  */
 package gallery.impl;
 
+import java.io.File;
+
 import gallery.GalleryPackage;
 import gallery.Picture;
 import gallery.PictureCollection;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 /**
@@ -258,6 +257,14 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 		result.append(fileExtension);
 		result.append(')');
 		return result.toString();
+	}
+
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getFullPath() {
+		return getCollection().getFullPath() + File.separator + getName() + "." + getFileExtension();
 	}
 
 } //PictureImpl

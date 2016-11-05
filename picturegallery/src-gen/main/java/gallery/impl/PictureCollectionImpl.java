@@ -7,18 +7,15 @@ import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.PictureLibrary;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
 import org.eclipse.emf.ecore.util.EObjectContainmentWithInverseEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.InternalEList;
@@ -335,6 +332,18 @@ public class PictureCollectionImpl extends PathElementImpl implements PictureCol
 				return getLibrary() != null;
 		}
 		return super.eIsSet(featureID);
+	}
+
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getFullPath() {
+		if (getSuperCollection() == null) {
+			return getLibrary().getBasePath() + File.separator + getName();
+		} else {
+			return getSuperCollection().getFullPath() + File.separator + getName();
+		}
 	}
 
 } //PictureCollectionImpl

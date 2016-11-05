@@ -93,11 +93,10 @@ public abstract class PathElementImpl extends MinimalEObjectImpl.Container imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
+	 * @generated NOT
 	 */
 	public String getFullPath() {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
+		// has to be implemented in the sub-classes!
 		throw new UnsupportedOperationException();
 	}
 
