@@ -1,7 +1,9 @@
 package picturegallery;
 
 import gallery.GalleryFactory;
+import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.PictureLibrary;
 import gallery.RealPicture;
 
 import java.io.File;
@@ -64,5 +66,35 @@ public class Logic {
         		loadDirectory(newSubCollection, recursive);
         	}
         }
+	}
+
+	public static PictureCollection createEmptyLibrary(final String baseDir) {
+		String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
+        String dirName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1);
+        System.out.println(baseDir + " == " + parentDir + " + " + dirName);
+
+        PictureLibrary lib = GalleryFactory.eINSTANCE.createPictureLibrary();
+        lib.setBasePath(parentDir);
+        lib.setName("TestLibrary");
+
+        PictureCollection base = GalleryFactory.eINSTANCE.createPictureCollection();
+        base.setLibrary(lib);
+        lib.setBaseCollection(base);
+        base.setName(dirName);
+		return base;
+	}
+
+	public static Picture findFirstPicture(PictureCollection col) {
+		if (!col.getPictures().isEmpty()) {
+			return col.getPictures().get(0);
+		}
+		// recursive deapth-first-search
+		for (PictureCollection sub : col.getSubCollections()) {
+			Picture current = findFirstPicture(sub);
+			if (current != null) {
+				return current;
+			}
+		}
+		return null;
 	}
 }

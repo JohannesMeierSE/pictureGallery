@@ -1,8 +1,7 @@
 package picturegallery;
 
-import gallery.GalleryFactory;
+import gallery.Picture;
 import gallery.PictureCollection;
-import gallery.PictureLibrary;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -58,25 +57,15 @@ public class MainApp extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 		        final String baseDir = Settings.getBasePath();
-		        String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
-		        String dirName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1);
-		        System.out.println(baseDir + " == " + parentDir + " + " + dirName);
-
-		        PictureLibrary lib = GalleryFactory.eINSTANCE.createPictureLibrary();
-		        lib.setBasePath(parentDir);
-		        lib.setName("TestLibrary");
-
-		        PictureCollection base = GalleryFactory.eINSTANCE.createPictureCollection();
-		        base.setLibrary(lib);
-		        lib.setBaseCollection(base);
-		        base.setName(dirName);
+		        PictureCollection base = Logic.createEmptyLibrary(baseDir);
 
 		        Logic.loadDirectory(base, true);
 
-		        if (!base.getPictures().isEmpty()) {
+		        Picture firstPicture = Logic.findFirstPicture(base);
+		        if (firstPicture != null) {
 					Image im = null;
 					try {
-						im = new Image(new File(base.getPictures().get(0).getFullPath()).toURI().toURL().toString());
+						im = new Image(new File(firstPicture.getFullPath()).toURI().toURL().toString());
 					} catch (MalformedURLException e) {
 						e.printStackTrace();
 					}
