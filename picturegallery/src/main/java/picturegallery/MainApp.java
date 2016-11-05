@@ -19,6 +19,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import org.apache.commons.collections4.map.LRUMap;
+
 import picturegallery.persistency.Settings;
 
 public class MainApp extends Application {
@@ -26,11 +29,14 @@ public class MainApp extends Application {
 	private Label labelCollectionPath;
 	private Label labelIndex;
 	private Label labelPictureName;
+	private Label labelKeys;
 
 	private PictureCollection base;
 	private PictureCollection currentCollectionToShow;
 	private int indexInCurrentCollection;
 	private VBox vBox;
+	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
+	private LRUMap<String, Image> imageCache = new LRUMap<>(50);
 
 	public static void main(String[] args) throws Exception {
         launch(args);
@@ -64,6 +70,10 @@ public class MainApp extends Application {
 
     	vBox = new VBox();
 
+    	labelKeys = new Label("keys");
+    	labelKeys.setText("hide/show these information (h), next picture (RIGHT), previous picture (LEFT)");
+    	handleLabel(labelKeys);
+
     	labelCollectionPath = new Label("Collection name");
     	handleLabel(labelCollectionPath);
     	labelIndex = new Label("index");
@@ -71,7 +81,7 @@ public class MainApp extends Application {
     	labelPictureName = new Label("picture name");
     	handleLabel(labelPictureName);
 
-    	Button loadButton = new Button("Load");
+    	Button loadButton = new Button("Load Library");
     	loadButton.setOnAction(new  EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -84,7 +94,7 @@ public class MainApp extends Application {
     	vBox.getChildren().add(loadButton);
     	root.getChildren().add(vBox);
 
-    	Scene scene = new Scene(root, 600, 600);
+    	Scene scene = new Scene(root, 800, 600);
     	scene.getStylesheets().add("/styles/styles.css");
 
     	// https://stackoverflow.com/questions/23163189/keylistener-javafx
@@ -128,11 +138,16 @@ public class MainApp extends Application {
 
 	private void showPicture(Picture newPicture) {
 		if (newPicture != null) {
-			Image im = null;
-			try {
-				im = new Image(new File(newPicture.getFullPath()).toURI().toURL().toString());
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
+			// check the cache
+			Image im = imageCache.get(newPicture.getName());
+			// load image
+			if (im == null) {
+				try {
+					im = new Image(new File(newPicture.getFullPath()).toURI().toURL().toString());
+					imageCache.put(newPicture.getName(), im);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
 			}
 			iv.setImage(im);
 			labelPictureName.setText(newPicture.getName());
@@ -161,6 +176,7 @@ public class MainApp extends Application {
 		if (newCollection == null || newCollection.getPictures().isEmpty() || newCollection == currentCollectionToShow) {
 			throw new IllegalArgumentException();
 		}
+		imageCache.clear();
 		currentCollectionToShow = newCollection;
 		labelCollectionPath.setText(currentCollectionToShow.getFullPath());
         indexInCurrentCollection = -1;
