@@ -7,13 +7,23 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -21,6 +31,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import org.apache.commons.collections4.map.LRUMap;
 
@@ -96,7 +107,9 @@ public class MainApp extends Application {
 			public void handle(ActionEvent event) {
 		        Logic.loadDirectory(base, true);
 
-		        PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
+		        PictureCollection newCol = selectCollection(base, true, false);
+
+//		        PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
 		        changeCollection(newCol);
 			}
 		});
@@ -247,5 +260,86 @@ public class MainApp extends Application {
 		labelCollectionPath.setText(currentCollectionToShow.getFullPath());
         indexInCurrentCollection = -1;
         changeIndex(0);
+	}
+
+	private PictureCollection selectCollection(PictureCollection base, boolean allowNull, boolean allowEmptyCollections) {
+		PictureCollection result = null;
+
+		// create the dialog
+		// http://code.makery.ch/blog/javafx-dialogs-official/
+		Dialog<PictureCollection> dialog = new Dialog<>();
+		dialog.setTitle("Select picture collection");
+		dialog.setHeaderText("Select one existing picture collection out of the following ones!");
+		ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().add(select);
+
+		// handle the "null collection"
+		if (allowNull) {
+			dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+		} else {
+			Node selectButton = dialog.getDialogPane().lookupButton(select);
+			selectButton.setDisable(true);
+			// TODO: make it up-to-date
+		}
+
+		// create the tree view
+		TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
+		rootItem.setExpanded(true);
+		handleTreeItem(rootItem);
+		TreeView<PictureCollection> tree = new TreeView<>(rootItem);
+		tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
+			@Override
+			public TreeCell<PictureCollection> call(TreeView<PictureCollection> param) {
+				return new TreeCell<PictureCollection>() {
+					@Override
+					protected void updateItem(PictureCollection item, boolean empty) {
+						super.updateItem(item, empty);
+						if (empty) {
+							setText(null);
+							setGraphic(null);
+						} else {
+							setText(item.getName());
+							setGraphic(null);
+						}
+					}
+				};
+			}
+		});
+
+		// finish the dialog
+		tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		tree.getSelectionModel().clearSelection();
+		dialog.getDialogPane().setContent(tree);
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				// request focus on the tree view by default
+				tree.requestFocus();
+			}
+		});
+		dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
+			@Override
+			public PictureCollection call(ButtonType param) {
+				if (param == select) {
+					return tree.getSelectionModel().getSelectedItem().getValue();
+				}
+				return null;
+			}
+		});
+
+		// run the dialog
+		Optional<PictureCollection> dialogResult = dialog.showAndWait();
+		if (dialogResult.isPresent()) {
+			result = dialogResult.get();
+		}
+		return result;
+	}
+
+	private void handleTreeItem(TreeItem<PictureCollection> item) {
+		for (PictureCollection subCol : item.getValue().getSubCollections()) {
+			TreeItem<PictureCollection> newItem = new TreeItem<PictureCollection>(subCol);
+			item.getChildren().add(newItem);
+			handleTreeItem(newItem);
+		}
 	}
 }
