@@ -11,6 +11,8 @@ import java.util.Optional;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -107,10 +109,15 @@ public class MainApp extends Application {
 			public void handle(ActionEvent event) {
 		        Logic.loadDirectory(base, true);
 
-		        PictureCollection newCol = selectCollection(base, true, false);
-
-//		        PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
-		        changeCollection(newCol);
+		        PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
+		        if (newCol != null) {
+		        	newCol = selectCollection(base, false, false);
+		        }
+		        if (newCol == null) {
+		        	System.err.println("the library does not contain any picture!!");
+		        } else {
+		        	changeCollection(newCol);
+		        }
 			}
 		});
     	vBox.getChildren().add(loadButton);
@@ -262,75 +269,102 @@ public class MainApp extends Application {
         changeIndex(0);
 	}
 
-	private PictureCollection selectCollection(PictureCollection base, boolean allowNull, boolean allowEmptyCollections) {
+	private PictureCollection selectCollection(PictureCollection base, boolean allowNull, boolean allowEmptyCollectionForSelection) {
 		PictureCollection result = null;
+		boolean found = false;
 
-		// create the dialog
-		// http://code.makery.ch/blog/javafx-dialogs-official/
-		Dialog<PictureCollection> dialog = new Dialog<>();
-		dialog.setTitle("Select picture collection");
-		dialog.setHeaderText("Select one existing picture collection out of the following ones!");
-		ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
-		dialog.getDialogPane().getButtonTypes().add(select);
-
-		// handle the "null collection"
-		if (allowNull) {
-			dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-		} else {
-			Node selectButton = dialog.getDialogPane().lookupButton(select);
-			selectButton.setDisable(true);
-			// TODO: make it up-to-date
-		}
-
-		// create the tree view
-		TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
-		rootItem.setExpanded(true);
-		handleTreeItem(rootItem);
-		TreeView<PictureCollection> tree = new TreeView<>(rootItem);
-		tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
-			@Override
-			public TreeCell<PictureCollection> call(TreeView<PictureCollection> param) {
-				return new TreeCell<PictureCollection>() {
-					@Override
-					protected void updateItem(PictureCollection item, boolean empty) {
-						super.updateItem(item, empty);
-						if (empty) {
-							setText(null);
-							setGraphic(null);
-						} else {
-							setText(item.getName());
-							setGraphic(null);
+		while (!found) {
+			// create the dialog
+			// http://code.makery.ch/blog/javafx-dialogs-official/
+			Dialog<PictureCollection> dialog = new Dialog<>();
+			dialog.setTitle("Select picture collection");
+			dialog.setHeaderText("Select one existing picture collection out of the following ones!");
+			ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
+			dialog.getDialogPane().getButtonTypes().add(select);
+	
+			// create the tree view
+			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
+			rootItem.setExpanded(true);
+			handleTreeItem(rootItem);
+			TreeView<PictureCollection> tree = new TreeView<>(rootItem);
+			tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
+				final Label label = new Label();
+				@Override
+				public TreeCell<PictureCollection> call(TreeView<PictureCollection> param) {
+					return new TreeCell<PictureCollection>() {
+						@Override
+						protected void updateItem(PictureCollection item, boolean empty) {
+							super.updateItem(item, empty);
+//							if (empty) {
+//								setText(null);
+//								setGraphic(null);
+//							} else {
+//								setText(null);
+//								setGraphic(label);
+//								label.setText(item.getName());
+//								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
+//								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
+//								setDisable(disabled);
+//								label.setDisable(disabled);
+//							}
+							if (empty) {
+								setText(null);
+							} else {
+								setText(item.getName());
+							}
 						}
-					}
-				};
-			}
-		});
-
-		// finish the dialog
-		tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		tree.getSelectionModel().clearSelection();
-		dialog.getDialogPane().setContent(tree);
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				// request focus on the tree view by default
-				tree.requestFocus();
-			}
-		});
-		dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
-			@Override
-			public PictureCollection call(ButtonType param) {
-				if (param == select) {
-					return tree.getSelectionModel().getSelectedItem().getValue();
+					};
 				}
-				return null;
+			});
+	
+			// handle the "null collection"
+			if (allowNull) {
+				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+			} else {
+				Node selectButton = dialog.getDialogPane().lookupButton(select);
+				selectButton.setDisable(true);
+				tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends TreeItem<PictureCollection>> observable,
+							TreeItem<PictureCollection> oldValue,
+							TreeItem<PictureCollection> newValue) {
+						selectButton.setDisable(newValue == null || newValue.getValue() == null);
+					}
+				});
 			}
-		});
+	
+			// finish the dialog
+			tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+			tree.getSelectionModel().clearSelection();
+			dialog.getDialogPane().setContent(tree);
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					// request focus on the tree view by default
+					tree.requestFocus();
+				}
+			});
+			dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
+				@Override
+				public PictureCollection call(ButtonType param) {
+					if (param == select) {
+						return tree.getSelectionModel().getSelectedItem().getValue();
+					}
+					return null;
+				}
+			});
+	
+			// run the dialog
+			Optional<PictureCollection> dialogResult = dialog.showAndWait();
+			if (dialogResult.isPresent()) {
+				result = dialogResult.get();
+			}
 
-		// run the dialog
-		Optional<PictureCollection> dialogResult = dialog.showAndWait();
-		if (dialogResult.isPresent()) {
-			result = dialogResult.get();
+			// handle the result
+			if (result != null || allowNull) {
+				found = true;
+			}
 		}
 		return result;
 	}
