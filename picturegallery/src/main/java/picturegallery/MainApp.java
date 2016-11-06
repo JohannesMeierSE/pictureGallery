@@ -48,9 +48,9 @@ public class MainApp extends Application {
 	private Label labelKeys;
 
 	private PictureCollection base;
-	private PictureCollection currentCollectionToShow;
+	private PictureCollection currentCollection;
 	private Picture currentPicture;
-	private int indexInCurrentCollection;
+	private int indexCurrentCollection;
 
 	private boolean showTempCollection;
 	private int indexTempCollection;
@@ -139,14 +139,14 @@ public class MainApp extends Application {
 //				label.setText(message);
 
     			int size = 0;
-    			if (currentCollectionToShow != null) {
-    				size = currentCollectionToShow.getPictures().size();
+    			if (currentCollection != null) {
+    				size = currentCollection.getPictures().size();
     			}
 				int sizeTemp = tempCollection.size();
 
 				// next picture (RIGHT)
 				if (event.getCode() == KeyCode.RIGHT && size >= 2) {
-					int newIndex = ( indexInCurrentCollection + 1 ) % size;
+					int newIndex = ( indexCurrentCollection + 1 ) % size;
 					if (showTempCollection) {
 						newIndex = ( indexTempCollection + 1 ) % sizeTemp;
 					}
@@ -155,7 +155,7 @@ public class MainApp extends Application {
 				}
 				// previous picture (LEFT)
 				if (event.getCode() == KeyCode.LEFT && size >= 2) {
-					int newIndex = ( indexInCurrentCollection + size - 1 ) % size;
+					int newIndex = ( indexCurrentCollection + size - 1 ) % size;
 					if (showTempCollection) {
 						newIndex = ( indexTempCollection + sizeTemp - 1 ) % sizeTemp;
 					}
@@ -181,7 +181,7 @@ public class MainApp extends Application {
 				if (event.getCode() == KeyCode.S && !showTempCollection && tempCollection.size() >= 2) {
 					System.out.println("starting temp mode");
 					showTempCollection = true;
-					labelCollectionPath.setText("temp collection within " + currentCollectionToShow.getFullPath());
+					labelCollectionPath.setText("temp collection within " + currentCollection.getFullPath());
 					indexTempCollection = -1;
 			        changeIndex(0);
 					return; // hier wichtig, da sonst es sofort wieder geschlossen wird!!
@@ -190,11 +190,11 @@ public class MainApp extends Application {
 				if (event.getCode() == KeyCode.S && showTempCollection) {
 					System.out.println("ending temp mode");
 					showTempCollection = false;
-					labelCollectionPath.setText(currentCollectionToShow.getFullPath());
-					labelIndex.setText((indexInCurrentCollection + 1) + " / " + currentCollectionToShow.getPictures().size());
+					labelCollectionPath.setText(currentCollection.getFullPath());
+					labelIndex.setText((indexCurrentCollection + 1) + " / " + currentCollection.getPictures().size());
 					indexTempCollection = -1;
 					tempCollection.clear();
-					changeIndex(indexInCurrentCollection);
+					changeIndex(indexCurrentCollection);
 					return;
 				}
 				// select another collection (c)
@@ -254,20 +254,20 @@ public class MainApp extends Application {
 			labelIndex.setText((indexTempCollection + 1) + " / " + tempCollection.size());
 			showPicture(tempCollection.get(indexTempCollection));
 		} else {
-			if (newIndex >= currentCollectionToShow.getPictures().size()) {
+			if (newIndex >= currentCollection.getPictures().size()) {
 				throw new IllegalArgumentException();
 			}
 			if (newIndex < 0) {
 				throw new IllegalArgumentException();
 			}
-			indexInCurrentCollection = newIndex;
-			labelIndex.setText((indexInCurrentCollection + 1) + " / " + currentCollectionToShow.getPictures().size());
-			showPicture(currentCollectionToShow.getPictures().get(indexInCurrentCollection));
+			indexCurrentCollection = newIndex;
+			labelIndex.setText((indexCurrentCollection + 1) + " / " + currentCollection.getPictures().size());
+			showPicture(currentCollection.getPictures().get(indexCurrentCollection));
 		}
 	}
 
 	private void changeCollection(PictureCollection newCollection) {
-		if (newCollection == null || newCollection.getPictures().isEmpty() || newCollection == currentCollectionToShow) {
+		if (newCollection == null || newCollection.getPictures().isEmpty() || newCollection == currentCollection) {
 			throw new IllegalArgumentException();
 		}
 		// temp collection
@@ -276,9 +276,9 @@ public class MainApp extends Application {
 		showTempCollection = false;
 		// current collection
 		imageCache.clear();
-		currentCollectionToShow = newCollection;
-		labelCollectionPath.setText(currentCollectionToShow.getFullPath());
-        indexInCurrentCollection = -1;
+		currentCollection = newCollection;
+		labelCollectionPath.setText(currentCollection.getFullPath());
+        indexCurrentCollection = -1;
         currentPicture = null;
         changeIndex(0);
 	}
