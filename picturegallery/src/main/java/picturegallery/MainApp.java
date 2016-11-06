@@ -93,7 +93,9 @@ public class MainApp extends Application {
 
     	labelKeys = new Label("keys");
     	labelKeys.setText("hide/show these information (h), next picture (RIGHT), previous picture (LEFT), "
-    			+ "add to/remove from temp collection (t), show temp collection (s), exit and clear temp collection (s)");
+    			+ "add to/remove from temp collection (t), show temp collection (s), exit and clear temp collection (s), "
+    			+ "select another collection (c)");
+    	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
     	labelCollectionPath = new Label("Collection name");
@@ -118,6 +120,7 @@ public class MainApp extends Application {
 		        } else {
 		        	changeCollection(newCol);
 		        }
+		        loadButton.setDisable(true);
 			}
 		});
     	vBox.getChildren().add(loadButton);
@@ -135,11 +138,14 @@ public class MainApp extends Application {
 //    			System.out.println(message);
 //				label.setText(message);
 
-				int size = currentCollectionToShow.getPictures().size();
+    			int size = 0;
+    			if (currentCollectionToShow != null) {
+    				size = currentCollectionToShow.getPictures().size();
+    			}
 				int sizeTemp = tempCollection.size();
 
 				// next picture (RIGHT)
-				if (event.getCode() == KeyCode.RIGHT) {
+				if (event.getCode() == KeyCode.RIGHT && size >= 2) {
 					int newIndex = ( indexInCurrentCollection + 1 ) % size;
 					if (showTempCollection) {
 						newIndex = ( indexTempCollection + 1 ) % sizeTemp;
@@ -148,7 +154,7 @@ public class MainApp extends Application {
 					return;
 				}
 				// previous picture (LEFT)
-				if (event.getCode() == KeyCode.LEFT) {
+				if (event.getCode() == KeyCode.LEFT && size >= 2) {
 					int newIndex = ( indexInCurrentCollection + size - 1 ) % size;
 					if (showTempCollection) {
 						newIndex = ( indexTempCollection + sizeTemp - 1 ) % sizeTemp;
@@ -190,6 +196,13 @@ public class MainApp extends Application {
 					tempCollection.clear();
 					changeIndex(indexInCurrentCollection);
 					return;
+				}
+				// select another collection (c)
+				if (event.getCode() == KeyCode.C && !showTempCollection) {
+					PictureCollection newCol = selectCollection(base, true, false);
+					if (newCol != null) {
+						changeCollection(newCol);
+					}
 				}
     		}
     	});
@@ -266,6 +279,7 @@ public class MainApp extends Application {
 		currentCollectionToShow = newCollection;
 		labelCollectionPath.setText(currentCollectionToShow.getFullPath());
         indexInCurrentCollection = -1;
+        currentPicture = null;
         changeIndex(0);
 	}
 
