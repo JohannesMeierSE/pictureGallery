@@ -5,6 +5,8 @@ import gallery.PictureCollection;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -26,6 +28,7 @@ import picturegallery.persistency.Settings;
 
 public class MainApp extends Application {
 	private ImageView iv;
+	private VBox vBox;
 	private Label labelCollectionPath;
 	private Label labelIndex;
 	private Label labelPictureName;
@@ -33,8 +36,13 @@ public class MainApp extends Application {
 
 	private PictureCollection base;
 	private PictureCollection currentCollectionToShow;
+	private Picture currentPicture;
 	private int indexInCurrentCollection;
-	private VBox vBox;
+
+	private boolean showTempCollection;
+	private int indexTempCollection;
+	private List<Picture> tempCollection = new ArrayList<>();
+
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 	private LRUMap<String, Image> imageCache = new LRUMap<>(50);
 
@@ -71,7 +79,8 @@ public class MainApp extends Application {
     	vBox = new VBox();
 
     	labelKeys = new Label("keys");
-    	labelKeys.setText("hide/show these information (h), next picture (RIGHT), previous picture (LEFT)");
+    	labelKeys.setText("hide/show these information (h), next picture (RIGHT), previous picture (LEFT), "
+    			+ "add to/remove from temp collection (t), show temp collection (s), exit and clear temp collection (s)");
     	handleLabel(labelKeys);
 
     	labelCollectionPath = new Label("Collection name");
@@ -107,20 +116,60 @@ public class MainApp extends Application {
 //				label.setText(message);
 
 				int size = currentCollectionToShow.getPictures().size();
+				int sizeTemp = tempCollection.size();
 
-				// next picture
+				// next picture (RIGHT)
 				if (event.getCode() == KeyCode.RIGHT) {
 					int newIndex = ( indexInCurrentCollection + 1 ) % size;
+					if (showTempCollection) {
+						newIndex = ( indexTempCollection + 1 ) % sizeTemp;
+					}
 					changeIndex(newIndex);
+					return;
 				}
-				// previous picture
+				// previous picture (LEFT)
 				if (event.getCode() == KeyCode.LEFT) {
 					int newIndex = ( indexInCurrentCollection + size - 1 ) % size;
+					if (showTempCollection) {
+						newIndex = ( indexTempCollection + sizeTemp - 1 ) % sizeTemp;
+					}
 					changeIndex(newIndex);
+					return;
 				}
-				// hide information
+				// hide information (h)
 				if (event.getCode() == KeyCode.H) {
 					vBox.setVisible(! vBox.isVisible());
+					return;
+				}
+				// add to/remove from temp collection (t)
+				if (event.getCode() == KeyCode.T && !showTempCollection) {
+					if (tempCollection.contains(currentPicture)) {
+						tempCollection.remove(currentPicture);
+					} else {
+						tempCollection.add(currentPicture);
+						System.out.println("added " + currentPicture.getName());
+					}
+					return;
+				}
+				// show temp collection (s)
+				if (event.getCode() == KeyCode.S && !showTempCollection && tempCollection.size() >= 2) {
+					System.out.println("starting temp mode");
+					showTempCollection = true;
+					labelCollectionPath.setText("temp collection within " + currentCollectionToShow.getFullPath());
+					indexTempCollection = -1;
+			        changeIndex(0);
+					return; // hier wichtig, da sonst es sofort wieder geschlossen wird!!
+				}
+				// exit and clear temp collection (s)
+				if (event.getCode() == KeyCode.S && showTempCollection) {
+					System.out.println("ending temp mode");
+					showTempCollection = false;
+					labelCollectionPath.setText(currentCollectionToShow.getFullPath());
+					labelIndex.setText((indexInCurrentCollection + 1) + " / " + currentCollectionToShow.getPictures().size());
+					indexTempCollection = -1;
+					tempCollection.clear();
+					changeIndex(indexInCurrentCollection);
+					return;
 				}
     		}
     	});
@@ -137,45 +186,62 @@ public class MainApp extends Application {
 	}
 
 	private void showPicture(Picture newPicture) {
-		if (newPicture != null) {
-			// check the cache
-			Image im = imageCache.get(newPicture.getName());
-			// load image
-			if (im == null) {
-				try {
-					im = new Image(new File(newPicture.getFullPath()).toURI().toURL().toString());
-					imageCache.put(newPicture.getName(), im);
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				}
+		if (newPicture == null) {
+			throw new IllegalArgumentException();
+		}
+		if (newPicture == currentPicture) {
+			return;
+		}
+		currentPicture = newPicture;
+		// check the cache
+		// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
+		Image im = imageCache.get(currentPicture.getName());
+		// load image
+		if (im == null) {
+			try {
+				im = new Image(new File(currentPicture.getFullPath()).toURI().toURL().toString());
+				imageCache.put(currentPicture.getName(), im);
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
 			}
-			iv.setImage(im);
-			labelPictureName.setText(newPicture.getName());
-        } else {
-        	throw new IllegalArgumentException();
-        }
+		}
+		iv.setImage(im);
+		labelPictureName.setText(currentPicture.getName());
 	}
 
 	private void changeIndex(int newIndex) {
-		if (indexInCurrentCollection == newIndex) {
-			System.out.println("same index as before: " + newIndex);
-			return;
+		if (showTempCollection) {
+			if (newIndex >= tempCollection.size()) {
+				throw new IllegalArgumentException();
+			}
+			if (newIndex < 0) {
+				throw new IllegalArgumentException();
+			}
+			indexTempCollection = newIndex;
+			labelIndex.setText((indexTempCollection + 1) + " / " + tempCollection.size());
+			showPicture(tempCollection.get(indexTempCollection));
+		} else {
+			if (newIndex >= currentCollectionToShow.getPictures().size()) {
+				throw new IllegalArgumentException();
+			}
+			if (newIndex < 0) {
+				throw new IllegalArgumentException();
+			}
+			indexInCurrentCollection = newIndex;
+			labelIndex.setText((indexInCurrentCollection + 1) + " / " + currentCollectionToShow.getPictures().size());
+			showPicture(currentCollectionToShow.getPictures().get(indexInCurrentCollection));
 		}
-		if (newIndex >= currentCollectionToShow.getPictures().size()) {
-			throw new IllegalArgumentException();
-		}
-		if (newIndex < 0) {
-			throw new IllegalArgumentException();
-		}
-		indexInCurrentCollection = newIndex;
-		labelIndex.setText((indexInCurrentCollection + 1) + " / " + currentCollectionToShow.getPictures().size());
-		showPicture(currentCollectionToShow.getPictures().get(indexInCurrentCollection));
 	}
 
 	private void changeCollection(PictureCollection newCollection) {
 		if (newCollection == null || newCollection.getPictures().isEmpty() || newCollection == currentCollectionToShow) {
 			throw new IllegalArgumentException();
 		}
+		// temp collection
+		indexTempCollection = -1;
+		tempCollection.clear();
+		showTempCollection = false;
+		// current collection
 		imageCache.clear();
 		currentCollectionToShow = newCollection;
 		labelCollectionPath.setText(currentCollectionToShow.getFullPath());

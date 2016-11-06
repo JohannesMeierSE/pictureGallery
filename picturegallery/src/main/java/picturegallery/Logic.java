@@ -45,7 +45,6 @@ public class Logic {
 			    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					String name = file.toString();
 					String nameLower = name.toLowerCase();
-			        System.out.println("file: " + name);
 			        if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg")) {
 			        	if (FileUtils.isSymlink(new File(name))) {
 			        		// TODO
