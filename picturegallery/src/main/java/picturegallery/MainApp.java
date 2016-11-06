@@ -288,29 +288,27 @@ public class MainApp extends Application {
 			handleTreeItem(rootItem);
 			TreeView<PictureCollection> tree = new TreeView<>(rootItem);
 			tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
-				final Label label = new Label();
 				@Override
 				public TreeCell<PictureCollection> call(TreeView<PictureCollection> param) {
 					return new TreeCell<PictureCollection>() {
 						@Override
 						protected void updateItem(PictureCollection item, boolean empty) {
 							super.updateItem(item, empty);
-//							if (empty) {
-//								setText(null);
-//								setGraphic(null);
-//							} else {
-//								setText(null);
-//								setGraphic(label);
-//								label.setText(item.getName());
-//								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
-//								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
-//								setDisable(disabled);
-//								label.setDisable(disabled);
-//							}
 							if (empty) {
 								setText(null);
+								setGraphic(null);
 							} else {
-								setText(item.getName());
+								setText(null);
+								final Label label = new Label();
+								setGraphic(label);
+								label.setText(item.getName());
+								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
+								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
+								setDisable(disabled);
+								label.setDisable(disabled);
+								if (disabled) {
+									label.setText(label.getText() + " (empty)");
+								}
 							}
 						}
 					};
@@ -329,7 +327,9 @@ public class MainApp extends Application {
 							ObservableValue<? extends TreeItem<PictureCollection>> observable,
 							TreeItem<PictureCollection> oldValue,
 							TreeItem<PictureCollection> newValue) {
-						selectButton.setDisable(newValue == null || newValue.getValue() == null);
+						selectButton.setDisable(newValue == null || newValue.getValue() == null ||
+								// benötigt, da man auch nicht-wählbare Einträge auswählen kann, diese Abfrage funktioniert aber auch nicht!!
+								(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
 					}
 				});
 			}
@@ -359,6 +359,9 @@ public class MainApp extends Application {
 			Optional<PictureCollection> dialogResult = dialog.showAndWait();
 			if (dialogResult.isPresent()) {
 				result = dialogResult.get();
+				if (result.getPictures().isEmpty() && !allowEmptyCollectionForSelection) {
+					result = null;
+				}
 			}
 
 			// handle the result
