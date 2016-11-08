@@ -4,7 +4,9 @@ import gallery.Picture;
 import gallery.PictureCollection;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -38,6 +40,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.io.FileUtils;
 
 import picturegallery.persistency.Settings;
 
@@ -57,6 +60,8 @@ public class MainApp extends Application {
 	private boolean showTempCollection;
 	private int indexTempCollection;
 	private List<Picture> tempCollection = new ArrayList<>();
+
+	private PictureCollection movetoCollection;
 
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 	private LRUMap<String, Image> imageCache = new LRUMap<>(50);
@@ -96,7 +101,7 @@ public class MainApp extends Application {
     	labelKeys = new Label("keys");
     	labelKeys.setText("hide/show these information (H), next picture (RIGHT), previous picture (LEFT), "
     			+ "add to/remove from temp collection (T), show temp collection / exit and clear temp collection (S), "
-    			+ "select another collection (C)");
+    			+ "select another collection (C), move the current picture into another collection (X)");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -207,6 +212,25 @@ public class MainApp extends Application {
 					}
 					return;
 				}
+				// move the current picture into another collection (X)
+				if (event.getCode() == KeyCode.X) {
+					if (movetoCollection == null) {
+						movetoCollection = selectCollection(base, true, true, Collections.singletonList(currentCollection));
+						if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
+							// Verschieben innerhalb der eigenen Collection macht keinen Sinn!
+							movetoCollection = null;
+						}
+					}
+					if (movetoCollection == null) {
+						// Benutzer kann diese Aktion also abbrechen, indem er keine Collection auswählt!
+						return;
+					}
+					if (showTempCollection) {
+						// TODO: was tun?? verschieben und anschließend Temp-Mode schließen (S)??
+					} else {
+						movePicture(currentPicture, movetoCollection);
+					}
+				}
     		}
     	});
 
@@ -235,6 +259,7 @@ public class MainApp extends Application {
 		Image storedImage = imageCache.get(currentPicture.getName());
 		if (storedImage == null) {
 			// load image
+			// https://stackoverflow.com/questions/26554814/javafx-updating-gui
 			Task<Image> task = new Task<Image>() {
 				@Override
 				protected Image call() throws Exception {
@@ -287,6 +312,7 @@ public class MainApp extends Application {
 		if (newCollection == null || newCollection.getPictures().isEmpty() || newCollection == currentCollection) {
 			throw new IllegalArgumentException();
 		}
+		movetoCollection = null;
 		currentCollection = newCollection;
 		// temp collection
 		tempCollection.clear();
@@ -298,7 +324,76 @@ public class MainApp extends Application {
         changeIndex(0);
 	}
 
-	private PictureCollection selectCollection(PictureCollection base, boolean allowNull, boolean allowEmptyCollectionForSelection) {
+	private void movePicture(Picture picture, PictureCollection newCollection) {
+		if (picture == null || newCollection == null) {
+			throw new IllegalArgumentException();
+		}
+		if (picture.getCollection() == newCollection) {
+			// nothing to do!
+			System.err.println("picture is already in this collection");
+			return;
+		}
+		try {
+			// move the file in the file system
+			FileUtils.moveFileToDirectory(new File(currentPicture.getFullPath()), new File(newCollection.getFullPath()), false);
+
+			int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
+			int previousIndexTemp = tempCollection.indexOf(picture);
+
+			// remove the picture from some other variable stores
+			imageCache.remove(picture.getName());
+			tempCollection.remove(picture);
+
+			// update the EMF model
+			picture.getCollection().getPictures().remove(picture);
+			newCollection.getPictures().add(picture);
+			picture.setCollection(newCollection);
+
+			// compute the new index
+			if (previousIndexCurrent < 0) {
+				// the picture was not part of the currently shown collection => do nothing
+			} else {
+				// current collection
+				int newIndexCurrent = indexCurrentCollection;
+				if (previousIndexCurrent < newIndexCurrent) {
+					// Bild vor dem aktuellen Bild wird gelöscht
+					newIndexCurrent--;
+				} else {
+					// wegen Sonderfall, dass das letzte Bild gelöscht wird
+					newIndexCurrent = Math.min(newIndexCurrent, currentCollection.getPictures().size() - 1);
+				}
+
+				// temp collection
+				int newIndexTemp = indexTempCollection;
+				if (previousIndexTemp < 0) {
+					// picture was not shown in temp collection
+				} else {
+					if (previousIndexTemp < newIndexTemp) {
+						newIndexTemp--;
+					} else {
+						newIndexTemp = Math.min(newIndexTemp, tempCollection.size() - 1);
+					}
+				}
+
+				// update the GUI
+				if (showTempCollection) {
+					changeIndex(newIndexTemp);
+				} else {
+					changeIndex(newIndexCurrent);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// TODO Sonderfall bei LinkedPicture!!
+	}
+
+	private PictureCollection selectCollection(PictureCollection base,
+			boolean allowNull, boolean allowEmptyCollectionForSelection) {
+		return selectCollection(base, allowNull, allowEmptyCollectionForSelection, Collections.emptyList());
+	}
+	private PictureCollection selectCollection(PictureCollection base,
+			boolean allowNull, boolean allowEmptyCollectionForSelection, List<PictureCollection> ignoredCollections) {
 		PictureCollection result = null;
 		boolean found = false;
 
@@ -332,9 +427,10 @@ public class MainApp extends Application {
 								setGraphic(label);
 								label.setText(item.getName());
 								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
+								boolean ignore = disabled || ignoredCollections.contains(item);
 								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
-								setDisable(disabled);
-								label.setDisable(disabled);
+								setDisable(ignore);
+								label.setDisable(ignore);
 								if (disabled) {
 									label.setText(label.getText() + " (empty)");
 								}
