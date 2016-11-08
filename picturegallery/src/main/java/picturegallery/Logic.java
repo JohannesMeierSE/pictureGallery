@@ -62,7 +62,8 @@ public class Logic {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        sortCollection(currentCollection);
+        sortPicturesInCollection(currentCollection);
+        sortSubCollections(currentCollection, false);
         if (recursive) {
         	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
         		loadDirectory(newSubCollection, recursive);
@@ -117,11 +118,26 @@ public class Logic {
 	 * Changes the order of the pictures in the collection (ascending names) => works in-place!
 	 * @param col
 	 */
-	public static void sortCollection(PictureCollection col) {
+	public static void sortPicturesInCollection(PictureCollection col) {
 		// http://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/common/util/ECollections.html#sort(org.eclipse.emf.common.util.EList)
 		ECollections.sort(col.getPictures(), new Comparator<Picture>() {
 			@Override
 			public int compare(Picture o1, Picture o2) {
+				if (o1 == o2) {
+					return 0;
+				}
+				if (o1.getName() == o2.getName()) {
+					throw new IllegalStateException();
+				}
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+	}
+
+	public static void sortSubCollections(PictureCollection base, boolean recursive) {
+		ECollections.sort(base.getSubCollections(), new Comparator<PictureCollection>() {
+			@Override
+			public int compare(PictureCollection o1, PictureCollection o2) {
 				if (o1 == o2) {
 					return 0;
 				}

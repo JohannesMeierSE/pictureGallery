@@ -348,6 +348,7 @@ public class MainApp extends Application {
 			picture.getCollection().getPictures().remove(picture);
 			newCollection.getPictures().add(picture);
 			picture.setCollection(newCollection);
+			Logic.sortPicturesInCollection(newCollection);
 
 			// compute the new index
 			if (previousIndexCurrent < 0) {
@@ -499,6 +500,7 @@ public class MainApp extends Application {
 	private void handleTreeItem(TreeItem<PictureCollection> item) {
 		for (PictureCollection subCol : item.getValue().getSubCollections()) {
 			TreeItem<PictureCollection> newItem = new TreeItem<PictureCollection>(subCol);
+			newItem.setExpanded(true);
 			item.getChildren().add(newItem);
 			handleTreeItem(newItem);
 		}
