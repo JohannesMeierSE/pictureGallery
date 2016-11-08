@@ -343,25 +343,24 @@ public class MainApp extends Application {
 					};
 				}
 			});
-	
+
 			// handle the "null collection"
 			if (allowNull) {
 				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-			} else {
-				Node selectButton = dialog.getDialogPane().lookupButton(select);
-				selectButton.setDisable(true);
-				tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
-					@Override
-					public void changed(
-							ObservableValue<? extends TreeItem<PictureCollection>> observable,
-							TreeItem<PictureCollection> oldValue,
-							TreeItem<PictureCollection> newValue) {
-						selectButton.setDisable(newValue == null || newValue.getValue() == null ||
-								// benötigt, da man auch nicht-wählbare Einträge auswählen kann, diese Abfrage funktioniert aber auch nicht!!
-								(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
-					}
-				});
 			}
+			Node selectButton = dialog.getDialogPane().lookupButton(select);
+			selectButton.setDisable(true);
+			tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends TreeItem<PictureCollection>> observable,
+						TreeItem<PictureCollection> oldValue,
+						TreeItem<PictureCollection> newValue) {
+					selectButton.setDisable(newValue == null || newValue.getValue() == null ||
+							// benötigt, da man auch nicht-wählbare Einträge auswählen kann, diese Abfrage funktioniert aber auch nicht!!
+							(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
+				}
+			});
 	
 			// finish the dialog
 			tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
