@@ -4,7 +4,6 @@ import gallery.Picture;
 import gallery.PictureCollection;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -194,7 +193,6 @@ public class MainApp extends Application {
 						showTempCollection = false;
 						tempCollection.clear();
 						labelCollectionPath.setText(currentCollection.getFullPath());
-						labelIndex.setText((indexCurrentCollection + 1) + " / " + currentCollection.getPictures().size());
 						changeIndex(indexCurrentCollection);
 					} else if (tempCollection.size() >= 2) {
 						// show temp collection (s)
@@ -226,10 +224,12 @@ public class MainApp extends Application {
 						return;
 					}
 					if (showTempCollection) {
-						// TODO: was tun?? verschieben und anschließend Temp-Mode schließen (S)??
-					} else {
-						movePicture(currentPicture, movetoCollection);
+						// close temp mode
+						showTempCollection = false;
+						tempCollection.clear();
+						labelCollectionPath.setText(currentCollection.getFullPath());
 					}
+					movePicture(currentPicture, movetoCollection);
 				}
     		}
     	});
@@ -333,60 +333,70 @@ public class MainApp extends Application {
 			System.err.println("picture is already in this collection");
 			return;
 		}
-		try {
-			// move the file in the file system
-			FileUtils.moveFileToDirectory(new File(currentPicture.getFullPath()), new File(newCollection.getFullPath()), false);
+		// TODO Sonderfall bei LinkedPicture!!
 
-			int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
-			int previousIndexTemp = tempCollection.indexOf(picture);
+		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
+		int previousIndexTemp = tempCollection.indexOf(picture);
 
-			// remove the picture from some other variable stores
-			imageCache.remove(picture.getName());
-			tempCollection.remove(picture);
+		Task<Void> task = new Task<Void>() { // do the long-running moving in another thread!
+			@Override
+			protected Void call() throws Exception {
+				// move the file in the file system
+				// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
+				FileUtils.moveFileToDirectory(new File(currentPicture.getFullPath()), new File(newCollection.getFullPath()), false);
+				
+				// remove the picture from some other variable stores
+				imageCache.remove(picture.getName());
+				tempCollection.remove(picture);
+				
+				// update the EMF model
+				picture.getCollection().getPictures().remove(picture);
+				newCollection.getPictures().add(picture);
+				picture.setCollection(newCollection);
+				Logic.sortPicturesInCollection(newCollection);
 
-			// update the EMF model
-			picture.getCollection().getPictures().remove(picture);
-			newCollection.getPictures().add(picture);
-			picture.setCollection(newCollection);
-			Logic.sortPicturesInCollection(newCollection);
-
-			// compute the new index
-			if (previousIndexCurrent < 0) {
-				// the picture was not part of the currently shown collection => do nothing
-			} else {
-				// current collection
-				int newIndexCurrent = indexCurrentCollection;
-				if (previousIndexCurrent < newIndexCurrent) {
-					// Bild vor dem aktuellen Bild wird gelöscht
-					newIndexCurrent--;
+				return null;
+			}
+		};
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent event) {
+				// compute the new index
+				if (previousIndexCurrent < 0) {
+					// the picture was not part of the currently shown collection => do nothing
 				} else {
-					// wegen Sonderfall, dass das letzte Bild gelöscht wird
-					newIndexCurrent = Math.min(newIndexCurrent, currentCollection.getPictures().size() - 1);
-				}
-
-				// temp collection
-				int newIndexTemp = indexTempCollection;
-				if (previousIndexTemp < 0) {
-					// picture was not shown in temp collection
-				} else {
-					if (previousIndexTemp < newIndexTemp) {
-						newIndexTemp--;
+					// current collection
+					int newIndexCurrent = indexCurrentCollection;
+					if (previousIndexCurrent < newIndexCurrent) {
+						// Bild vor dem aktuellen Bild wird gelöscht
+						newIndexCurrent--;
 					} else {
-						newIndexTemp = Math.min(newIndexTemp, tempCollection.size() - 1);
+						// wegen Sonderfall, dass das letzte Bild gelöscht wird
+						newIndexCurrent = Math.min(newIndexCurrent, currentCollection.getPictures().size() - 1);
+					}
+					
+					// temp collection
+					int newIndexTemp = indexTempCollection;
+					if (previousIndexTemp < 0) {
+						// picture was not shown in temp collection
+					} else {
+						if (previousIndexTemp < newIndexTemp) {
+							newIndexTemp--;
+						} else {
+							newIndexTemp = Math.min(newIndexTemp, tempCollection.size() - 1);
+						}
+					}
+					
+					// update the GUI
+					if (showTempCollection) {
+						changeIndex(newIndexTemp);
+					} else {
+						changeIndex(newIndexCurrent);
 					}
 				}
-
-				// update the GUI
-				if (showTempCollection) {
-					changeIndex(newIndexTemp);
-				} else {
-					changeIndex(newIndexCurrent);
-				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		// TODO Sonderfall bei LinkedPicture!!
+		});
+		new Thread(task).start();
 	}
 
 	private PictureCollection selectCollection(PictureCollection base,
