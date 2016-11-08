@@ -4,15 +4,17 @@ import gallery.Picture;
 import gallery.PictureCollection;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -92,9 +94,9 @@ public class MainApp extends Application {
     	vBox = new VBox();
 
     	labelKeys = new Label("keys");
-    	labelKeys.setText("hide/show these information (h), next picture (RIGHT), previous picture (LEFT), "
-    			+ "add to/remove from temp collection (t), show temp collection (s), exit and clear temp collection (s), "
-    			+ "select another collection (c)");
+    	labelKeys.setText("hide/show these information (H), next picture (RIGHT), previous picture (LEFT), "
+    			+ "add to/remove from temp collection (T), show temp collection / exit and clear temp collection (S), "
+    			+ "select another collection (C)");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -184,7 +186,6 @@ public class MainApp extends Application {
 				if (event.getCode() == KeyCode.S) {
 					if (showTempCollection) {
 						// exit and clear temp collection (s)
-						System.out.println("ending temp mode");
 						showTempCollection = false;
 						tempCollection.clear();
 						labelCollectionPath.setText(currentCollection.getFullPath());
@@ -192,7 +193,6 @@ public class MainApp extends Application {
 						changeIndex(indexCurrentCollection);
 					} else if (tempCollection.size() >= 2) {
 						// show temp collection (s)
-						System.out.println("starting temp mode");
 						showTempCollection = true;
 						labelCollectionPath.setText("temp collection within " + currentCollection.getFullPath());
 						changeIndex(0);
@@ -229,20 +229,35 @@ public class MainApp extends Application {
 			return;
 		}
 		currentPicture = newPicture;
+		labelPictureName.setText(currentPicture.getName());
 		// check the cache
 		// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
-		Image im = imageCache.get(currentPicture.getName());
-		// load image
-		if (im == null) {
-			try {
-				im = new Image(new File(currentPicture.getFullPath()).toURI().toURL().toString());
-				imageCache.put(currentPicture.getName(), im);
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
+		Image storedImage = imageCache.get(currentPicture.getName());
+		if (storedImage == null) {
+			// load image
+			Task<Image> task = new Task<Image>() {
+				@Override
+				protected Image call() throws Exception {
+					Image loaded = new Image(new File(currentPicture.getFullPath()).toURI().toURL().toString());
+					return loaded;
+				}
+			};
+			task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent event) {
+					try {
+						Image availableImage = task.get();
+						imageCache.put(currentPicture.getName(), availableImage);
+						iv.setImage(availableImage);
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
+				}
+			});
+			new Thread(task).start();
+		} else {
+			iv.setImage(storedImage);
 		}
-		iv.setImage(im);
-		labelPictureName.setText(currentPicture.getName());
 	}
 
 	private void changeIndex(int newIndex) {
