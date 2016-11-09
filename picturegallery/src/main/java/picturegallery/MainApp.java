@@ -39,6 +39,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -96,7 +97,15 @@ public class MainApp extends Application {
     	iv.fitHeightProperty().bind(root.heightProperty());
     	root.getChildren().add(iv);
 
-    	final String baseDir = Settings.getBasePath();
+    	// https://docs.oracle.com/javafx/2/ui_controls/file-chooser.htm
+		DirectoryChooser dialog = new DirectoryChooser();
+		dialog.setTitle("Choose the base directory of the library to work with!");
+		dialog.setInitialDirectory(new File(Settings.getBasePath()));
+		File choosenLibrary = dialog.showDialog(stage);
+    	String baseDir = Settings.getBasePath();
+    	if (choosenLibrary != null) {
+    		baseDir = choosenLibrary.getAbsolutePath();
+    	}
     	base = Logic.createEmptyLibrary(baseDir);
 
     	vBox = new VBox();
