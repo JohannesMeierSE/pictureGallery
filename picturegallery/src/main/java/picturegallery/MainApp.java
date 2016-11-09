@@ -110,10 +110,14 @@ public class MainApp extends Application {
     	vBox = new VBox();
 
     	labelKeys = new Label("keys");
-    	labelKeys.setText("hide/show these information (H), next picture (RIGHT), previous picture (LEFT), "
-    			+ "add to/remove from temp collection (T), show temp collection / exit and clear temp collection (S), "
-    			+ "select another collection (C), move the current picture into another collection (X), "
-    			+ "create new collection (N)");
+    	labelKeys.setText("(H) hide/show these information\n"
+    			+ "(RIGHT) next picture\n"
+    			+ "(LEFT) previous picture\n"
+    			+ "(T) add to/remove from temp collection\n"
+    			+ "(S) show temp collection / exit and clear temp collection\n"
+    			+ "(C) select another collection\n"
+    			+ "(X) move the current picture into another collection\n"
+    			+ "(N) create new collection\n\n");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
