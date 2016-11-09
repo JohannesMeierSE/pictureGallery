@@ -91,9 +91,9 @@ public class MainApp extends Application {
     	iv.setPreserveRatio(true);
     	iv.setSmooth(true);
     	iv.setCache(true);
-    	iv.setFitWidth(100);
-    	// https://stackoverflow.com/questions/21501090/set-maximum-size-for-javafx-imageview => muss noch optimiert werden!
+    	// https://stackoverflow.com/questions/12630296/resizing-images-to-fit-the-parent-node
     	iv.fitWidthProperty().bind(root.widthProperty());
+    	iv.fitHeightProperty().bind(root.heightProperty());
     	root.getChildren().add(iv);
 
     	final String baseDir = Settings.getBasePath();
