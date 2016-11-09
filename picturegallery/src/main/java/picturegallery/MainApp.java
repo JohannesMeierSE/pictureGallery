@@ -1,9 +1,13 @@
 package picturegallery;
 
+import gallery.GalleryFactory;
 import gallery.Picture;
 import gallery.PictureCollection;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +104,8 @@ public class MainApp extends Application {
     	labelKeys = new Label("keys");
     	labelKeys.setText("hide/show these information (H), next picture (RIGHT), previous picture (LEFT), "
     			+ "add to/remove from temp collection (T), show temp collection / exit and clear temp collection (S), "
-    			+ "select another collection (C), move the current picture into another collection (X)");
+    			+ "select another collection (C), move the current picture into another collection (X), "
+    			+ "create new collection (N)");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -230,6 +235,33 @@ public class MainApp extends Application {
 						labelCollectionPath.setText(currentCollection.getFullPath());
 					}
 					movePicture(currentPicture, movetoCollection);
+					return;
+				}
+				// create new collection (N)
+				if (event.getCode() == KeyCode.N) {
+					PictureCollection parentOfNewCollection = selectCollection(base, true, true);
+					if (parentOfNewCollection != null) {
+						String newName = "newName";
+						// check for uniqueness
+						for (PictureCollection sub : parentOfNewCollection.getSubCollections()) {
+							if (sub.getName().equals(newName)) {
+								return;
+							}
+						}
+						// update EMF model
+						PictureCollection newCollection = GalleryFactory.eINSTANCE.createPictureCollection();
+						newCollection.setName(newName);
+						newCollection.setSuperCollection(parentOfNewCollection);
+						parentOfNewCollection.getSubCollections().add(newCollection);
+						Logic.sortSubCollections(parentOfNewCollection, false);
+						// create folder in file system
+						try {
+							Files.createDirectory(Paths.get(newCollection.getFullPath()));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					return;
 				}
     		}
     	});
