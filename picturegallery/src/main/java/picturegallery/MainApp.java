@@ -22,7 +22,6 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
@@ -461,6 +460,13 @@ public class MainApp extends Application {
 			ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
 			dialog.getDialogPane().getButtonTypes().add(select);
 	
+			// handle the "null collection" (1)
+			if (allowNull) {
+				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+			}
+			Button selectButton = (Button) dialog.getDialogPane().lookupButton(select);
+			selectButton.setDisable(true);
+			
 			// create the tree view
 			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
 			rootItem.setExpanded(true);
@@ -494,13 +500,17 @@ public class MainApp extends Application {
 					};
 				}
 			});
+			dialog.getDialogPane().setOnKeyReleased(new EventHandler<KeyEvent>() {
+				@Override
+				public void handle(KeyEvent event) {
+					// closes the dialog with "ENTER"
+					if (event.getCode() == KeyCode.ENTER && !selectButton.isDisabled()) {
+						selectButton.fire();
+					}
+				}
+			});
 
-			// handle the "null collection"
-			if (allowNull) {
-				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-			}
-			Node selectButton = dialog.getDialogPane().lookupButton(select);
-			selectButton.setDisable(true);
+			// handle the "null collection" (2)
 			tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
 				@Override
 				public void changed(
@@ -512,7 +522,7 @@ public class MainApp extends Application {
 							(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
 				}
 			});
-	
+
 			// finish the dialog
 			tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 			tree.getSelectionModel().clearSelection();
