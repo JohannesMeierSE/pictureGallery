@@ -20,7 +20,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -125,25 +124,6 @@ public class MainApp extends Application {
     	labelPictureName = new Label("picture name");
     	handleLabel(labelPictureName);
 
-    	Button loadButton = new Button("Load Library");
-    	loadButton.setOnAction(new  EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-		        Logic.loadDirectory(base, true);
-
-		        PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
-		        if (newCol != null) {
-		        	newCol = selectCollection(base, false, false);
-		        }
-		        if (newCol == null) {
-		        	System.err.println("the library does not contain any picture!!");
-		        } else {
-		        	changeCollection(newCol);
-		        }
-		        loadButton.setDisable(true);
-			}
-		});
-    	vBox.getChildren().add(loadButton);
     	root.getChildren().add(vBox);
 
     	Scene scene = new Scene(root, 800, 600);
@@ -289,6 +269,29 @@ public class MainApp extends Application {
         stage.setTitle("Picture Gallery");
         stage.setScene(scene);
         stage.show();
+
+        Task<Void> task = new Task<Void>() {
+        	@Override
+        	protected Void call() throws Exception {
+        		Logic.loadDirectory(base, true);
+        		return null;
+        	}
+        };
+        task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+        	@Override
+        	public void handle(WorkerStateEvent event) {
+        		PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
+        		if (newCol != null) {
+        			newCol = selectCollection(base, false, false);
+        		}
+        		if (newCol == null) {
+        			System.err.println("the library does not contain any picture!!");
+        		} else {
+        			changeCollection(newCol);
+        		}
+        	}
+        });
+        new Thread(task).start();
     }
 
 	private void handleLabel(Label label) {
