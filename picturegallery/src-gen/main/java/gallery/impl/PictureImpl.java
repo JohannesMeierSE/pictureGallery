@@ -3,6 +3,7 @@
 package gallery.impl;
 
 import gallery.GalleryPackage;
+import gallery.Metadata;
 import gallery.Picture;
 import gallery.PictureCollection;
 
@@ -131,6 +132,17 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 		fileExtension = newFileExtension;
 		if (eNotificationRequired())
 			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.PICTURE__FILE_EXTENSION, oldFileExtension, fileExtension));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Metadata getMetadata() {
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
 	}
 
 	/**

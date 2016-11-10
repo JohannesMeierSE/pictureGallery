@@ -507,13 +507,67 @@ public interface GalleryPackage extends EPackage {
 	int METADATA__PICTURE = 0;
 
 	/**
+	 * The feature id for the '<em><b>Size</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA__SIZE = 1;
+
+	/**
+	 * The feature id for the '<em><b>Landscape</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA__LANDSCAPE = 2;
+
+	/**
+	 * The feature id for the '<em><b>Created</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA__CREATED = 3;
+
+	/**
+	 * The feature id for the '<em><b>Height</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA__HEIGHT = 4;
+
+	/**
+	 * The feature id for the '<em><b>Width</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA__WIDTH = 5;
+
+	/**
+	 * The feature id for the '<em><b>Camera</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA__CAMERA = 6;
+
+	/**
 	 * The number of structural features of the '<em>Metadata</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int METADATA_FEATURE_COUNT = 1;
+	int METADATA_FEATURE_COUNT = 7;
 
 	/**
 	 * The number of operations of the '<em>Metadata</em>' class.
@@ -770,6 +824,72 @@ public interface GalleryPackage extends EPackage {
 	EReference getMetadata_Picture();
 
 	/**
+	 * Returns the meta object for the attribute '{@link gallery.Metadata#getSize <em>Size</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Size</em>'.
+	 * @see gallery.Metadata#getSize()
+	 * @see #getMetadata()
+	 * @generated
+	 */
+	EAttribute getMetadata_Size();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.Metadata#isLandscape <em>Landscape</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Landscape</em>'.
+	 * @see gallery.Metadata#isLandscape()
+	 * @see #getMetadata()
+	 * @generated
+	 */
+	EAttribute getMetadata_Landscape();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.Metadata#getCreated <em>Created</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Created</em>'.
+	 * @see gallery.Metadata#getCreated()
+	 * @see #getMetadata()
+	 * @generated
+	 */
+	EAttribute getMetadata_Created();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.Metadata#getHeight <em>Height</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Height</em>'.
+	 * @see gallery.Metadata#getHeight()
+	 * @see #getMetadata()
+	 * @generated
+	 */
+	EAttribute getMetadata_Height();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.Metadata#getWidth <em>Width</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Width</em>'.
+	 * @see gallery.Metadata#getWidth()
+	 * @see #getMetadata()
+	 * @generated
+	 */
+	EAttribute getMetadata_Width();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.Metadata#getCamera <em>Camera</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Camera</em>'.
+	 * @see gallery.Metadata#getCamera()
+	 * @see #getMetadata()
+	 * @generated
+	 */
+	EAttribute getMetadata_Camera();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -989,6 +1109,54 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EReference METADATA__PICTURE = eINSTANCE.getMetadata_Picture();
+
+		/**
+		 * The meta object literal for the '<em><b>Size</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute METADATA__SIZE = eINSTANCE.getMetadata_Size();
+
+		/**
+		 * The meta object literal for the '<em><b>Landscape</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute METADATA__LANDSCAPE = eINSTANCE.getMetadata_Landscape();
+
+		/**
+		 * The meta object literal for the '<em><b>Created</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute METADATA__CREATED = eINSTANCE.getMetadata_Created();
+
+		/**
+		 * The meta object literal for the '<em><b>Height</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute METADATA__HEIGHT = eINSTANCE.getMetadata_Height();
+
+		/**
+		 * The meta object literal for the '<em><b>Width</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute METADATA__WIDTH = eINSTANCE.getMetadata_Width();
+
+		/**
+		 * The meta object literal for the '<em><b>Camera</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute METADATA__CAMERA = eINSTANCE.getMetadata_Camera();
 
 	}
 

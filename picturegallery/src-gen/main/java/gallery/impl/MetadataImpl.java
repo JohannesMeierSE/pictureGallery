@@ -6,6 +6,7 @@ import gallery.GalleryPackage;
 import gallery.Metadata;
 import gallery.RealPicture;
 
+import java.util.Date;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 
@@ -25,12 +26,127 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
  * The following features are implemented:
  * <ul>
  *   <li>{@link gallery.impl.MetadataImpl#getPicture <em>Picture</em>}</li>
+ *   <li>{@link gallery.impl.MetadataImpl#getSize <em>Size</em>}</li>
+ *   <li>{@link gallery.impl.MetadataImpl#isLandscape <em>Landscape</em>}</li>
+ *   <li>{@link gallery.impl.MetadataImpl#getCreated <em>Created</em>}</li>
+ *   <li>{@link gallery.impl.MetadataImpl#getHeight <em>Height</em>}</li>
+ *   <li>{@link gallery.impl.MetadataImpl#getWidth <em>Width</em>}</li>
+ *   <li>{@link gallery.impl.MetadataImpl#getCamera <em>Camera</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
 public class MetadataImpl extends MinimalEObjectImpl.Container implements Metadata {
+	/**
+	 * The default value of the '{@link #getSize() <em>Size</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getSize()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final int SIZE_EDEFAULT = 0;
+	/**
+	 * The cached value of the '{@link #getSize() <em>Size</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getSize()
+	 * @generated
+	 * @ordered
+	 */
+	protected int size = SIZE_EDEFAULT;
+	/**
+	 * The default value of the '{@link #isLandscape() <em>Landscape</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isLandscape()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final boolean LANDSCAPE_EDEFAULT = true;
+	/**
+	 * The cached value of the '{@link #isLandscape() <em>Landscape</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isLandscape()
+	 * @generated
+	 * @ordered
+	 */
+	protected boolean landscape = LANDSCAPE_EDEFAULT;
+	/**
+	 * The default value of the '{@link #getCreated() <em>Created</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getCreated()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final Date CREATED_EDEFAULT = null;
+	/**
+	 * The cached value of the '{@link #getCreated() <em>Created</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getCreated()
+	 * @generated
+	 * @ordered
+	 */
+	protected Date created = CREATED_EDEFAULT;
+	/**
+	 * The default value of the '{@link #getHeight() <em>Height</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getHeight()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final int HEIGHT_EDEFAULT = 0;
+	/**
+	 * The cached value of the '{@link #getHeight() <em>Height</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getHeight()
+	 * @generated
+	 * @ordered
+	 */
+	protected int height = HEIGHT_EDEFAULT;
+	/**
+	 * The default value of the '{@link #getWidth() <em>Width</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getWidth()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final int WIDTH_EDEFAULT = 0;
+	/**
+	 * The cached value of the '{@link #getWidth() <em>Width</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getWidth()
+	 * @generated
+	 * @ordered
+	 */
+	protected int width = WIDTH_EDEFAULT;
+	/**
+	 * The default value of the '{@link #getCamera() <em>Camera</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getCamera()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String CAMERA_EDEFAULT = null;
+	/**
+	 * The cached value of the '{@link #getCamera() <em>Camera</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getCamera()
+	 * @generated
+	 * @ordered
+	 */
+	protected String camera = CAMERA_EDEFAULT;
+
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -96,6 +212,132 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public int getSize() {
+		return size;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setSize(int newSize) {
+		int oldSize = size;
+		size = newSize;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.METADATA__SIZE, oldSize, size));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isLandscape() {
+		return landscape;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setLandscape(boolean newLandscape) {
+		boolean oldLandscape = landscape;
+		landscape = newLandscape;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.METADATA__LANDSCAPE, oldLandscape, landscape));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Date getCreated() {
+		return created;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setCreated(Date newCreated) {
+		Date oldCreated = created;
+		created = newCreated;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.METADATA__CREATED, oldCreated, created));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public int getHeight() {
+		return height;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setHeight(int newHeight) {
+		int oldHeight = height;
+		height = newHeight;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.METADATA__HEIGHT, oldHeight, height));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public int getWidth() {
+		return width;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setWidth(int newWidth) {
+		int oldWidth = width;
+		width = newWidth;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.METADATA__WIDTH, oldWidth, width));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getCamera() {
+		return camera;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setCamera(String newCamera) {
+		String oldCamera = camera;
+		camera = newCamera;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.METADATA__CAMERA, oldCamera, camera));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
@@ -145,6 +387,18 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 		switch (featureID) {
 			case GalleryPackage.METADATA__PICTURE:
 				return getPicture();
+			case GalleryPackage.METADATA__SIZE:
+				return getSize();
+			case GalleryPackage.METADATA__LANDSCAPE:
+				return isLandscape();
+			case GalleryPackage.METADATA__CREATED:
+				return getCreated();
+			case GalleryPackage.METADATA__HEIGHT:
+				return getHeight();
+			case GalleryPackage.METADATA__WIDTH:
+				return getWidth();
+			case GalleryPackage.METADATA__CAMERA:
+				return getCamera();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -159,6 +413,24 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 		switch (featureID) {
 			case GalleryPackage.METADATA__PICTURE:
 				setPicture((RealPicture)newValue);
+				return;
+			case GalleryPackage.METADATA__SIZE:
+				setSize((Integer)newValue);
+				return;
+			case GalleryPackage.METADATA__LANDSCAPE:
+				setLandscape((Boolean)newValue);
+				return;
+			case GalleryPackage.METADATA__CREATED:
+				setCreated((Date)newValue);
+				return;
+			case GalleryPackage.METADATA__HEIGHT:
+				setHeight((Integer)newValue);
+				return;
+			case GalleryPackage.METADATA__WIDTH:
+				setWidth((Integer)newValue);
+				return;
+			case GalleryPackage.METADATA__CAMERA:
+				setCamera((String)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -175,6 +447,24 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 			case GalleryPackage.METADATA__PICTURE:
 				setPicture((RealPicture)null);
 				return;
+			case GalleryPackage.METADATA__SIZE:
+				setSize(SIZE_EDEFAULT);
+				return;
+			case GalleryPackage.METADATA__LANDSCAPE:
+				setLandscape(LANDSCAPE_EDEFAULT);
+				return;
+			case GalleryPackage.METADATA__CREATED:
+				setCreated(CREATED_EDEFAULT);
+				return;
+			case GalleryPackage.METADATA__HEIGHT:
+				setHeight(HEIGHT_EDEFAULT);
+				return;
+			case GalleryPackage.METADATA__WIDTH:
+				setWidth(WIDTH_EDEFAULT);
+				return;
+			case GalleryPackage.METADATA__CAMERA:
+				setCamera(CAMERA_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -189,8 +479,46 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 		switch (featureID) {
 			case GalleryPackage.METADATA__PICTURE:
 				return getPicture() != null;
+			case GalleryPackage.METADATA__SIZE:
+				return size != SIZE_EDEFAULT;
+			case GalleryPackage.METADATA__LANDSCAPE:
+				return landscape != LANDSCAPE_EDEFAULT;
+			case GalleryPackage.METADATA__CREATED:
+				return CREATED_EDEFAULT == null ? created != null : !CREATED_EDEFAULT.equals(created);
+			case GalleryPackage.METADATA__HEIGHT:
+				return height != HEIGHT_EDEFAULT;
+			case GalleryPackage.METADATA__WIDTH:
+				return width != WIDTH_EDEFAULT;
+			case GalleryPackage.METADATA__CAMERA:
+				return CAMERA_EDEFAULT == null ? camera != null : !CAMERA_EDEFAULT.equals(camera);
 		}
 		return super.eIsSet(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public String toString() {
+		if (eIsProxy()) return super.toString();
+
+		StringBuffer result = new StringBuffer(super.toString());
+		result.append(" (size: ");
+		result.append(size);
+		result.append(", landscape: ");
+		result.append(landscape);
+		result.append(", created: ");
+		result.append(created);
+		result.append(", height: ");
+		result.append(height);
+		result.append(", width: ");
+		result.append(width);
+		result.append(", camera: ");
+		result.append(camera);
+		result.append(')');
+		return result.toString();
 	}
 
 } //MetadataImpl
