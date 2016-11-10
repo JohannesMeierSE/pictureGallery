@@ -30,7 +30,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -243,36 +242,30 @@ public class MainApp extends Application {
 				if (event.getCode() == KeyCode.N) {
 					PictureCollection parentOfNewCollection = selectCollection(base, true, true);
 					if (parentOfNewCollection != null) {
-						// get the new of the new collection
-						TextInputDialog dialog = new TextInputDialog();
-						dialog.setTitle("Name of the new collection");
-						dialog.setHeaderText("Select a (unique) name for the new collection!");
-						dialog.setContentText("Name of new collection:");
-						Optional<String> result = dialog.showAndWait();
-						if (result.isPresent()){
-						    String newName = result.get();
-						    if (newName == null || newName.isEmpty()) {
-						    	return;
-						    }
-						    // check for uniqueness
-						    for (PictureCollection sub : parentOfNewCollection.getSubCollections()) {
-						    	if (sub.getName().equals(newName)) {
-						    		return;
-						    	}
-						    }
-						    // update EMF model
-						    PictureCollection newCollection = GalleryFactory.eINSTANCE.createPictureCollection();
-						    newCollection.setName(newName);
-						    newCollection.setSuperCollection(parentOfNewCollection);
-						    parentOfNewCollection.getSubCollections().add(newCollection);
-						    Logic.sortSubCollections(parentOfNewCollection, false);
-						    // create folder in file system
-						    try {
-						    	Files.createDirectory(Paths.get(newCollection.getFullPath()));
-						    } catch (IOException e) {
-						    	e.printStackTrace();
-						    }
-						}
+						// get the name of the new collection
+					    String newName = Logic.askForString("Name of the new collection",
+					    		"Select a (unique) name for the new collection!", "Name of new collection:");
+					    if (newName == null || newName.isEmpty()) {
+					    	return;
+					    }
+					    // check for uniqueness
+					    for (PictureCollection sub : parentOfNewCollection.getSubCollections()) {
+					    	if (sub.getName().equals(newName)) {
+					    		return;
+					    	}
+					    }
+					    // update EMF model
+					    PictureCollection newCollection = GalleryFactory.eINSTANCE.createPictureCollection();
+					    newCollection.setName(newName);
+					    newCollection.setSuperCollection(parentOfNewCollection);
+					    parentOfNewCollection.getSubCollections().add(newCollection);
+					    Logic.sortSubCollections(parentOfNewCollection, false);
+					    // create folder in file system
+					    try {
+					    	Files.createDirectory(Paths.get(newCollection.getFullPath()));
+					    } catch (IOException e) {
+					    	e.printStackTrace();
+					    }
 					}
 					return;
 				}

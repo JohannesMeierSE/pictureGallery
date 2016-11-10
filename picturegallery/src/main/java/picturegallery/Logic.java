@@ -20,6 +20,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+
+import javafx.scene.control.TextInputDialog;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
@@ -334,6 +337,19 @@ public class Logic {
 			 * Orientation: right side, top (rotate 90 cw) tiff:Orientation: 6
 			 * File Size: 2795458 bytes
 			 */
+		}
+	}
+
+	public static String askForString(String title, String header, String content) {
+		TextInputDialog dialog = new TextInputDialog();
+		dialog.setTitle(title);
+		dialog.setHeaderText(header);
+		dialog.setContentText(header);
+		Optional<String> result = dialog.showAndWait();
+		if (result.isPresent()){
+		    return result.get();
+		} else {
+			return null;
 		}
 	}
 }
