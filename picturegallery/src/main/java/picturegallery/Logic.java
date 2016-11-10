@@ -148,4 +148,36 @@ public class Logic {
 			}
 		});
 	}
+
+	public static String formatBytes(int bytes) {
+		String text = bytes + " Bytes";
+
+		String unit = "";
+		int before = bytes;
+		int after = -1;
+		if (bytes >= 1024) {
+			int kb = bytes / 1024;
+			if (kb >= 1014) {
+				int mb = kb / 1024;
+				if (mb >= 1024) {
+					int gb = mb / 1024;
+					unit = "GB";
+					before = gb;
+					after = Math.round((mb % 1014) / 1024f * 10);
+				} else {
+					unit = "MB";
+					before = mb;
+					after = Math.round((kb % 1014) / 1024f * 10);
+				}
+			} else {
+				unit = "KB";
+				before = kb;
+				after = Math.round((bytes % 1014) / 1024f * 10);
+			}
+		}
+		if (after >= 0) {
+			text = text + " ~ " + before + "." + after + " " + unit;
+		}
+		return text;
+	}
 }

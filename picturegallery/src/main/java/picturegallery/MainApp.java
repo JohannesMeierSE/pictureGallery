@@ -325,13 +325,13 @@ public class MainApp extends Application {
 			return;
 		}
 		currentPicture = newPicture;
-		labelPictureName.setText(currentPicture.getName());
+		labelPictureName.setText(currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase());
 		// print metadata:
 		String text = "\n";
 		gallery.Metadata md = currentPicture.getMetadata();
 		if (md != null) {
 			// size
-			text = text + "size = " + md.getSize() + " bytes\n";
+			text = text + "size = " + Logic.formatBytes(md.getSize()) + "\n";
 			// orientation
 			if (md.isLandscape()) {
 				text = text + "orientation = landscape\n";
@@ -498,7 +498,7 @@ public class MainApp extends Application {
 						// date of creation
 						if (key.contains("date") && key.contains("time")) {
 							try {
-								SimpleDateFormat f = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss"); // 2016:01:01 10:14:14
+								SimpleDateFormat f = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss"); // 2016:01:01 10:14:14 TODO: bei Bedarf müssen mehrere Formate hintereinander ausprobiert werden!!
 								md.setCreated(f.parse(value));
 							} catch (Throwable e) {
 								System.err.println("unable to read: " + key + " = " + value);
