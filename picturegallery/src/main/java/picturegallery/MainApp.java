@@ -415,8 +415,11 @@ public class MainApp extends Application {
 	}
 
 	private void changeCollection(PictureCollection newCollection) {
-		if (newCollection == null || newCollection.getPictures().isEmpty() || newCollection == currentCollection) {
+		if (newCollection == null || newCollection.getPictures().isEmpty()) {
 			throw new IllegalArgumentException();
+		}
+		if (newCollection == currentCollection) {
+			return;
 		}
 		movetoCollection = null;
 		currentCollection = newCollection;
@@ -703,15 +706,22 @@ public class MainApp extends Application {
 								setText(null);
 								final Label label = new Label();
 								setGraphic(label);
-								label.setText(item.getName());
+								String textToShow = item.getName();
+								if (item == currentCollection) {
+									textToShow = textToShow + " [currently shown]";
+								}
+								if (item == movetoCollection) {
+									textToShow = textToShow + " [currently moving into]";
+								}
 								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
 								boolean ignore = disabled || ignoredCollections.contains(item);
 								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
 								setDisable(ignore);
 								label.setDisable(ignore);
 								if (disabled) {
-									label.setText(label.getText() + " (empty)");
+									textToShow = textToShow + " [empty]";
 								}
+								label.setText(textToShow);
 							}
 						}
 					};
