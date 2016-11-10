@@ -124,12 +124,13 @@ public class MainApp extends Application {
 
     	labelKeys = new Label("keys");
     	labelKeys.setText("(H) hide/show these information\n"
-    			+ "(RIGHT) next picture\n"
-    			+ "(LEFT) previous picture\n"
+    			+ "(Right) next picture\n"
+    			+ "(Left) previous picture\n"
     			+ "(T) add to/remove from temp collection\n"
     			+ "(S) show temp collection / exit and clear temp collection\n"
     			+ "(C) select another collection\n"
     			+ "(X) move the current picture into another collection\n"
+    			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(N) create new collection\n"
     			+ "(F11) start/stop full screen mode\n"
     			+ "(Q) clear cache\n\n");
@@ -220,8 +221,11 @@ public class MainApp extends Application {
 					}
 					return;
 				}
-				// move the current picture into another collection (X)
+				// move the current picture into another collection (X); (X + Shift) => select another collection!
 				if (event.getCode() == KeyCode.X) {
+					if (event.isShiftDown()) {
+						movetoCollection = null;
+					}
 					if (movetoCollection == null) {
 						movetoCollection = selectCollection(base, true, true, Collections.singletonList(currentCollection));
 						if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
@@ -667,7 +671,9 @@ public class MainApp extends Application {
 					if (showTempCollection) {
 						changeIndex(newIndexTemp);
 					} else {
-						changeIndex(newIndexCurrent);
+						if (!currentCollection.getPictures().isEmpty()) { // TODO: richtigen Mode für einrichten mit schwarzem Hintergrund!!
+							changeIndex(newIndexCurrent);
+						}
 					}
 				}
 			}
