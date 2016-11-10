@@ -58,6 +58,7 @@ public interface Metadata extends EObject {
 
 	/**
 	 * Returns the value of the '<em><b>Size</b></em>' attribute.
+	 * The default value is <code>"-1"</code>.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Size</em>' attribute isn't clear,
@@ -67,7 +68,7 @@ public interface Metadata extends EObject {
 	 * @return the value of the '<em>Size</em>' attribute.
 	 * @see #setSize(int)
 	 * @see gallery.GalleryPackage#getMetadata_Size()
-	 * @model
+	 * @model default="-1"
 	 * @generated
 	 */
 	int getSize();
@@ -137,6 +138,7 @@ public interface Metadata extends EObject {
 
 	/**
 	 * Returns the value of the '<em><b>Height</b></em>' attribute.
+	 * The default value is <code>"-1"</code>.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Height</em>' attribute isn't clear,
@@ -146,7 +148,7 @@ public interface Metadata extends EObject {
 	 * @return the value of the '<em>Height</em>' attribute.
 	 * @see #setHeight(int)
 	 * @see gallery.GalleryPackage#getMetadata_Height()
-	 * @model
+	 * @model default="-1"
 	 * @generated
 	 */
 	int getHeight();
@@ -163,6 +165,7 @@ public interface Metadata extends EObject {
 
 	/**
 	 * Returns the value of the '<em><b>Width</b></em>' attribute.
+	 * The default value is <code>"-1"</code>.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Width</em>' attribute isn't clear,
@@ -172,7 +175,7 @@ public interface Metadata extends EObject {
 	 * @return the value of the '<em>Width</em>' attribute.
 	 * @see #setWidth(int)
 	 * @see gallery.GalleryPackage#getMetadata_Width()
-	 * @model
+	 * @model default="-1"
 	 * @generated
 	 */
 	int getWidth();

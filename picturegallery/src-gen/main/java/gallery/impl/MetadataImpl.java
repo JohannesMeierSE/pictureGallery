@@ -46,7 +46,7 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 	 * @generated
 	 * @ordered
 	 */
-	protected static final int SIZE_EDEFAULT = 0;
+	protected static final int SIZE_EDEFAULT = -1;
 	/**
 	 * The cached value of the '{@link #getSize() <em>Size</em>}' attribute.
 	 * <!-- begin-user-doc -->
@@ -100,7 +100,7 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 	 * @generated
 	 * @ordered
 	 */
-	protected static final int HEIGHT_EDEFAULT = 0;
+	protected static final int HEIGHT_EDEFAULT = -1;
 	/**
 	 * The cached value of the '{@link #getHeight() <em>Height</em>}' attribute.
 	 * <!-- begin-user-doc -->
@@ -118,7 +118,7 @@ public class MetadataImpl extends MinimalEObjectImpl.Container implements Metada
 	 * @generated
 	 * @ordered
 	 */
-	protected static final int WIDTH_EDEFAULT = 0;
+	protected static final int WIDTH_EDEFAULT = -1;
 	/**
 	 * The cached value of the '{@link #getWidth() <em>Width</em>}' attribute.
 	 * <!-- begin-user-doc -->

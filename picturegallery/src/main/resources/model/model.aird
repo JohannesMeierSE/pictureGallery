@@ -651,7 +651,7 @@
           <foregroundColor xmi:type="viewpoint:RGBValues" xmi:id="_nT0NVKc4Eeab2JyM2OVuPA" red="255" green="252" blue="216"/>
         </ownedStyle>
         <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']"/>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_FuuGAKc4Eeab2JyM2OVuPA" name="size : EInt = 0" tooltipText="&#xA;ERROR : The required feature 'eAttributeType' of 'org.eclipse.emf.ecore.impl.EAttributeImpl@2f763d8c{platform:/resource/picturegallery/src/main/resources/model/model.ecore#//Metadata/newAttribute}' must be set&#xA;ERROR : The typed element must have a type">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_FuuGAKc4Eeab2JyM2OVuPA" name="size : EInt = -1" tooltipText="">
           <target xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/size"/>
           <semanticElements xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/size"/>
           <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_KPs94Kc4Eeab2JyM2OVuPA" labelAlignment="LEFT">
@@ -662,7 +662,7 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']"/>
         </ownedElements>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_TUO5cKc4Eeab2JyM2OVuPA" name="landscape : EBoolean = true" tooltipText="&#xA;ERROR : The required feature 'eAttributeType' of 'org.eclipse.emf.ecore.impl.EAttributeImpl@31736568{platform:/resource/picturegallery/src/main/resources/model/model.ecore#//Metadata/newAttribute}' must be set&#xA;ERROR : The typed element must have a type">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_TUO5cKc4Eeab2JyM2OVuPA" name="landscape : EBoolean = true" tooltipText="">
           <target xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/landscape"/>
           <semanticElements xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/landscape"/>
           <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_UbwiMKc4Eeab2JyM2OVuPA" labelAlignment="LEFT">
@@ -673,7 +673,7 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']"/>
         </ownedElements>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_bL4LIKc4Eeab2JyM2OVuPA" name="created : EDate" tooltipText="&#xA;ERROR : The required feature 'eAttributeType' of 'org.eclipse.emf.ecore.impl.EAttributeImpl@5299ec5e{platform:/resource/picturegallery/src/main/resources/model/model.ecore#//Metadata/newAttribute}' must be set&#xA;ERROR : The typed element must have a type">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_bL4LIKc4Eeab2JyM2OVuPA" name="created : EDate" tooltipText="">
           <target xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/created"/>
           <semanticElements xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/created"/>
           <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_cYVXMKc4Eeab2JyM2OVuPA" labelAlignment="LEFT">
@@ -684,7 +684,7 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']"/>
         </ownedElements>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_d5N7IKc4Eeab2JyM2OVuPA" name="height : EInt = 0" tooltipText="&#xA;ERROR : The required feature 'eAttributeType' of 'org.eclipse.emf.ecore.impl.EAttributeImpl@6af55b81{platform:/resource/picturegallery/src/main/resources/model/model.ecore#//Metadata/newAttribute}' must be set&#xA;ERROR : The typed element must have a type">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_d5N7IKc4Eeab2JyM2OVuPA" name="height : EInt = -1" tooltipText="">
           <target xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/height"/>
           <semanticElements xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/height"/>
           <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_fenLoKc4Eeab2JyM2OVuPA" labelAlignment="LEFT">
@@ -695,7 +695,7 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']"/>
         </ownedElements>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_gYDVEKc4Eeab2JyM2OVuPA" name="width : EInt = 0" tooltipText="&#xA;ERROR : The required feature 'eAttributeType' of 'org.eclipse.emf.ecore.impl.EAttributeImpl@6245732c{platform:/resource/picturegallery/src/main/resources/model/model.ecore#//Metadata/newAttribute}' must be set&#xA;ERROR : The typed element must have a type">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_gYDVEKc4Eeab2JyM2OVuPA" name="width : EInt = -1" tooltipText="">
           <target xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/width"/>
           <semanticElements xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/width"/>
           <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_hAo_EKc4Eeab2JyM2OVuPA" labelAlignment="LEFT">
@@ -706,7 +706,7 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']"/>
         </ownedElements>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_mi01QKc4Eeab2JyM2OVuPA" name="camera : EString" tooltipText="&#xA;ERROR : The required feature 'eAttributeType' of 'org.eclipse.emf.ecore.impl.EAttributeImpl@61c6524e{platform:/resource/picturegallery/src/main/resources/model/model.ecore#//Metadata/newAttribute}' must be set&#xA;ERROR : The typed element must have a type">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_mi01QKc4Eeab2JyM2OVuPA" name="camera : EString" tooltipText="">
           <target xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/camera"/>
           <semanticElements xmi:type="ecore:EAttribute" href="model.ecore#//Metadata/camera"/>
           <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_nT33sKc4Eeab2JyM2OVuPA" labelAlignment="LEFT">

@@ -344,7 +344,11 @@ public class Logic {
 		String text = "\n";
 		if (md != null) {
 			// size
-			text = text + "size = " + formatBytes(md.getSize()) + "\n";
+			if (md.getSize() >= 0) {
+				text = text + "size = " + formatBytes(md.getSize()) + "\n";
+			} else {
+				text = text + "size =\n";
+			}
 			// orientation
 			if (md.isLandscape()) {
 				text = text + "orientation = landscape\n";
@@ -358,10 +362,18 @@ public class Logic {
 			} else {
 				text = text + "created =\n";
 			}
-			// height TODO: default value ändern!
-			text = text + "height = " + md.getHeight() + " Pixel\n";
+			// height
+			if (md.getHeight() >= 0) {
+				text = text + "height = " + md.getHeight() + " Pixel\n";
+			} else {
+				text = text + "height =\n";
+			}
 			// width
-			text = text + "width = " + md.getWidth() + " Pixel\n";
+			if (md.getWidth() >= 0) {
+				text = text + "width = " + md.getWidth() + " Pixel\n";
+			} else {
+				text = text + "width =\n";
+			}
 			// camera
 			if (md.getCamera() != null) {
 				text = text + "camera = " + md.getCamera()+ "\n";
