@@ -340,6 +340,40 @@ public class Logic {
 		}
 	}
 
+	public static String printMetadata(gallery.Metadata md) {
+		String text = "\n";
+		if (md != null) {
+			// size
+			text = text + "size = " + formatBytes(md.getSize()) + "\n";
+			// orientation
+			if (md.isLandscape()) {
+				text = text + "orientation = landscape\n";
+			} else {
+				text = text + "orientation = portrait\n";
+			}
+			// creation date
+			if (md.getCreated() != null) {
+				SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd (E)  HH:mm:ss");
+				text = text + "created = " + f.format(md.getCreated()) + "\n";
+			} else {
+				text = text + "created =\n";
+			}
+			// height TODO: default value ändern!
+			text = text + "height = " + md.getHeight() + " Pixel\n";
+			// width
+			text = text + "width = " + md.getWidth() + " Pixel\n";
+			// camera
+			if (md.getCamera() != null) {
+				text = text + "camera = " + md.getCamera()+ "\n";
+			} else {
+				text = text + "camera =\n";
+			}
+		} else {
+			text = text + "meta data not available";
+		}
+		return text;
+	}
+
 	public static String askForString(String title, String header, String content,
 			boolean nullAndEmptyAreForbidden) {
 		while (true) {

@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -273,7 +272,7 @@ public class MainApp extends Application {
 				if (event.getCode() == KeyCode.F11) {
 					stage.setFullScreen(!stage.isFullScreen());
 				}
-				// (Q) clear cache
+				// (Q) clear cache TODO: Hack to fix problems with full cache!
 				if (event.getCode() == KeyCode.Q) {
 					imageCache.clear();
 				}
@@ -325,38 +324,8 @@ public class MainApp extends Application {
 		}
 		currentPicture = newPicture;
 		labelPictureName.setText(currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase());
-		// print metadata:
-		String text = "\n";
-		gallery.Metadata md = currentPicture.getMetadata();
-		if (md != null) {
-			// size
-			text = text + "size = " + Logic.formatBytes(md.getSize()) + "\n";
-			// orientation
-			if (md.isLandscape()) {
-				text = text + "orientation = landscape\n";
-			} else {
-				text = text + "orientation = portrait\n";
-			}
-			// creation date
-			if (md.getCreated() != null) {
-				SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd (E)  HH:mm:ss");
-				text = text + "created = " + f.format(md.getCreated()) + "\n";
-			} else {
-				text = text + "created =\n";
-			}
-			// height TODO: default value ändern!
-			text = text + "height = " + md.getHeight() + " Pixel\n";
-			// width
-			text = text + "width = " + md.getWidth() + " Pixel\n";
-			// camera
-			if (md.getCamera() != null) {
-				text = text + "camera = " + md.getCamera()+ "\n";
-			} else {
-				text = text + "camera =\n";
-			}
-		} else {
-			text = text + "meta data not available";
-		}
+		// print metadata
+		String text = Logic.printMetadata(currentPicture.getMetadata());
 		labelMeta.setText(text);
 
 		// check the cache
