@@ -78,8 +78,7 @@ public class MainApp extends Application {
      * https://github.com/javafx-maven-plugin/javafx-basic-archetype
      * https://github.com/javafx-maven-plugin/javafx-maven-plugin
      * create jar: run "mvn jfx:jar"
-     */
-    /*
+     *
      * EMF within Maven project
      * http://mapasuta.sourceforge.net/maven/site/maven-emfgen-plugin/usage.html
      * https://www.eclipse.org/forums/index.php?t=msg&th=134237
@@ -138,10 +137,6 @@ public class MainApp extends Application {
     	scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
     		@Override
     		public void handle(KeyEvent event) {
-//    			String message = event.getText() + "|||" + event.getCharacter() + "|||" + event.getCode();
-//    			System.out.println(message);
-//				label.setText(message);
-
     			int size = 0;
     			if (currentCollection != null) {
     				size = currentCollection.getPictures().size();
