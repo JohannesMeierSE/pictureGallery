@@ -57,7 +57,7 @@ public class MainApp extends Application {
 	private Label labelKeys;
 	private Label labelMeta;
 
-	private PictureCollection base;
+	private PictureCollection baseCollection;
 	private PictureCollection currentCollection;
 	private Picture currentPicture;
 	private int indexCurrentCollection;
@@ -109,7 +109,7 @@ public class MainApp extends Application {
     	if (choosenLibrary != null) {
     		baseDir = choosenLibrary.getAbsolutePath();
     	}
-    	base = Logic.createEmptyLibrary(baseDir);
+    	baseCollection = Logic.createEmptyLibrary(baseDir);
 
     	vBox = new VBox();
 
@@ -206,7 +206,7 @@ public class MainApp extends Application {
 				}
 				// select another collection (c)
 				if (event.getCode() == KeyCode.C && !showTempCollection) {
-					PictureCollection newCol = selectCollection(base, true, false);
+					PictureCollection newCol = selectCollection(baseCollection, true, false);
 					if (newCol != null) {
 						changeCollection(newCol);
 					}
@@ -218,7 +218,7 @@ public class MainApp extends Application {
 						movetoCollection = null;
 					}
 					if (movetoCollection == null) {
-						movetoCollection = selectCollection(base, true, true, Collections.singletonList(currentCollection));
+						movetoCollection = selectCollection(baseCollection, true, true, Collections.singletonList(currentCollection));
 						if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
 							// Verschieben innerhalb der eigenen Collection macht keinen Sinn!
 							movetoCollection = null;
@@ -239,7 +239,7 @@ public class MainApp extends Application {
 				}
 				// create new collection (N)
 				if (event.getCode() == KeyCode.N) {
-					PictureCollection parentOfNewCollection = selectCollection(base, true, true);
+					PictureCollection parentOfNewCollection = selectCollection(baseCollection, true, true);
 					if (parentOfNewCollection != null) {
 						// get the name of the new collection
 					    String newName = Logic.askForString("Name of the new collection",
@@ -287,16 +287,16 @@ public class MainApp extends Application {
         Task<Void> task = new Task<Void>() {
         	@Override
         	protected Void call() throws Exception {
-        		Logic.loadDirectory(base, true);
+        		Logic.loadDirectory(baseCollection, true);
         		return null;
         	}
         };
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
         	@Override
         	public void handle(WorkerStateEvent event) {
-        		PictureCollection newCol = Logic.findFirstNonEmptyCollection(base);
+        		PictureCollection newCol = Logic.findFirstNonEmptyCollection(baseCollection);
         		if (newCol != null) {
-        			newCol = selectCollection(base, false, false);
+        			newCol = selectCollection(baseCollection, false, false);
         		}
         		if (newCol == null) {
         			System.err.println("the library does not contain any picture!!");
