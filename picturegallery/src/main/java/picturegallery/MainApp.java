@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +52,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.image.ImageParser;
 import org.apache.tika.parser.jpeg.JpegParser;
 import org.apache.tika.sax.BodyContentHandler;
-import org.eclipse.emf.ecore.EAttribute;
 
 import picturegallery.persistency.Settings;
 
@@ -328,9 +328,28 @@ public class MainApp extends Application {
 		labelPictureName.setText(currentPicture.getName());
 		// print metadata:
 		String text = "\n";
-		if (currentPicture.getMetadata() != null) {
-			for (EAttribute atr : currentPicture.getMetadata().eClass().getEAllAttributes()) {
-				text = text + atr.getName() + " = " + currentPicture.getMetadata().eGet(atr) + "\n";
+		gallery.Metadata md = currentPicture.getMetadata();
+		if (md != null) {
+			// size
+			text = text + "size = " + md.getSize() + " bytes\n";
+			// orientation
+			if (md.isLandscape()) {
+				text = text + "orientation = landscape\n";
+			} else {
+				text = text + "orientation = portrait\n";
+			}
+			// creation date
+			SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd (E)  HH:mm:ss");
+			text = text + "created = " + f.format(md.getCreated()) + "\n";
+			// height TODO: default value ändern!
+			text = text + "height = " + md.getHeight() + " Pixel\n";
+			// width
+			text = text + "width = " + md.getWidth() + " Pixel\n";
+			// camera
+			if (md.getCamera() != null) {
+				text = text + "camera = " + md.getCamera()+ "\n";
+			} else {
+				text = text + "camera =\n";
 			}
 		} else {
 			text = text + "meta data not available";
@@ -435,6 +454,7 @@ public class MainApp extends Application {
 						parser.parse(in, handler, metadata, pcontext);
 				    }
 					in.close();
+					System.out.println("");
 					System.out.println("Contents of the document:" + handler.toString());
 
 					gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
@@ -458,13 +478,28 @@ public class MainApp extends Application {
 						if (key.contains("file") && key.contains("size")) {
 							if (value.contains("byte")) {
 								String part = value.replace("bytes", "");
-								part = value.replace("byte", "");
+								part = part.replace("byte", "");
 								part = part.trim();
-								md.setSize(Integer.parseInt(part));
+								try {
+									md.setSize(Integer.parseInt(part));
+								} catch (Throwable e) {
+									System.err.println("unable to read: " + key + " = " + value);
+								}
+							}
+						}
+
+						// date of creation
+						if (key.contains("date") && key.contains("time")) {
+							try {
+								SimpleDateFormat f = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss"); // 2016:01:01 10:14:14
+								md.setCreated(f.parse(value));
+							} catch (Throwable e) {
+								System.err.println("unable to read: " + key + " = " + value);
 							}
 						}
 					}
 
+					// meine RX100
 					/*
 					 * Orientation: Top, left side (Horizontal / normal)
 					 * Kamera-Type
@@ -474,6 +509,12 @@ public class MainApp extends Application {
 					 * Image Width: 5472 pixels
 					 * Model: DSC-RX100
 					 * Date/Time Digitized: 2016:01:01 10:14:14
+					 */
+					// Luisas
+					/*
+					 * Orientation: right side, top (rotate 90 cw)
+					 * tiff:Orientation: 6
+					 * File Size: 2795458 bytes
 					 */
 				}
 				return null;
