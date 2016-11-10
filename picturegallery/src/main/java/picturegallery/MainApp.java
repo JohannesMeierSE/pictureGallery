@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -77,7 +78,7 @@ public class MainApp extends Application {
 	private PictureCollection movetoCollection;
 
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
-	private LRUMap<String, Image> imageCache = new LRUMap<>(50);
+	private Map<String, Image> imageCache = Collections.synchronizedMap(new LRUMap<>(50, 50));
 
 	public static void main(String[] args) throws Exception {
         launch(args);
@@ -88,6 +89,8 @@ public class MainApp extends Application {
      * https://github.com/javafx-maven-plugin/javafx-basic-archetype
      * https://github.com/javafx-maven-plugin/javafx-maven-plugin
      * create jar: run "mvn jfx:jar"
+     *
+     * start from Eclipse: use "-Xms1024m" !
      *
      * EMF within Maven project
      * http://mapasuta.sourceforge.net/maven/site/maven-emfgen-plugin/usage.html
@@ -128,7 +131,8 @@ public class MainApp extends Application {
     			+ "(C) select another collection\n"
     			+ "(X) move the current picture into another collection\n"
     			+ "(N) create new collection\n"
-    			+ "(F11) start/stop full screen mode\n\n");
+    			+ "(F11) start/stop full screen mode\n"
+    			+ "(Q) clear cache\n\n");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -279,6 +283,10 @@ public class MainApp extends Application {
 				if (event.getCode() == KeyCode.F11) {
 					stage.setFullScreen(!stage.isFullScreen());
 				}
+				// (Q) clear cache
+				if (event.getCode() == KeyCode.Q) {
+					imageCache.clear();
+				}
     		}
     	});
 
@@ -360,6 +368,7 @@ public class MainApp extends Application {
 			text = text + "meta data not available";
 		}
 		labelMeta.setText(text);
+
 		// check the cache
 		// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 		Image storedImage = imageCache.get(currentPicture.getName());
@@ -378,6 +387,10 @@ public class MainApp extends Application {
 				public void handle(WorkerStateEvent event) {
 					try {
 						Image availableImage = task.get();
+						if (availableImage == null) {
+							System.err.println("laoded image is null!");
+							return;
+						}
 						imageCache.put(currentPicture.getName(), availableImage);
 						iv.setImage(availableImage);
 					} catch (InterruptedException | ExecutionException e) {
@@ -607,11 +620,11 @@ public class MainApp extends Application {
 				// move the file in the file system
 				// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
 				FileUtils.moveFileToDirectory(new File(currentPicture.getFullPath()), new File(newCollection.getFullPath()), false);
-				
+
 				// remove the picture from some other variable stores
 				imageCache.remove(picture.getName());
 				tempCollection.remove(picture);
-				
+
 				// update the EMF model
 				picture.getCollection().getPictures().remove(picture);
 				newCollection.getPictures().add(picture);
