@@ -55,6 +55,7 @@ import org.apache.tika.sax.BodyContentHandler;
 
 import picturegallery.persistency.Settings;
 
+// TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
 public class MainApp extends Application {
 	private ImageView iv;
 	private VBox vBox;
@@ -339,8 +340,12 @@ public class MainApp extends Application {
 				text = text + "orientation = portrait\n";
 			}
 			// creation date
-			SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd (E)  HH:mm:ss");
-			text = text + "created = " + f.format(md.getCreated()) + "\n";
+			if (md.getCreated() != null) {
+				SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd (E)  HH:mm:ss");
+				text = text + "created = " + f.format(md.getCreated()) + "\n";
+			} else {
+				text = text + "created =\n";
+			}
 			// height TODO: default value ändern!
 			text = text + "height = " + md.getHeight() + " Pixel\n";
 			// width
@@ -455,7 +460,7 @@ public class MainApp extends Application {
 				    }
 					in.close();
 					System.out.println("");
-					System.out.println("Contents of the document:" + handler.toString());
+					System.out.println(pic.getFullPath());
 
 					gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
 					pic.setMetadata(md);
@@ -496,12 +501,21 @@ public class MainApp extends Application {
 						}
 
 						// date of creation
-						if (key.contains("date") && key.contains("time")) {
-							try {
-								SimpleDateFormat f = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss"); // 2016:01:01 10:14:14 TODO: bei Bedarf müssen mehrere Formate hintereinander ausprobiert werden!!
-								md.setCreated(f.parse(value));
-							} catch (Throwable e) {
-								System.err.println("unable to read: " + key + " = " + value);
+						if (!key.contains("modif")) {
+							if (key.contains("date") && key.contains("time")) {
+								// https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+								List<SimpleDateFormat> kinds = new ArrayList<>();
+								kinds.add(new SimpleDateFormat("yyyy:MM:dd HH:mm:ss")); // 2016:01:01 10:14:14
+								kinds.add(new SimpleDateFormat("E MMM dd HH:mm:ss z YYYY")); // mon mar 09 07:49:00 cet 1998
+								for (SimpleDateFormat f : kinds) {
+									try {
+										md.setCreated(f.parse(value));
+									} catch (Throwable e) {
+									}
+								}
+								if (md.getCreated() == null) {
+									System.err.println("unable to read: " + key + " = " + value);
+								}
 							}
 						}
 
