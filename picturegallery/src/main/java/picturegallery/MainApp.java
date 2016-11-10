@@ -116,7 +116,8 @@ public class MainApp extends Application {
     			+ "(S) show temp collection / exit and clear temp collection\n"
     			+ "(C) select another collection\n"
     			+ "(X) move the current picture into another collection\n"
-    			+ "(N) create new collection\n\n");
+    			+ "(N) create new collection\n"
+    			+ "(F11) start/stop full screen mode\n\n");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -131,6 +132,8 @@ public class MainApp extends Application {
 
     	Scene scene = new Scene(root, 800, 600);
     	scene.getStylesheets().add("/styles/styles.css");
+
+    	stage.setFullScreenExitHint("Press F11 or ESC to exit full-screen mode.");
 
     	// https://stackoverflow.com/questions/23163189/keylistener-javafx
     	// https://stackoverflow.com/questions/16834997/cannot-listen-to-keyevent-in-javafx
@@ -261,6 +264,10 @@ public class MainApp extends Application {
 						}
 					}
 					return;
+				}
+				// (F11) start/stop full screen mode
+				if (event.getCode() == KeyCode.F11) {
+					stage.setFullScreen(!stage.isFullScreen());
 				}
     		}
     	});
