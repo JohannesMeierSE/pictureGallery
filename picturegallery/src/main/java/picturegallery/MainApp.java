@@ -3,8 +3,10 @@ package picturegallery;
 import gallery.GalleryFactory;
 import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.RealPicture;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -44,6 +46,12 @@ import javafx.util.Callback;
 
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.image.ImageParser;
+import org.apache.tika.parser.jpeg.JpegParser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.eclipse.emf.ecore.EAttribute;
 
 import picturegallery.persistency.Settings;
 
@@ -54,6 +62,7 @@ public class MainApp extends Application {
 	private Label labelIndex;
 	private Label labelPictureName;
 	private Label labelKeys;
+	private Label labelMeta;
 
 	private PictureCollection base;
 	private PictureCollection currentCollection;
@@ -128,6 +137,8 @@ public class MainApp extends Application {
     	handleLabel(labelIndex);
     	labelPictureName = new Label("picture name");
     	handleLabel(labelPictureName);
+    	labelMeta= new Label("meta data");
+    	handleLabel(labelMeta);
 
     	root.getChildren().add(vBox);
 
@@ -178,7 +189,6 @@ public class MainApp extends Application {
 						tempCollection.remove(currentPicture);
 					} else {
 						tempCollection.add(currentPicture);
-						System.out.println("added " + currentPicture.getName());
 					}
 					return;
 				}
@@ -316,6 +326,16 @@ public class MainApp extends Application {
 		}
 		currentPicture = newPicture;
 		labelPictureName.setText(currentPicture.getName());
+		// print metadata:
+		String text = "\n";
+		if (currentPicture.getMetadata() != null) {
+			for (EAttribute atr : currentPicture.getMetadata().eClass().getEAllAttributes()) {
+				text = text + atr.getName() + " = " + currentPicture.getMetadata().eGet(atr) + "\n";
+			}
+		} else {
+			text = text + "meta data not available";
+		}
+		labelMeta.setText(text);
 		// check the cache
 		// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 		Image storedImage = imageCache.get(currentPicture.getName());
@@ -384,6 +404,82 @@ public class MainApp extends Application {
 		currentPicture = null;
 		labelCollectionPath.setText(currentCollection.getFullPath());
         changeIndex(0);
+
+        // load metadata
+        // TODO: abbrechen, wenn schon wieder gewechselt wird, obwohl der Task noch nicht fertig ist!!
+        Task<Void> task = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				List<RealPicture> currentPictures = new ArrayList<>(currentCollection.getPictures().size());
+				for (Picture pic : currentCollection.getPictures()) {
+					if (pic instanceof RealPicture && pic.getMetadata() == null) {
+						currentPictures.add((RealPicture) pic);
+					}
+				}
+				for (RealPicture pic : currentPictures) {
+				    /*
+				     * https://wiki.apache.org/tika/
+				     * https://www.tutorialspoint.com/tika/tika_extracting_image_file.htm
+				     * Erweiterung, falls mal eine falsche Dateiendung eingegeben wurde: https://jeszysblog.wordpress.com/2012/03/05/file-type-detection-with-apache-tika/
+				     */
+				    Metadata metadata = new Metadata();
+				    ParseContext pcontext = new ParseContext();
+				    BodyContentHandler handler = new BodyContentHandler();
+				    FileInputStream in = new FileInputStream(new File(pic.getFullPath()));
+				    String ext = pic.getFileExtension().toLowerCase();
+					if (ext.equals("jpeg") || ext.equals("jpg")) {
+				    	JpegParser JpegParser = new JpegParser();
+				    	JpegParser.parse(in, handler, metadata, pcontext);
+				    } else {
+					    ImageParser parser = new ImageParser();
+						parser.parse(in, handler, metadata, pcontext);
+				    }
+					in.close();
+					System.out.println("Contents of the document:" + handler.toString());
+
+					gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
+					pic.setMetadata(md);
+
+					for (String name : metadata.names()) {
+						String key = name.toLowerCase();
+						String value = metadata.get(name).toLowerCase();
+						System.out.println(name + ": " + value);
+
+						// orientation
+						if (key.contains("orientation")) {
+							if (value.contains("horizontal") || value.contains("landscape")) {
+								md.setLandscape(true);
+							}
+							if (value.contains("vertical") || value.contains("portrait")) {
+								md.setLandscape(false);
+							}
+						}
+						// file size
+						if (key.contains("file") && key.contains("size")) {
+							if (value.contains("byte")) {
+								String part = value.replace("bytes", "");
+								part = value.replace("byte", "");
+								part = part.trim();
+								md.setSize(Integer.parseInt(part));
+							}
+						}
+					}
+
+					/*
+					 * Orientation: Top, left side (Horizontal / normal)
+					 * Kamera-Type
+					 * File Size: 7518573 bytes
+					 * Date/Time: 2016:01:01 10:14:14
+					 * Image Height: 3648 pixels
+					 * Image Width: 5472 pixels
+					 * Model: DSC-RX100
+					 * Date/Time Digitized: 2016:01:01 10:14:14
+					 */
+				}
+				return null;
+			}
+		};
+		new Thread(task).start();
 	}
 
 	private void movePicture(Picture picture, PictureCollection newCollection) {
