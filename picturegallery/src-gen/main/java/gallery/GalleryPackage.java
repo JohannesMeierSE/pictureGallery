@@ -241,13 +241,22 @@ public interface GalleryPackage extends EPackage {
 	int PICTURE___GET_FULL_PATH = PATH_ELEMENT___GET_FULL_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Metadata</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE___GET_METADATA = PATH_ELEMENT_OPERATION_COUNT + 0;
+
+	/**
 	 * The number of operations of the '<em>Picture</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int PICTURE_OPERATION_COUNT = PATH_ELEMENT_OPERATION_COUNT + 0;
+	int PICTURE_OPERATION_COUNT = PATH_ELEMENT_OPERATION_COUNT + 1;
 
 	/**
 	 * The meta object id for the '{@link gallery.impl.RealPictureImpl <em>Real Picture</em>}' class.
@@ -296,13 +305,22 @@ public interface GalleryPackage extends EPackage {
 	int REAL_PICTURE__LINKED_BY = PICTURE_FEATURE_COUNT + 0;
 
 	/**
+	 * The feature id for the '<em><b>Metadata</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE__METADATA = PICTURE_FEATURE_COUNT + 1;
+
+	/**
 	 * The number of structural features of the '<em>Real Picture</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int REAL_PICTURE_FEATURE_COUNT = PICTURE_FEATURE_COUNT + 1;
+	int REAL_PICTURE_FEATURE_COUNT = PICTURE_FEATURE_COUNT + 2;
 
 	/**
 	 * The operation id for the '<em>Get Full Path</em>' operation.
@@ -312,6 +330,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int REAL_PICTURE___GET_FULL_PATH = PICTURE___GET_FULL_PATH;
+
+	/**
+	 * The operation id for the '<em>Get Metadata</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE___GET_METADATA = PICTURE___GET_METADATA;
 
 	/**
 	 * The number of operations of the '<em>Real Picture</em>' class.
@@ -387,6 +414,15 @@ public interface GalleryPackage extends EPackage {
 	int LINKED_PICTURE___GET_FULL_PATH = PICTURE___GET_FULL_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Metadata</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int LINKED_PICTURE___GET_METADATA = PICTURE___GET_METADATA;
+
+	/**
 	 * The number of operations of the '<em>Linked Picture</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -449,6 +485,44 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int PICTURE_LIBRARY_OPERATION_COUNT = 0;
+
+
+	/**
+	 * The meta object id for the '{@link gallery.impl.MetadataImpl <em>Metadata</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see gallery.impl.MetadataImpl
+	 * @see gallery.impl.GalleryPackageImpl#getMetadata()
+	 * @generated
+	 */
+	int METADATA = 6;
+
+	/**
+	 * The feature id for the '<em><b>Picture</b></em>' container reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA__PICTURE = 0;
+
+	/**
+	 * The number of structural features of the '<em>Metadata</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA_FEATURE_COUNT = 1;
+
+	/**
+	 * The number of operations of the '<em>Metadata</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int METADATA_OPERATION_COUNT = 0;
 
 
 	/**
@@ -538,6 +612,16 @@ public interface GalleryPackage extends EPackage {
 	EAttribute getPicture_FileExtension();
 
 	/**
+	 * Returns the meta object for the '{@link gallery.Picture#getMetadata() <em>Get Metadata</em>}' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the '<em>Get Metadata</em>' operation.
+	 * @see gallery.Picture#getMetadata()
+	 * @generated
+	 */
+	EOperation getPicture__GetMetadata();
+
+	/**
 	 * Returns the meta object for class '{@link gallery.RealPicture <em>Real Picture</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -557,6 +641,17 @@ public interface GalleryPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getRealPicture_LinkedBy();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link gallery.RealPicture#getMetadata <em>Metadata</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Metadata</em>'.
+	 * @see gallery.RealPicture#getMetadata()
+	 * @see #getRealPicture()
+	 * @generated
+	 */
+	EReference getRealPicture_Metadata();
 
 	/**
 	 * Returns the meta object for class '{@link gallery.LinkedPicture <em>Linked Picture</em>}'.
@@ -654,6 +749,27 @@ public interface GalleryPackage extends EPackage {
 	EAttribute getPictureLibrary_Name();
 
 	/**
+	 * Returns the meta object for class '{@link gallery.Metadata <em>Metadata</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Metadata</em>'.
+	 * @see gallery.Metadata
+	 * @generated
+	 */
+	EClass getMetadata();
+
+	/**
+	 * Returns the meta object for the container reference '{@link gallery.Metadata#getPicture <em>Picture</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the container reference '<em>Picture</em>'.
+	 * @see gallery.Metadata#getPicture()
+	 * @see #getMetadata()
+	 * @generated
+	 */
+	EReference getMetadata_Picture();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -745,6 +861,14 @@ public interface GalleryPackage extends EPackage {
 		EAttribute PICTURE__FILE_EXTENSION = eINSTANCE.getPicture_FileExtension();
 
 		/**
+		 * The meta object literal for the '<em><b>Get Metadata</b></em>' operation.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EOperation PICTURE___GET_METADATA = eINSTANCE.getPicture__GetMetadata();
+
+		/**
 		 * The meta object literal for the '{@link gallery.impl.RealPictureImpl <em>Real Picture</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -761,6 +885,14 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EReference REAL_PICTURE__LINKED_BY = eINSTANCE.getRealPicture_LinkedBy();
+
+		/**
+		 * The meta object literal for the '<em><b>Metadata</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference REAL_PICTURE__METADATA = eINSTANCE.getRealPicture_Metadata();
 
 		/**
 		 * The meta object literal for the '{@link gallery.impl.LinkedPictureImpl <em>Linked Picture</em>}' class.
@@ -839,6 +971,24 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute PICTURE_LIBRARY__NAME = eINSTANCE.getPictureLibrary_Name();
+
+		/**
+		 * The meta object literal for the '{@link gallery.impl.MetadataImpl <em>Metadata</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see gallery.impl.MetadataImpl
+		 * @see gallery.impl.GalleryPackageImpl#getMetadata()
+		 * @generated
+		 */
+		EClass METADATA = eINSTANCE.getMetadata();
+
+		/**
+		 * The meta object literal for the '<em><b>Picture</b></em>' container reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference METADATA__PICTURE = eINSTANCE.getMetadata_Picture();
 
 	}
 

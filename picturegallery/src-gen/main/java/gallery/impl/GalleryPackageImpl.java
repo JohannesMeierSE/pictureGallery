@@ -5,6 +5,7 @@ package gallery.impl;
 import gallery.GalleryFactory;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
+import gallery.Metadata;
 import gallery.PathElement;
 import gallery.Picture;
 import gallery.PictureCollection;
@@ -67,6 +68,13 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 	 * @generated
 	 */
 	private EClass pictureLibraryEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass metadataEClass = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -206,6 +214,15 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EOperation getPicture__GetMetadata() {
+		return pictureEClass.getEOperations().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getRealPicture() {
 		return realPictureEClass;
 	}
@@ -217,6 +234,15 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 	 */
 	public EReference getRealPicture_LinkedBy() {
 		return (EReference)realPictureEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getRealPicture_Metadata() {
+		return (EReference)realPictureEClass.getEStructuralFeatures().get(1);
 	}
 
 	/**
@@ -305,6 +331,24 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getMetadata() {
+		return metadataEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getMetadata_Picture() {
+		return (EReference)metadataEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public GalleryFactory getGalleryFactory() {
 		return (GalleryFactory)getEFactoryInstance();
 	}
@@ -337,9 +381,11 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 		pictureEClass = createEClass(PICTURE);
 		createEReference(pictureEClass, PICTURE__COLLECTION);
 		createEAttribute(pictureEClass, PICTURE__FILE_EXTENSION);
+		createEOperation(pictureEClass, PICTURE___GET_METADATA);
 
 		realPictureEClass = createEClass(REAL_PICTURE);
 		createEReference(realPictureEClass, REAL_PICTURE__LINKED_BY);
+		createEReference(realPictureEClass, REAL_PICTURE__METADATA);
 
 		linkedPictureEClass = createEClass(LINKED_PICTURE);
 		createEReference(linkedPictureEClass, LINKED_PICTURE__REAL_PICTURE);
@@ -352,6 +398,9 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 		createEAttribute(pictureLibraryEClass, PICTURE_LIBRARY__BASE_PATH);
 		createEReference(pictureLibraryEClass, PICTURE_LIBRARY__BASE_COLLECTION);
 		createEAttribute(pictureLibraryEClass, PICTURE_LIBRARY__NAME);
+
+		metadataEClass = createEClass(METADATA);
+		createEReference(metadataEClass, METADATA__PICTURE);
 	}
 
 	/**
@@ -398,8 +447,11 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 		initEReference(getPicture_Collection(), this.getPictureCollection(), this.getPictureCollection_Pictures(), "collection", null, 1, 1, Picture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getPicture_FileExtension(), ecorePackage.getEString(), "fileExtension", null, 1, 1, Picture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+		initEOperation(getPicture__GetMetadata(), this.getMetadata(), "getMetadata", 0, 1, IS_UNIQUE, IS_ORDERED);
+
 		initEClass(realPictureEClass, RealPicture.class, "RealPicture", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getRealPicture_LinkedBy(), this.getLinkedPicture(), this.getLinkedPicture_RealPicture(), "linkedBy", null, 0, -1, RealPicture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getRealPicture_Metadata(), this.getMetadata(), this.getMetadata_Picture(), "metadata", null, 0, 1, RealPicture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(linkedPictureEClass, LinkedPicture.class, "LinkedPicture", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getLinkedPicture_RealPicture(), this.getRealPicture(), this.getRealPicture_LinkedBy(), "realPicture", null, 1, 1, LinkedPicture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -413,6 +465,9 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 		initEAttribute(getPictureLibrary_BasePath(), ecorePackage.getEString(), "basePath", null, 1, 1, PictureLibrary.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getPictureLibrary_BaseCollection(), this.getPictureCollection(), this.getPictureCollection_Library(), "baseCollection", null, 1, 1, PictureLibrary.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getPictureLibrary_Name(), ecorePackage.getEString(), "name", null, 0, 1, PictureLibrary.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(metadataEClass, Metadata.class, "Metadata", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getMetadata_Picture(), this.getRealPicture(), this.getRealPicture_Metadata(), "picture", null, 1, 1, Metadata.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);

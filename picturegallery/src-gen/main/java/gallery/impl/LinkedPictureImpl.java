@@ -4,14 +4,13 @@ package gallery.impl;
 
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
+import gallery.Metadata;
 import gallery.RealPicture;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
@@ -204,6 +203,14 @@ public class LinkedPictureImpl extends PictureImpl implements LinkedPicture {
 				return realPicture != null;
 		}
 		return super.eIsSet(featureID);
+	}
+
+	/*
+	 * own code
+	 */
+	@Override
+	public Metadata getMetadata() {
+		return getRealPicture().getMetadata();
 	}
 
 } //LinkedPictureImpl

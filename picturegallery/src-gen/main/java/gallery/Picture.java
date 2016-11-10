@@ -75,4 +75,12 @@ public interface Picture extends PathElement {
 	 */
 	void setFileExtension(String value);
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation"
+	 * @generated
+	 */
+	Metadata getMetadata();
+
 } // Picture

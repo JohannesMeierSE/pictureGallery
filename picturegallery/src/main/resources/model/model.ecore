@@ -12,6 +12,7 @@
         eOpposite="#//PictureLibrary/baseCollection"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Picture" abstract="true" eSuperTypes="#//PathElement">
+    <eOperations name="getMetadata" eType="#//Metadata"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="collection" lowerBound="1"
         eType="#//PictureCollection" eOpposite="#//PictureCollection/pictures"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileExtension" lowerBound="1"
@@ -20,6 +21,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="RealPicture" eSuperTypes="#//Picture">
     <eStructuralFeatures xsi:type="ecore:EReference" name="linkedBy" upperBound="-1"
         eType="#//LinkedPicture" eOpposite="#//LinkedPicture/realPicture"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="metadata" eType="#//Metadata"
+        containment="true" eOpposite="#//Metadata/picture"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LinkedPicture" eSuperTypes="#//Picture">
     <eStructuralFeatures xsi:type="ecore:EReference" name="realPicture" lowerBound="1"
@@ -35,5 +38,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="baseCollection" lowerBound="1"
         eType="#//PictureCollection" containment="true" eOpposite="#//PictureCollection/library"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Metadata">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="picture" lowerBound="1"
+        eType="#//RealPicture" eOpposite="#//RealPicture/metadata"/>
   </eClassifiers>
 </ecore:EPackage>

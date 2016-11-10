@@ -2,14 +2,16 @@
  */
 package gallery.impl;
 
-import java.io.File;
-
 import gallery.GalleryPackage;
 import gallery.Picture;
 import gallery.PictureCollection;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
@@ -241,6 +243,20 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 				return FILE_EXTENSION_EDEFAULT == null ? fileExtension != null : !FILE_EXTENSION_EDEFAULT.equals(fileExtension);
 		}
 		return super.eIsSet(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public Object eInvoke(int operationID, EList<?> arguments) throws InvocationTargetException {
+		switch (operationID) {
+			case GalleryPackage.PICTURE___GET_METADATA:
+				return getMetadata();
+		}
+		return super.eInvoke(operationID, arguments);
 	}
 
 	/**
