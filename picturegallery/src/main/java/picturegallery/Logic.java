@@ -387,12 +387,17 @@ public class Logic {
 	}
 
 	public static String askForString(String title, String header, String content,
-			boolean nullAndEmptyAreForbidden) {
+			boolean nullAndEmptyAreForbidden, String defaultValue) {
 		while (true) {
-			TextInputDialog dialog = new TextInputDialog();
+			final TextInputDialog dialog;
+			if (defaultValue == null || defaultValue.isEmpty()) {
+				dialog = new TextInputDialog();
+			} else {
+				dialog = new TextInputDialog(defaultValue);
+			}
 			dialog.setTitle(title);
 			dialog.setHeaderText(header);
-			dialog.setContentText(header);
+			dialog.setContentText(content);
 			Optional<String> result = dialog.showAndWait();
 			if (result.isPresent()) {
 				String res = result.get();

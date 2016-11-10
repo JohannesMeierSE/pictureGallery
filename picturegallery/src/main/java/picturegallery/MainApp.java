@@ -123,6 +123,7 @@ public class MainApp extends Application {
     			+ "(X) move the current picture into another collection\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(N) create new collection\n"
+    			+ "(R) rename existing collection\n"
     			+ "(F11) start/stop full screen mode\n"
     			+ "(Q) clear cache\n\n");
     	labelKeys.setWrapText(true);
@@ -194,14 +195,13 @@ public class MainApp extends Application {
 						// exit and clear temp collection (s)
 						showTempCollection = false;
 						tempCollection.clear();
-						labelCollectionPath.setText(currentCollection.getFullPath());
 						changeIndex(indexCurrentCollection);
 					} else if (tempCollection.size() >= 2) {
 						// show temp collection (s)
 						showTempCollection = true;
-						labelCollectionPath.setText("temp collection within " + currentCollection.getFullPath());
 						changeIndex(0);
 					}
+					updateCollectionLabel();
 					return;
 				}
 				// select another collection (c)
@@ -232,7 +232,7 @@ public class MainApp extends Application {
 						// close temp mode
 						showTempCollection = false;
 						tempCollection.clear();
-						labelCollectionPath.setText(currentCollection.getFullPath());
+						updateCollectionLabel();
 					}
 					movePicture(currentPicture, movetoCollection);
 					return;
@@ -243,7 +243,7 @@ public class MainApp extends Application {
 					if (parentOfNewCollection != null) {
 						// get the name of the new collection
 					    String newName = Logic.askForString("Name of the new collection",
-					    		"Select a (unique) name for the new collection!", "Name of new collection:", false);
+					    		"Select a (unique) name for the new collection!", "Name of new collection:", false, null);
 					    if (newName == null || newName.isEmpty()) {
 					    	return;
 					    }
@@ -267,6 +267,28 @@ public class MainApp extends Application {
 					    }
 					}
 					return;
+				}
+				// (R) rename existing collection
+				if (event.getCode() == KeyCode.R) {
+					PictureCollection collectionToRename = selectCollection(baseCollection, true, true);
+					if (collectionToRename == null) {
+						return;
+					}
+					String newName = Logic.askForString("Rename collection",
+							"Select a new name for the collection " + collectionToRename.getName() + "!",
+							"New name: ", true, collectionToRename.getName());
+					if (newName.equals(collectionToRename.getName())) {
+						return;
+					}
+					// rename in file system
+					// http://www.java-examples.com/rename-file-or-directory
+					File oldFile = new File(collectionToRename.getFullPath());
+					oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName));
+					// rename in EMF model
+					collectionToRename.setName(newName);
+					if (currentCollection == collectionToRename) {
+						updateCollectionLabel();
+					}
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {
@@ -401,7 +423,7 @@ public class MainApp extends Application {
 		// current collection
 		imageCache.clear();
 		currentPicture = null;
-		labelCollectionPath.setText(currentCollection.getFullPath());
+		updateCollectionLabel();
         changeIndex(0);
 
         // load metadata
@@ -625,6 +647,14 @@ public class MainApp extends Application {
 			newItem.setExpanded(true);
 			item.getChildren().add(newItem);
 			handleTreeItem(newItem);
+		}
+	}
+
+	private void updateCollectionLabel() {
+		if (showTempCollection) {
+			labelCollectionPath.setText("temp collection within " + currentCollection.getFullPath());
+		} else {
+			labelCollectionPath.setText(currentCollection.getFullPath());
 		}
 	}
 }
