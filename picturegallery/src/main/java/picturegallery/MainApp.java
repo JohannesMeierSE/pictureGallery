@@ -460,9 +460,15 @@ public class MainApp extends Application {
 					gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
 					pic.setMetadata(md);
 
+					// helper variables
+					String model = "";
+					String make = "";
+
 					for (String name : metadata.names()) {
-						String key = name.toLowerCase();
-						String value = metadata.get(name).toLowerCase();
+						String keyReal = new String(name);
+						String valueReal = new String(metadata.get(name));
+						String key = keyReal.toLowerCase();
+						String value = valueReal.toLowerCase();
 						System.out.println(name + ": " + value);
 
 						// orientation
@@ -474,6 +480,7 @@ public class MainApp extends Application {
 								md.setLandscape(false);
 							}
 						}
+
 						// file size
 						if (key.contains("file") && key.contains("size")) {
 							if (value.contains("byte")) {
@@ -497,12 +504,52 @@ public class MainApp extends Application {
 								System.err.println("unable to read: " + key + " = " + value);
 							}
 						}
+
+						// height
+						if (key.contains("height") && value.contains("pixel")) {
+							String part = value.replace("pixels", "");
+							part = part.replace("pixel", "");
+							part = part.trim();
+							try {
+								md.setHeight(Integer.parseInt(part));
+							} catch (Throwable e) {
+								System.err.println("unable to read: " + key + " = " + value);
+							}
+						}
+
+						// width
+						if (key.contains("width") && value.contains("pixel")) {
+							String part = value.replace("pixels", "");
+							part = part.replace("pixel", "");
+							part = part.trim();
+							try {
+								md.setWidth(Integer.parseInt(part));
+							} catch (Throwable e) {
+								System.err.println("unable to read: " + key + " = " + value);
+							}
+						}
+
+						// camera
+						if (key.equals("make")) {
+							make = valueReal;
+						}
+						if (make.isEmpty() && key.contains("make")) {
+							make = valueReal;
+						}
+						if (key.equals("model")) {
+							model = valueReal;
+						}
+						if (model.isEmpty() && key.contains("model")) {
+							model = valueReal;
+						}
 					}
+					md.setCamera(make + " " + model);
 
 					// meine RX100
 					/*
 					 * Orientation: Top, left side (Horizontal / normal)
-					 * Kamera-Type
+					 * Make: sony
+					 * Model: dsc-rx100
 					 * File Size: 7518573 bytes
 					 * Date/Time: 2016:01:01 10:14:14
 					 * Image Height: 3648 pixels
