@@ -85,6 +85,7 @@ public class MainApp extends Application {
      */
     public void start(Stage stage) throws Exception {
     	StackPane root = new StackPane();
+    	root.setStyle("-fx-background-color: #000000;");
 
     	iv = new ImageView();
     	iv.setPreserveRatio(true);
@@ -132,8 +133,6 @@ public class MainApp extends Application {
 
     	Scene scene = new Scene(root, 800, 600);
     	scene.getStylesheets().add("/styles/styles.css");
-
-    	stage.setFullScreenExitHint("Press F11 or ESC to exit full-screen mode.");
 
     	// https://stackoverflow.com/questions/23163189/keylistener-javafx
     	// https://stackoverflow.com/questions/16834997/cannot-listen-to-keyevent-in-javafx
@@ -272,6 +271,7 @@ public class MainApp extends Application {
     		}
     	});
 
+    	stage.setFullScreenExitHint("Press F11 or ESC to exit full-screen mode.");
         stage.setTitle("Picture Gallery");
         stage.setScene(scene);
         stage.show();
@@ -302,7 +302,8 @@ public class MainApp extends Application {
 
 	private void handleLabel(Label label) {
     	// https://assylias.wordpress.com/2013/12/08/383/
-		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);");
+		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
+				+ "-fx-text-fill: white;");
     	vBox.getChildren().add(label);
 	}
 
