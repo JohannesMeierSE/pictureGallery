@@ -340,16 +340,28 @@ public class Logic {
 		}
 	}
 
-	public static String askForString(String title, String header, String content) {
-		TextInputDialog dialog = new TextInputDialog();
-		dialog.setTitle(title);
-		dialog.setHeaderText(header);
-		dialog.setContentText(header);
-		Optional<String> result = dialog.showAndWait();
-		if (result.isPresent()){
-		    return result.get();
-		} else {
-			return null;
+	public static String askForString(String title, String header, String content,
+			boolean nullAndEmptyAreForbidden) {
+		while (true) {
+			TextInputDialog dialog = new TextInputDialog();
+			dialog.setTitle(title);
+			dialog.setHeaderText(header);
+			dialog.setContentText(header);
+			Optional<String> result = dialog.showAndWait();
+			if (result.isPresent()) {
+				String res = result.get();
+				if (nullAndEmptyAreForbidden && (res == null || res.isEmpty())) {
+					// next iteration
+				} else {
+					return result.get();
+				}
+			} else {
+				if (nullAndEmptyAreForbidden) {
+					// next iteration
+				} else {
+					return null;
+				}
+			}
 		}
 	}
 }

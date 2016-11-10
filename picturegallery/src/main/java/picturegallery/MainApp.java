@@ -244,7 +244,7 @@ public class MainApp extends Application {
 					if (parentOfNewCollection != null) {
 						// get the name of the new collection
 					    String newName = Logic.askForString("Name of the new collection",
-					    		"Select a (unique) name for the new collection!", "Name of new collection:");
+					    		"Select a (unique) name for the new collection!", "Name of new collection:", false);
 					    if (newName == null || newName.isEmpty()) {
 					    	return;
 					    }
