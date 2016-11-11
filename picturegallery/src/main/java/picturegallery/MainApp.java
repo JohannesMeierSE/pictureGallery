@@ -1,6 +1,7 @@
 package picturegallery;
 
 import gallery.GalleryFactory;
+import gallery.LinkedPicture;
 import gallery.Picture;
 import gallery.PictureCollection;
 
@@ -333,6 +334,10 @@ public class MainApp extends Application {
 		}
 		currentPicture = newPicture;
 		labelPictureName.setText(currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase());
+		if (currentPicture instanceof LinkedPicture) {
+			Picture real = ((LinkedPicture) currentPicture).getRealPicture();
+			labelPictureName.setText(labelPictureName.getText() + " => " + real.getFullPath());
+		}
 		// print metadata
 		String text = Logic.printMetadata(currentPicture.getMetadata());
 		labelMeta.setText(text);
