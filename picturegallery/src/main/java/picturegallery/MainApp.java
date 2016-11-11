@@ -296,7 +296,7 @@ public class MainApp extends Application {
         Task<Void> task = new Task<Void>() {
         	@Override
         	protected Void call() throws Exception {
-        		Logic.loadDirectory(baseCollection, true);
+        		Logic.loadDirectory(baseCollection.getLibrary(), true);
         		return null;
         	}
         };

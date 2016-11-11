@@ -1,6 +1,7 @@
 package picturegallery;
 
 import gallery.GalleryFactory;
+import gallery.LinkedPicture;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.PictureLibrary;
@@ -20,7 +21,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javafx.application.Platform;
@@ -52,7 +55,46 @@ import org.eclipse.emf.common.util.ECollections;
 import org.xml.sax.SAXException;
 
 public class Logic {
-	public static void loadDirectory(PictureCollection currentCollection, boolean recursive) {
+	public static void loadDirectory(PictureLibrary library, boolean recursive) {
+		PictureCollection currentCollection = library.getBaseCollection();
+    	Map<String, RealPicture> map = new HashMap<>(); // full path (String) -> RealPicture
+    	List<Path> symlinks = new ArrayList<>();
+
+    	loadDirectoryLogic(currentCollection, recursive, map, symlinks);
+
+    	String baseFullPath = currentCollection.getFullPath();
+    	// handle symlinks
+    	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
+		for (Path symlink : symlinks) {
+			Path real = null;
+			try {
+				real = symlink.toRealPath();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			String r = real.toAbsolutePath().toString();
+			if (!r.startsWith(baseFullPath)) {
+				System.err.println("Found symlink to a picture which is not part of this library!");
+				continue; // => ignore it!
+			}
+			// TODO: prüfen, ob die Datei überhaupt in dieser Library liegt!!
+			if (Files.isDirectory(real)) {
+				// TODO hier behandeln + überhaupt erst erkennen!
+			} else {
+				RealPicture ref = map.get(r);
+				if (ref == null) {
+					String message = "missing link: " + r + " of " + symlink.toString();
+					System.err.println(message);
+					throw new IllegalArgumentException(message);
+				} else {
+					LinkedPicture linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
+					linkedPicture.setRealPicture(ref);
+					initPicture(currentCollection, symlink.toString(), linkedPicture);
+				}
+			}
+		}
+	}
+	private static void loadDirectoryLogic(PictureCollection currentCollection, boolean recursive, Map<String, RealPicture> map, List<Path> symlinks) {
 		String baseDir = currentCollection.getFullPath();
         try {
 	        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
@@ -75,17 +117,16 @@ public class Logic {
 
 				@Override
 			    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					String name = file.toString();
+					String name = file.toAbsolutePath().toString();
 					String nameLower = name.toLowerCase();
 			        if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg")) {
 			        	if (FileUtils.isSymlink(new File(name))) {
-			        		// TODO
+			        		symlinks.add(file);
 			        	} else {
 			        		RealPicture pic = GalleryFactory.eINSTANCE.createRealPicture();
-			        		pic.setCollection(currentCollection);
-			        		currentCollection.getPictures().add(pic);
-			        		pic.setFileExtension(name.substring(name.lastIndexOf(".") + 1));
-			        		pic.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")));
+			        		initPicture(currentCollection, name, pic);
+
+			        		map.put(pic.getFullPath(), pic);
 			        	}
 			        }
 			        return FileVisitResult.CONTINUE;
@@ -98,9 +139,16 @@ public class Logic {
         sortSubCollections(currentCollection, false);
         if (recursive) {
         	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
-        		loadDirectory(newSubCollection, recursive);
+        		loadDirectoryLogic(newSubCollection, recursive, map, symlinks);
         	}
         }
+	}
+
+	private static void initPicture(PictureCollection currentCollection, String name, Picture pic) {
+		pic.setCollection(currentCollection);
+		currentCollection.getPictures().add(pic);
+		pic.setFileExtension(name.substring(name.lastIndexOf(".") + 1));
+		pic.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")));
 	}
 
 	public static PictureCollection createEmptyLibrary(final String baseDir) {
