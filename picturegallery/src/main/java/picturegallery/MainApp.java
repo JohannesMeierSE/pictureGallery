@@ -360,6 +360,7 @@ public class MainApp extends Application {
 			Task<Image> task = new Task<Image>() {
 				@Override
 				protected Image call() throws Exception {
+					// löst anscheinend selbstständig SymLinks auf !!
 					Image loaded = new Image(new File(currentPicture.getFullPath()).toURI().toURL().toString());
 					return loaded;
 				}
@@ -458,7 +459,9 @@ public class MainApp extends Application {
 			protected Void call() throws Exception {
 				// move the file in the file system
 				// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
-				FileUtils.moveFileToDirectory(new File(currentPicture.getFullPath()), new File(newCollection.getFullPath()), false);
+				FileUtils.moveFileToDirectory(new File(picture.getFullPath()), new File(newCollection.getFullPath()), false);
+				// handle pictures linking on this moved real picture
+//				for (LinkedPicture linked : picture)
 
 				// remove the picture from some other variable stores
 				imageCache.remove(picture.getName());
