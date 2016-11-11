@@ -119,7 +119,12 @@ public class Logic {
 			    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					String name = file.toAbsolutePath().toString();
 					String nameLower = name.toLowerCase();
-			        if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg")) {
+			        if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg") || nameLower.endsWith(".gif")) {
+			        	/*
+			        	 * scheinbar nicht funktionierende Gifs:
+			        	 * - https://www.tutorials.de/threads/animierte-gifs.180222/ => GIFs fehlerhaft, ohne entsprechend 100ms Delay zwischen den Bildern(?)
+			        	 * - oder die Bilddateien sind einfach beschädigt ... !
+			        	 */
 			        	if (FileUtils.isSymlink(new File(name))) {
 			        		symlinks.add(file);
 			        	} else {
