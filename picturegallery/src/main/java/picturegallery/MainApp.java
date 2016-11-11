@@ -258,7 +258,7 @@ public class MainApp extends Application {
 				}
 				// (R) rename existing collection
 				if (event.getCode() == KeyCode.R) {
-					PictureCollection collectionToRename = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true);
+					PictureCollection collectionToRename = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true, Collections.singletonList(baseCollection));
 					if (collectionToRename == null) {
 						return;
 					}
@@ -266,7 +266,16 @@ public class MainApp extends Application {
 							"Select a new name for the collection " + collectionToRename.getName() + "!",
 							"New name: ", true, collectionToRename.getName());
 					if (newName.equals(collectionToRename.getName())) {
-						return;
+						return; // same name like before => nothing to do!
+					}
+					for (PictureCollection sibling : collectionToRename.getSuperCollection().getSubCollections()) {
+						if (sibling == collectionToRename) {
+							continue;
+						}
+						if (sibling.getName().equals(newName)) {
+							System.err.println("The new name " + newName + " is not unique!");
+							return; // the new name is not unique!!
+						}
 					}
 					// rename in file system
 					// http://www.java-examples.com/rename-file-or-directory
