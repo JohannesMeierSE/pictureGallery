@@ -18,11 +18,28 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.util.Callback;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
@@ -413,6 +430,144 @@ public class Logic {
 					return null;
 				}
 			}
+		}
+	}
+
+	public static PictureCollection selectCollection(PictureCollection base,
+			PictureCollection currentCollection, PictureCollection movetoCollection,
+			boolean allowNull, boolean allowEmptyCollectionForSelection) {
+		return Logic.selectCollection(base, currentCollection, movetoCollection, allowNull, allowEmptyCollectionForSelection, Collections.emptyList());
+	}
+
+	public static PictureCollection selectCollection(PictureCollection base,
+			PictureCollection currentCollection, PictureCollection movetoCollection,
+			boolean allowNull, boolean allowEmptyCollectionForSelection, List<PictureCollection> ignoredCollections) {
+		PictureCollection result = null;
+		boolean found = false;
+	
+		while (!found) {
+			// create the dialog
+			// http://code.makery.ch/blog/javafx-dialogs-official/
+			Dialog<PictureCollection> dialog = new Dialog<>();
+			dialog.setTitle("Select picture collection");
+			dialog.setHeaderText("Select one existing picture collection out of the following ones!");
+			ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
+			dialog.getDialogPane().getButtonTypes().add(select);
+	
+			// handle the "null collection" (1)
+			if (allowNull) {
+				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+			}
+			Button selectButton = (Button) dialog.getDialogPane().lookupButton(select);
+			selectButton.setDisable(true);
+			
+			// create the tree view
+			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
+			rootItem.setExpanded(true);
+			Logic.handleTreeItem(rootItem);
+			TreeView<PictureCollection> tree = new TreeView<>(rootItem);
+			tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
+				@Override
+				public TreeCell<PictureCollection> call(TreeView<PictureCollection> param) {
+					return new TreeCell<PictureCollection>() {
+						@Override
+						protected void updateItem(PictureCollection item, boolean empty) {
+							super.updateItem(item, empty);
+							if (empty) {
+								setText(null);
+								setGraphic(null);
+							} else {
+								setText(null);
+								final Label label = new Label();
+								setGraphic(label);
+								String textToShow = item.getName();
+								if (item == currentCollection) {
+									textToShow = textToShow + " [currently shown]";
+								}
+								if (item == movetoCollection) {
+									textToShow = textToShow + " [currently moving into]";
+								}
+								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
+								boolean ignore = disabled || ignoredCollections.contains(item);
+								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
+								setDisable(ignore);
+								label.setDisable(ignore);
+								if (disabled) {
+									textToShow = textToShow + " [empty]";
+								}
+								label.setText(textToShow);
+							}
+						}
+					};
+				}
+			});
+			dialog.getDialogPane().setOnKeyReleased(new EventHandler<KeyEvent>() {
+				@Override
+				public void handle(KeyEvent event) {
+					// closes the dialog with "ENTER"
+					if (event.getCode() == KeyCode.ENTER && !selectButton.isDisabled()) {
+						selectButton.fire();
+					}
+				}
+			});
+	
+			// handle the "null collection" (2)
+			tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends TreeItem<PictureCollection>> observable,
+						TreeItem<PictureCollection> oldValue,
+						TreeItem<PictureCollection> newValue) {
+					selectButton.setDisable(newValue == null || newValue.getValue() == null ||
+							// benötigt, da man auch nicht-wählbare Einträge auswählen kann, diese Abfrage funktioniert aber auch nicht!!
+							(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
+				}
+			});
+	
+			// finish the dialog
+			tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+			tree.getSelectionModel().clearSelection();
+			dialog.getDialogPane().setContent(tree);
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					// request focus on the tree view by default
+					tree.requestFocus();
+				}
+			});
+			dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
+				@Override
+				public PictureCollection call(ButtonType param) {
+					if (param == select) {
+						return tree.getSelectionModel().getSelectedItem().getValue();
+					}
+					return null;
+				}
+			});
+	
+			// run the dialog
+			Optional<PictureCollection> dialogResult = dialog.showAndWait();
+			if (dialogResult.isPresent()) {
+				result = dialogResult.get();
+				if (result.getPictures().isEmpty() && !allowEmptyCollectionForSelection) {
+					result = null;
+				}
+			}
+	
+			// handle the result
+			if (result != null || allowNull) {
+				found = true;
+			}
+		}
+		return result;
+	}
+
+	private static void handleTreeItem(TreeItem<PictureCollection> item) {
+		for (PictureCollection subCol : item.getValue().getSubCollections()) {
+			TreeItem<PictureCollection> newItem = new TreeItem<PictureCollection>(subCol);
+			newItem.setExpanded(true);
+			item.getChildren().add(newItem);
+			handleTreeItem(newItem);
 		}
 	}
 }

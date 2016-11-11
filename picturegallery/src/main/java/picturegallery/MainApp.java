@@ -12,26 +12,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -40,7 +28,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.io.FileUtils;
@@ -206,7 +193,7 @@ public class MainApp extends Application {
 				}
 				// select another collection (c)
 				if (event.getCode() == KeyCode.C && !showTempCollection) {
-					PictureCollection newCol = selectCollection(baseCollection, true, false);
+					PictureCollection newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, false);
 					if (newCol != null) {
 						changeCollection(newCol);
 					}
@@ -218,7 +205,7 @@ public class MainApp extends Application {
 						movetoCollection = null;
 					}
 					if (movetoCollection == null) {
-						movetoCollection = selectCollection(baseCollection, true, true, Collections.singletonList(currentCollection));
+						movetoCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true, Collections.singletonList(currentCollection));
 						if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
 							// Verschieben innerhalb der eigenen Collection macht keinen Sinn!
 							movetoCollection = null;
@@ -239,7 +226,7 @@ public class MainApp extends Application {
 				}
 				// create new collection (N)
 				if (event.getCode() == KeyCode.N) {
-					PictureCollection parentOfNewCollection = selectCollection(baseCollection, true, true);
+					PictureCollection parentOfNewCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true);
 					if (parentOfNewCollection != null) {
 						// get the name of the new collection
 					    String newName = Logic.askForString("Name of the new collection",
@@ -270,7 +257,7 @@ public class MainApp extends Application {
 				}
 				// (R) rename existing collection
 				if (event.getCode() == KeyCode.R) {
-					PictureCollection collectionToRename = selectCollection(baseCollection, true, true);
+					PictureCollection collectionToRename = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true);
 					if (collectionToRename == null) {
 						return;
 					}
@@ -318,7 +305,7 @@ public class MainApp extends Application {
         	public void handle(WorkerStateEvent event) {
         		PictureCollection newCol = Logic.findFirstNonEmptyCollection(baseCollection);
         		if (newCol != null) {
-        			newCol = selectCollection(baseCollection, false, false);
+        			newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, false, false);
         		}
         		if (newCol == null) {
         			System.err.println("the library does not contain any picture!!");
@@ -513,141 +500,6 @@ public class MainApp extends Application {
 			}
 		});
 		new Thread(task).start();
-	}
-
-	private PictureCollection selectCollection(PictureCollection base,
-			boolean allowNull, boolean allowEmptyCollectionForSelection) {
-		return selectCollection(base, allowNull, allowEmptyCollectionForSelection, Collections.emptyList());
-	}
-	private PictureCollection selectCollection(PictureCollection base,
-			boolean allowNull, boolean allowEmptyCollectionForSelection, List<PictureCollection> ignoredCollections) {
-		PictureCollection result = null;
-		boolean found = false;
-
-		while (!found) {
-			// create the dialog
-			// http://code.makery.ch/blog/javafx-dialogs-official/
-			Dialog<PictureCollection> dialog = new Dialog<>();
-			dialog.setTitle("Select picture collection");
-			dialog.setHeaderText("Select one existing picture collection out of the following ones!");
-			ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
-			dialog.getDialogPane().getButtonTypes().add(select);
-	
-			// handle the "null collection" (1)
-			if (allowNull) {
-				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-			}
-			Button selectButton = (Button) dialog.getDialogPane().lookupButton(select);
-			selectButton.setDisable(true);
-			
-			// create the tree view
-			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
-			rootItem.setExpanded(true);
-			handleTreeItem(rootItem);
-			TreeView<PictureCollection> tree = new TreeView<>(rootItem);
-			tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
-				@Override
-				public TreeCell<PictureCollection> call(TreeView<PictureCollection> param) {
-					return new TreeCell<PictureCollection>() {
-						@Override
-						protected void updateItem(PictureCollection item, boolean empty) {
-							super.updateItem(item, empty);
-							if (empty) {
-								setText(null);
-								setGraphic(null);
-							} else {
-								setText(null);
-								final Label label = new Label();
-								setGraphic(label);
-								String textToShow = item.getName();
-								if (item == currentCollection) {
-									textToShow = textToShow + " [currently shown]";
-								}
-								if (item == movetoCollection) {
-									textToShow = textToShow + " [currently moving into]";
-								}
-								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
-								boolean ignore = disabled || ignoredCollections.contains(item);
-								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
-								setDisable(ignore);
-								label.setDisable(ignore);
-								if (disabled) {
-									textToShow = textToShow + " [empty]";
-								}
-								label.setText(textToShow);
-							}
-						}
-					};
-				}
-			});
-			dialog.getDialogPane().setOnKeyReleased(new EventHandler<KeyEvent>() {
-				@Override
-				public void handle(KeyEvent event) {
-					// closes the dialog with "ENTER"
-					if (event.getCode() == KeyCode.ENTER && !selectButton.isDisabled()) {
-						selectButton.fire();
-					}
-				}
-			});
-
-			// handle the "null collection" (2)
-			tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
-				@Override
-				public void changed(
-						ObservableValue<? extends TreeItem<PictureCollection>> observable,
-						TreeItem<PictureCollection> oldValue,
-						TreeItem<PictureCollection> newValue) {
-					selectButton.setDisable(newValue == null || newValue.getValue() == null ||
-							// benötigt, da man auch nicht-wählbare Einträge auswählen kann, diese Abfrage funktioniert aber auch nicht!!
-							(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
-				}
-			});
-
-			// finish the dialog
-			tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-			tree.getSelectionModel().clearSelection();
-			dialog.getDialogPane().setContent(tree);
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					// request focus on the tree view by default
-					tree.requestFocus();
-				}
-			});
-			dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
-				@Override
-				public PictureCollection call(ButtonType param) {
-					if (param == select) {
-						return tree.getSelectionModel().getSelectedItem().getValue();
-					}
-					return null;
-				}
-			});
-	
-			// run the dialog
-			Optional<PictureCollection> dialogResult = dialog.showAndWait();
-			if (dialogResult.isPresent()) {
-				result = dialogResult.get();
-				if (result.getPictures().isEmpty() && !allowEmptyCollectionForSelection) {
-					result = null;
-				}
-			}
-
-			// handle the result
-			if (result != null || allowNull) {
-				found = true;
-			}
-		}
-		return result;
-	}
-
-	private void handleTreeItem(TreeItem<PictureCollection> item) {
-		for (PictureCollection subCol : item.getValue().getSubCollections()) {
-			TreeItem<PictureCollection> newItem = new TreeItem<PictureCollection>(subCol);
-			newItem.setExpanded(true);
-			item.getChildren().add(newItem);
-			handleTreeItem(newItem);
-		}
 	}
 
 	private void updateCollectionLabel() {
