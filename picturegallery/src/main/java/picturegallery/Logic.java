@@ -623,4 +623,31 @@ public class Logic {
 			handleTreeItem(newItem);
 		}
 	}
+
+	public static void createSymlink(LinkedPicture picture) {
+		try {
+			// https://stackoverflow.com/questions/17926459/creating-a-symbolic-link-with-java
+			// TODO: relative Pfade sind schöner!!
+			Files.createSymbolicLink(Paths.get(picture.getFullPath()), Paths.get(picture.getRealPicture().getFullPath()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void deleteSymlink(LinkedPicture linked) {
+		try {
+			Files.delete(Paths.get(linked.getFullPath()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
+		// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
+		try {
+			FileUtils.moveFileToDirectory(new File(previousFullPath), new File(newDirectoryFullPath), false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

@@ -4,6 +4,7 @@ import gallery.GalleryFactory;
 import gallery.LinkedPicture;
 import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.RealPicture;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +32,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import org.apache.commons.collections4.map.LRUMap;
-import org.apache.commons.io.FileUtils;
 
 import picturegallery.persistency.Settings;
 
@@ -440,6 +440,37 @@ public class MainApp extends Application {
 		new Thread(task).start();
 	}
 
+	private void deletePicture(Picture picture, boolean updateGui) {
+		// real => alle verlinkten Bilder werden auch gelöscht!!
+		if (picture instanceof RealPicture) {
+			// TODO: linked => linked => real  muss irgendwie verboten und verhindert werden!
+			RealPicture realToDelete = (RealPicture) picture;
+			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
+				deletePicture(linked, false);
+				linked.setRealPicture(null);
+			}
+		}
+
+		// update the GUI berücksichtigen
+		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
+		int previousIndexTemp = tempCollection.indexOf(picture);
+		
+		tempCollection.remove(picture);
+		imageCache.remove(picture.getName());
+		
+		picture.getCollection().getPictures().remove(picture);
+		
+		// delete file in file system
+		try {
+			Files.delete(Paths.get(picture.getFullPath()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// update GUI
+		updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, updateGui);
+	}
+
 	private void movePicture(Picture picture, PictureCollection newCollection) {
 		if (picture == null || newCollection == null) {
 			throw new IllegalArgumentException();
@@ -449,7 +480,13 @@ public class MainApp extends Application {
 			System.err.println("picture is already in this collection");
 			return;
 		}
-		// TODO Sonderfall bei LinkedPicture!!
+		// check for uniqueness
+		for (Picture existing : newCollection.getPictures()) {
+			if (existing.getName().equals(picture.getName())) {
+				System.err.println("moving is not possible: uniqueness is hurt!");
+				return;
+			}
+		}
 
 		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
 		int previousIndexTemp = tempCollection.indexOf(picture);
@@ -457,21 +494,40 @@ public class MainApp extends Application {
 		Task<Void> task = new Task<Void>() { // do the long-running moving in another thread!
 			@Override
 			protected Void call() throws Exception {
-				// move the file in the file system
-				// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
-				FileUtils.moveFileToDirectory(new File(picture.getFullPath()), new File(newCollection.getFullPath()), false);
-				// handle pictures linking on this moved real picture
-//				for (LinkedPicture linked : picture)
-
 				// remove the picture from some other variable stores
 				imageCache.remove(picture.getName());
 				tempCollection.remove(picture);
 
-				// update the EMF model
-				picture.getCollection().getPictures().remove(picture);
-				newCollection.getPictures().add(picture);
-				picture.setCollection(newCollection);
-				Logic.sortPicturesInCollection(newCollection);
+				// move the file in the file system
+				Logic.moveFileIntoDirectory(picture.getFullPath(), newCollection.getFullPath());
+
+				if (picture instanceof RealPicture) {
+					RealPicture pictureToMove = (RealPicture) picture;
+
+					// handle pictures linking on this moved real picture:
+					// delete symlinks ...
+					for (LinkedPicture linked : pictureToMove.getLinkedBy()) {
+						Logic.deleteSymlink(linked);
+					}
+
+					// update the EMF model
+					picture.getCollection().getPictures().remove(picture);
+					newCollection.getPictures().add(picture);
+					picture.setCollection(newCollection);
+					Logic.sortPicturesInCollection(newCollection);
+					
+					// ... and create them all again with changed target
+					for (LinkedPicture linked : pictureToMove.getLinkedBy()) {
+						Logic.createSymlink(linked);
+					}
+				} else {
+					// könnte dazu führen, dass Linked und Real im selben Ordner gelandet sind, ist aber erstmal egal!
+					// update the EMF model
+					picture.getCollection().getPictures().remove(picture);
+					newCollection.getPictures().add(picture);
+					picture.setCollection(newCollection);
+					Logic.sortPicturesInCollection(newCollection);
+				}
 
 				return null;
 			}
@@ -479,44 +535,56 @@ public class MainApp extends Application {
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
-				// compute the new index
-				if (previousIndexCurrent < 0) {
-					// the picture was not part of the currently shown collection => do nothing
-				} else {
-					// current collection
-					int newIndexCurrent = indexCurrentCollection;
-					if (previousIndexCurrent < newIndexCurrent) {
-						// Bild vor dem aktuellen Bild wird gelöscht
-						newIndexCurrent--;
-					} else {
-						// wegen Sonderfall, dass das letzte Bild gelöscht wird
-						newIndexCurrent = Math.min(newIndexCurrent, currentCollection.getPictures().size() - 1);
-					}
-					
-					// temp collection
-					int newIndexTemp = indexTempCollection;
-					if (previousIndexTemp < 0) {
-						// picture was not shown in temp collection
-					} else {
-						if (previousIndexTemp < newIndexTemp) {
-							newIndexTemp--;
-						} else {
-							newIndexTemp = Math.min(newIndexTemp, tempCollection.size() - 1);
-						}
-					}
-					
-					// update the GUI
-					if (showTempCollection) {
-						changeIndex(newIndexTemp);
-					} else {
-						if (!currentCollection.getPictures().isEmpty()) { // TODO: richtigen Mode für einrichten mit schwarzem Hintergrund!!
-							changeIndex(newIndexCurrent);
-						}
-					}
-				}
+				updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, true);
 			}
 		});
 		new Thread(task).start();
+	}
+
+	private void updateIndexAfterGonePicture(int indexCurrentBeforeGone, int indexTempBeforeGone, boolean updateGui) {
+		// compute the new index
+		if (indexCurrentBeforeGone < 0) {
+			// the picture was not part of the currently shown collection => do nothing
+		} else {
+			// current collection
+			int newIndexCurrent = indexCurrentCollection;
+			if (indexCurrentBeforeGone < newIndexCurrent) {
+				// Bild vor dem aktuellen Bild wird gelöscht
+				newIndexCurrent--;
+			} else {
+				// wegen Sonderfall, dass das letzte Bild gelöscht wird
+				newIndexCurrent = Math.min(newIndexCurrent, currentCollection.getPictures().size() - 1);
+			}
+
+			// temp collection
+			int newIndexTemp = indexTempCollection;
+			// ist "indexTempCollection" kleiner als 0, ändert sich durch die folgenden Zeilen nichts!
+			if (indexTempBeforeGone < 0) {
+				// picture was not shown in temp collection
+			} else {
+				if (indexTempBeforeGone < newIndexTemp) {
+					newIndexTemp--;
+				} else {
+					newIndexTemp = Math.min(newIndexTemp, tempCollection.size() - 1);
+				}
+			}
+
+			if (updateGui) {
+				// update the GUI
+				if (showTempCollection) {
+					changeIndex(newIndexTemp);
+					indexCurrentCollection = newIndexCurrent; // Auch der Index in der aktuellen Collection muss aktualisiert werden, damit man nach dem Schließen des Temp-Mode wieder da ist, wo man die Collection verlassen hatte.
+				} else {
+					if (!currentCollection.getPictures().isEmpty()) { // TODO: dafür richtigen Mode einrichten mit schwarzem Hintergrund!!
+						changeIndex(newIndexCurrent);
+					}
+					// der Temp-Index spielt außerhalb des Temp-Mode keine Rolle!
+				}
+			} else {
+				indexCurrentCollection = newIndexCurrent;
+				indexTempCollection = newIndexTemp;
+			}
+		}
 	}
 
 	private void updateCollectionLabel() {
