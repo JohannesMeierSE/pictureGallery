@@ -311,10 +311,15 @@ public class MainApp extends Application {
 					}
 					return;
 				}
-				// (R) rename existing collection
+				// (R) rename existing collection (but not the base collection)
 				if (event.getCode() == KeyCode.R) {
-					PictureCollection collectionToRename = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true, Collections.singletonList(baseCollection));
+					PictureCollection collectionToRename = Logic.selectCollection(baseCollection,
+							currentCollection, movetoCollection, true, true, Collections.singletonList(baseCollection));
 					if (collectionToRename == null) {
+						return;
+					}
+					if (collectionToRename == baseCollection) {
+						// sollte eigentlich gar nicht möglich sein!
 						return;
 					}
 					String newName = Logic.askForString("Rename collection",
@@ -323,6 +328,7 @@ public class MainApp extends Application {
 					if (newName.equals(collectionToRename.getName())) {
 						return; // same name like before => nothing to do!
 					}
+					// check for uniqueness
 					for (PictureCollection sibling : collectionToRename.getSuperCollection().getSubCollections()) {
 						if (sibling == collectionToRename) {
 							continue;
@@ -331,6 +337,11 @@ public class MainApp extends Application {
 							System.err.println("The new name " + newName + " is not unique!");
 							return; // the new name is not unique!!
 						}
+					}
+					List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
+					// remove all links linking on pictures contained (recursively) in the collection to rename
+					for (LinkedPicture link : linksToReGenerate) {
+						Logic.deleteSymlink(link);
 					}
 					// rename in file system
 					// http://www.java-examples.com/rename-file-or-directory
@@ -341,7 +352,10 @@ public class MainApp extends Application {
 					if (currentCollection == collectionToRename) {
 						updateCollectionLabel();
 					}
-					// TODO: handle relative links!!
+					// create all deleted links again
+					for (LinkedPicture link : linksToReGenerate) {
+						Logic.createSymlink(link);
+					}
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {

@@ -204,6 +204,30 @@ public class Logic {
 	}
 
 	/**
+	 * Collects all LinkedPictures which are linking to a RealPicture
+	 * which is contained (recursively) in the given PictureCollection.
+	 * @param collection
+	 * @return
+	 */
+	public static List<LinkedPicture> findLinksOnPicturesIn(PictureCollection collection) {
+		List<LinkedPicture> result = new ArrayList<>();
+		findLinksOnPicturesInLogic(collection, result);
+		return result;
+	}
+	private static void findLinksOnPicturesInLogic(PictureCollection collection, List<LinkedPicture> result) {
+		// collects all LinkedPictures linking on the RealPictures contained in the current collection
+		for (Picture pic : collection.getPictures()) {
+			if (pic instanceof RealPicture) {
+				result.addAll(((RealPicture) pic).getLinkedBy());
+			}
+		}
+		// handles all sub-collections
+		for (PictureCollection sub : collection.getSubCollections()) {
+			findLinksOnPicturesInLogic(sub, result);
+		}
+	}
+
+	/**
 	 * Changes the order of the pictures in the collection (ascending names) => works in-place!
 	 * @param col
 	 */
