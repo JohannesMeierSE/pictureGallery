@@ -111,7 +111,7 @@ public class MainApp extends Application {
     			+ "(C) select another collection\n"
     			+ "(X) move the current picture into another collection\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
-    			+ "(V) add the current picture as link into another collection\n"
+    			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
     			+ "(N) create new collection\n"
     			+ "(R) rename existing collection\n"
@@ -253,18 +253,31 @@ public class MainApp extends Application {
 					} else {
 						linkedPicture = (RealPicture) currentPicture;
 					}
-					// update the EMF model
-					LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
-					newLink.setName(new String(linkedPicture.getName()));
-					newLink.setFileExtension(new String(linkedPicture.getFileExtension()));
-					newLink.setCollection(linktoCollection);
-					newLink.setRealPicture(linkedPicture);
-					linkedPicture.getLinkedBy().add(newLink);
-					linktoCollection.getPictures().add(newLink);
-					Logic.sortPicturesInCollection(linktoCollection);
-					// add link in file system
-					Logic.createSymlink(newLink);
-					// kein Update der GUI nötig, da der Link in eine Collection =! der aktuellen eingefügt wird!
+					// search for an existing link
+					LinkedPicture existingLink = null;
+					for (LinkedPicture l : linkedPicture.getLinkedBy()) {
+						if (l.getCollection() == linktoCollection) {
+							existingLink = l;
+							break;
+						}
+					}
+					if (existingLink == null) { // => create new link
+						// update the EMF model
+						LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
+						newLink.setName(new String(linkedPicture.getName()));
+						newLink.setFileExtension(new String(linkedPicture.getFileExtension()));
+						newLink.setCollection(linktoCollection);
+						newLink.setRealPicture(linkedPicture);
+						linkedPicture.getLinkedBy().add(newLink);
+						linktoCollection.getPictures().add(newLink);
+						Logic.sortPicturesInCollection(linktoCollection);
+						// add link in file system
+						Logic.createSymlink(newLink);
+					} else {
+						// => remove existing link
+						deletePicture(existingLink, false);
+					}
+					// kein Update der GUI nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
 					return;
 				}
 				// create new collection (N)
@@ -328,6 +341,7 @@ public class MainApp extends Application {
 					if (currentCollection == collectionToRename) {
 						updateCollectionLabel();
 					}
+					// TODO: handle relative links!!
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {
@@ -461,6 +475,7 @@ public class MainApp extends Application {
 			return;
 		}
 		movetoCollection = null;
+		linktoCollection = null;
 		currentCollection = newCollection;
 		// temp collection
 		tempCollection.clear();
@@ -500,14 +515,14 @@ public class MainApp extends Application {
 		tempCollection.remove(picture);
 		imageCache.remove(picture.getName());
 		
-		picture.getCollection().getPictures().remove(picture);
-		
 		// delete file in file system
 		try {
 			Files.delete(Paths.get(picture.getFullPath()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		picture.getCollection().getPictures().remove(picture);
 
 		// update GUI
 		updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, updateGui);
