@@ -342,11 +342,12 @@ public class MainApp extends Application {
 			return;
 		}
 		currentPicture = newPicture;
-		labelPictureName.setText(currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase());
+		// update the text description of the picture
+		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
 		if (currentPicture instanceof LinkedPicture) {
-			Picture real = ((LinkedPicture) currentPicture).getRealPicture();
-			labelPictureName.setText(labelPictureName.getText() + " => " + real.getFullPath());
+			pictureText = pictureText + " => " + ((LinkedPicture) currentPicture).getRealPicture().getFullPath();
 		}
+		labelPictureName.setText(pictureText);
 		// print metadata
 		String text = Logic.printMetadata(currentPicture.getMetadata());
 		labelMeta.setText(text);
