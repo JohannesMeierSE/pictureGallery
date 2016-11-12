@@ -338,6 +338,8 @@ public class MainApp extends Application {
 							return; // the new name is not unique!!
 						}
 					}
+
+					// after testing all pre-conditions, starts with the renaming itself ...
 					List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
 					// remove all links linking on pictures contained (recursively) in the collection to rename
 					for (LinkedPicture link : linksToReGenerate) {
@@ -356,6 +358,8 @@ public class MainApp extends Application {
 					for (LinkedPicture link : linksToReGenerate) {
 						Logic.createSymlink(link);
 					}
+					// sort the collections within the parent collection
+					Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {
