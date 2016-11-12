@@ -56,13 +56,13 @@ import org.xml.sax.SAXException;
 
 public class Logic {
 	public static void loadDirectory(PictureLibrary library, boolean recursive) {
-		PictureCollection currentCollection = library.getBaseCollection();
+		PictureCollection baseCollection = library.getBaseCollection();
     	Map<String, RealPicture> map = new HashMap<>(); // full path (String) -> RealPicture
     	List<Path> symlinks = new ArrayList<>();
 
-    	loadDirectoryLogic(currentCollection, recursive, map, symlinks);
+    	loadDirectoryLogic(baseCollection, recursive, map, symlinks);
 
-    	String baseFullPath = currentCollection.getFullPath();
+    	String baseFullPath = baseCollection.getFullPath();
     	// handle symlinks
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
 		for (Path symlink : symlinks) {
@@ -73,13 +73,15 @@ public class Logic {
 				e.printStackTrace();
 			}
 			String r = real.toAbsolutePath().toString();
+			// prüfen, ob die Datei überhaupt in dieser Library liegt!
 			if (!r.startsWith(baseFullPath)) {
 				System.err.println("Found symlink to a picture which is not part of this library!");
 				continue; // => ignore it!
 			}
-			// TODO: prüfen, ob die Datei überhaupt in dieser Library liegt!!
 			if (Files.isDirectory(real)) {
-				// TODO hier behandeln + überhaupt erst erkennen!
+				// symlink onto a directory
+				System.err.println("symlink to directory: ignored!");
+				// werden bislang nicht erkannt und sollen in jedem Fall ignoriert werden!
 			} else {
 				RealPicture ref = map.get(r);
 				if (ref == null) {
@@ -89,16 +91,18 @@ public class Logic {
 				} else {
 					LinkedPicture linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
 					linkedPicture.setRealPicture(ref);
-					initPicture(currentCollection, symlink.toString(), linkedPicture);
+					initPicture(baseCollection, symlink.toString(), linkedPicture);
 				}
 			}
 		}
 	}
+
 	private static void loadDirectoryLogic(PictureCollection currentCollection, boolean recursive, Map<String, RealPicture> map, List<Path> symlinks) {
 		String baseDir = currentCollection.getFullPath();
         try {
 	        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
 			Files.walkFileTree(Paths.get(baseDir), new SimpleFileVisitor<Path>() {
+				// this method does not follow symbolic links!
 			    @Override
 				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 			    	// ignore sub-folders, but accept the initial base path!
@@ -632,8 +636,12 @@ public class Logic {
 	public static void createSymlink(LinkedPicture picture) {
 		try {
 			// https://stackoverflow.com/questions/17926459/creating-a-symbolic-link-with-java
-			// TODO: relative Pfade sind schöner!!
-			Files.createSymbolicLink(Paths.get(picture.getFullPath()), Paths.get(picture.getRealPicture().getFullPath()));
+			// https://stackoverflow.com/questions/32625105/how-to-create-relative-symlink-in-java-nio-2
+			// https://docs.oracle.com/javase/tutorial/essential/io/links.html
+			Path linkPathAbsolute = Paths.get(picture.getFullPath());
+			Path sourcePathAbsolute = Paths.get(picture.getRealPicture().getFullPath());
+			Path sourcePathRelative = linkPathAbsolute.getParent().relativize(sourcePathAbsolute);
+			Files.createSymbolicLink(linkPathAbsolute, sourcePathRelative);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

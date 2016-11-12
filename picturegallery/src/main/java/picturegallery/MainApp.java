@@ -430,7 +430,6 @@ public class MainApp extends Application {
         changeIndex(0);
 
         // load metadata
-        // TODO: abbrechen, wenn schon wieder gewechselt wird, obwohl der Task noch nicht fertig ist!!
         Task<Void> task = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
@@ -499,10 +498,10 @@ public class MainApp extends Application {
 				imageCache.remove(picture.getName());
 				tempCollection.remove(picture);
 
-				// move the file in the file system
-				Logic.moveFileIntoDirectory(picture.getFullPath(), newCollection.getFullPath());
-
 				if (picture instanceof RealPicture) {
+					// move the file in the file system
+					Logic.moveFileIntoDirectory(picture.getFullPath(), newCollection.getFullPath());
+
 					RealPicture pictureToMove = (RealPicture) picture;
 
 					// handle pictures linking on this moved real picture:
@@ -522,12 +521,19 @@ public class MainApp extends Application {
 						Logic.createSymlink(linked);
 					}
 				} else {
+					// verschieben funktioniert bei relativen Links nicht!!
+					LinkedPicture pictureToMove = (LinkedPicture) picture;
+					Logic.deleteSymlink(pictureToMove); // ... erst löschen
+
 					// könnte dazu führen, dass Linked und Real im selben Ordner gelandet sind, ist aber erstmal egal!
+
 					// update the EMF model
 					picture.getCollection().getPictures().remove(picture);
 					newCollection.getPictures().add(picture);
 					picture.setCollection(newCollection);
 					Logic.sortPicturesInCollection(newCollection);
+
+					Logic.createSymlink(pictureToMove); // ... und dann neu erstellen
 				}
 
 				return null;
