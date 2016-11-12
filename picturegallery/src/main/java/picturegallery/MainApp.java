@@ -55,6 +55,7 @@ public class MainApp extends Application {
 	private List<Picture> tempCollection = new ArrayList<>();
 
 	private PictureCollection movetoCollection;
+	private PictureCollection linktoCollection;
 
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 	private Map<String, Image> imageCache = Collections.synchronizedMap(new LRUMap<>(50, 50));
@@ -110,6 +111,8 @@ public class MainApp extends Application {
     			+ "(C) select another collection\n"
     			+ "(X) move the current picture into another collection\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
+    			+ "(V) add the current picture as link into another collection\n"
+    			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
     			+ "(N) create new collection\n"
     			+ "(R) rename existing collection\n"
     			+ "(F11) start/stop full screen mode\n"
@@ -206,7 +209,8 @@ public class MainApp extends Application {
 						movetoCollection = null;
 					}
 					if (movetoCollection == null) {
-						movetoCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true, Collections.singletonList(currentCollection));
+						movetoCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
+								true, true, Collections.singletonList(currentCollection));
 						if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
 							// Verschieben innerhalb der eigenen Collection macht keinen Sinn!
 							movetoCollection = null;
@@ -223,6 +227,44 @@ public class MainApp extends Application {
 						updateCollectionLabel();
 					}
 					movePicture(currentPicture, movetoCollection);
+					return;
+				}
+    			// (V) add the current picture as link into another collection
+				if (event.getCode() == KeyCode.V) {
+					// (V + Shift) select another collection and add the current picture as link into this collection
+					if (event.isShiftDown()) {
+						linktoCollection = null;
+					}
+					if (linktoCollection == null) {
+						linktoCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
+								true, true, Collections.singletonList(currentCollection));
+						if (linktoCollection == currentCollection) {
+							// sollte eigentlich gar nciht möglich sein (macht inhaltlich auch keinen Sinn)
+							linktoCollection = null;
+						}
+					}
+					if (linktoCollection == null) {
+						return;
+					}
+					// bestimme das Ziel
+					RealPicture linkedPicture;
+					if (currentPicture instanceof LinkedPicture) {
+						linkedPicture = ((LinkedPicture) currentPicture).getRealPicture();
+					} else {
+						linkedPicture = (RealPicture) currentPicture;
+					}
+					// update the EMF model
+					LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
+					newLink.setName(new String(linkedPicture.getName()));
+					newLink.setFileExtension(new String(linkedPicture.getFileExtension()));
+					newLink.setCollection(linktoCollection);
+					newLink.setRealPicture(linkedPicture);
+					linkedPicture.getLinkedBy().add(newLink);
+					linktoCollection.getPictures().add(newLink);
+					Logic.sortPicturesInCollection(linktoCollection);
+					// add link in file system
+					Logic.createSymlink(newLink);
+					// kein Update der GUI nötig, da der Link in eine Collection =! der aktuellen eingefügt wird!
 					return;
 				}
 				// create new collection (N)
