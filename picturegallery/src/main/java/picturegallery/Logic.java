@@ -43,6 +43,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.util.Callback;
+import javafx.util.Pair;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
@@ -58,7 +59,7 @@ public class Logic {
 	public static void loadDirectory(PictureLibrary library, boolean recursive) {
 		PictureCollection baseCollection = library.getBaseCollection();
     	Map<String, RealPicture> map = new HashMap<>(); // full path (String) -> RealPicture
-    	List<Path> symlinks = new ArrayList<>();
+    	List<Pair<Path, PictureCollection>> symlinks = new ArrayList<>();
 
     	loadDirectoryLogic(baseCollection, recursive, map, symlinks);
 
@@ -66,10 +67,10 @@ public class Logic {
     	String baseFullPath = baseCollection.getFullPath();
     	// handle symlinks
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
-		for (Path symlink : symlinks) {
+		for (Pair<Path, PictureCollection> symlink : symlinks) {
 			Path real = null;
 			try {
-				real = symlink.toRealPath();
+				real = symlink.getKey().toRealPath();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -91,10 +92,13 @@ public class Logic {
 					throw new IllegalArgumentException(message);
 				} else {
 					LinkedPicture linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
+					ref.getLinkedBy().add(linkedPicture);
 					linkedPicture.setRealPicture(ref);
-					initPicture(baseCollection, symlink.toString(), linkedPicture);
-					if (!collectionsToSort.contains(baseCollection)) {
-						collectionsToSort.add(baseCollection);
+					initPicture(symlink.getValue(), symlink.getKey().toString(), linkedPicture);
+
+					// sort the pictures (including the new LinkedPicture) in this collection again
+					if (!collectionsToSort.contains(symlink.getValue())) {
+						collectionsToSort.add(symlink.getValue());
 					}
 				}
 			}
@@ -105,7 +109,8 @@ public class Logic {
 		}
 	}
 
-	private static void loadDirectoryLogic(PictureCollection currentCollection, boolean recursive, Map<String, RealPicture> map, List<Path> symlinks) {
+	private static void loadDirectoryLogic(PictureCollection currentCollection, boolean recursive,
+			Map<String, RealPicture> map, List<Pair<Path, PictureCollection>> symlinks) {
 		String baseDir = currentCollection.getFullPath();
         try {
 	        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
@@ -138,7 +143,7 @@ public class Logic {
 			        	 * - oder die Bilddateien sind einfach beschädigt ... !
 			        	 */
 			        	if (FileUtils.isSymlink(new File(name))) {
-			        		symlinks.add(file);
+			        		symlinks.add(new Pair<Path, PictureCollection>(file, currentCollection));
 			        	} else {
 			        		RealPicture pic = GalleryFactory.eINSTANCE.createRealPicture();
 			        		initPicture(currentCollection, name, pic);
