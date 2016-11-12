@@ -270,8 +270,13 @@ public class Logic {
 			throws FileNotFoundException, IOException, SAXException, TikaException {
 		List<RealPicture> currentPictures = new ArrayList<>(currentCollection.getPictures().size());
 		for (Picture pic : currentCollection.getPictures()) {
-			if (pic instanceof RealPicture && pic.getMetadata() == null) {
+			if (pic.getMetadata() != null) {
+				continue;
+			}
+			if (pic instanceof RealPicture) {
 				currentPictures.add((RealPicture) pic);
+			} else {
+				currentPictures.add(((LinkedPicture) pic).getRealPicture());
 			}
 		}
 		for (RealPicture pic : currentPictures) {
