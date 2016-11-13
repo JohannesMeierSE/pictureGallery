@@ -419,7 +419,11 @@ public class MainApp extends Application {
 		// update the text description of the picture
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
 		if (currentPicture instanceof LinkedPicture) {
-			pictureText = pictureText + " => " + ((LinkedPicture) currentPicture).getRealPicture().getFullPath();
+			pictureText = pictureText + "    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getFullPath();
+		} else {
+			for (LinkedPicture link : ((RealPicture) currentPicture).getLinkedBy()) {
+				pictureText = pictureText + "\n      <=  " + link.getFullPath();
+			}
 		}
 		labelPictureName.setText(pictureText);
 		// print metadata
@@ -562,7 +566,7 @@ public class MainApp extends Application {
 				return;
 			}
 		}
-
+// TODO: dürfen Real- und LinkedPicture (mit Bezug zueinander) im selben Ordner/Collection landen ??
 		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
 		int previousIndexTemp = tempCollection.indexOf(picture);
 
