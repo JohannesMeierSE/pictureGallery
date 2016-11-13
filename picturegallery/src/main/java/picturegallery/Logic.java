@@ -242,11 +242,30 @@ public class Logic {
 
 	/**
 	 * Changes the order of the pictures in the collection (ascending names) => works in-place!
-	 * @param col
+	 * @param collectionToSort
 	 */
-	public static void sortPicturesInCollection(PictureCollection col) {
+	public static void sortPicturesInCollection(PictureCollection collectionToSort) {
 		// http://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/common/util/ECollections.html#sort(org.eclipse.emf.common.util.EList)
-		ECollections.sort(col.getPictures(), new Comparator<Picture>() {
+		ECollections.sort(collectionToSort.getPictures(), new Comparator<Picture>() {
+			@Override
+			public int compare(Picture o1, Picture o2) {
+				if (o1 == o2) {
+					return 0;
+				}
+				if (o1.getName() == o2.getName()) {
+					throw new IllegalStateException();
+				}
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+	}
+
+	/**
+	 * Changes the order of the pictures in the list (ascending names) => works in-place!
+	 * @param picturesToSort
+	 */
+	public static void sortPictures(List<Picture> picturesToSort) {
+		Collections.sort(picturesToSort, new Comparator<Picture>() {
 			@Override
 			public int compare(Picture o1, Picture o2) {
 				if (o1 == o2) {

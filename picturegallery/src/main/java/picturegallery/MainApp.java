@@ -167,12 +167,12 @@ public class MainApp extends Application {
 					changeIndex(newIndex);
 					return;
 				}
-				// hide information (h)
+				// (H) hide information
 				if (event.getCode() == KeyCode.H) {
 					vBox.setVisible(! vBox.isVisible());
 					return;
 				}
-				// add to/remove from temp collection (t)
+				// (T) add to/remove from temp collection
 				if (event.getCode() == KeyCode.T && !showTempCollection && currentPicture != null) {
 					if (tempCollection.contains(currentPicture)) {
 						tempCollection.remove(currentPicture);
@@ -181,6 +181,7 @@ public class MainApp extends Application {
 					}
 					return;
 				}
+				// (S) show temp collection / exit and clear temp collection
 				if (event.getCode() == KeyCode.S) {
 					if (showTempCollection) {
 						// exit and clear temp collection (s)
@@ -189,13 +190,14 @@ public class MainApp extends Application {
 						changeIndex(indexCurrentCollection);
 					} else if (tempCollection.size() >= 2) {
 						// show temp collection (s)
+						Logic.sortPictures(tempCollection);
 						showTempCollection = true;
 						changeIndex(0);
 					}
 					updateCollectionLabel();
 					return;
 				}
-				// select another collection (c)
+				// (C) select another collection
 				if (event.getCode() == KeyCode.C && !showTempCollection) {
 					PictureCollection newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, false);
 					if (newCol != null) {
