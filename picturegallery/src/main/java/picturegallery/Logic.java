@@ -598,7 +598,7 @@ public class Logic {
 								setText(null);
 								final Label label = new Label();
 								setGraphic(label);
-								String textToShow = item.getName();
+								String textToShow = item.getName() + " (" + item.getPictures().size() + ")";
 								if (item == currentCollection) {
 									textToShow = textToShow + " [currently shown]";
 								}
