@@ -369,7 +369,7 @@ public class MainApp extends Application {
 				}
 				// (Q) clear cache TODO: Hack to fix problems with full cache!
 				if (event.getCode() == KeyCode.Q) {
-					imageCache.clear();
+					clearCache();
 				}
     		}
     	});
@@ -505,7 +505,7 @@ public class MainApp extends Application {
 		tempCollection.clear();
 		showTempCollection = false;
 		// current collection
-		imageCache.clear();
+		clearCache();
 		currentPicture = null;
 		updateCollectionLabel();
         changeIndex(0);
@@ -519,6 +519,10 @@ public class MainApp extends Application {
 			}
 		};
 		new Thread(task).start();
+	}
+
+	private void clearCache() {
+		imageCache.clear();
 	}
 
 	private void deletePicture(Picture picture, boolean updateGui) {
