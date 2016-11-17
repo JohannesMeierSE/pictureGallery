@@ -36,6 +36,9 @@ import picturegallery.persistency.Settings;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
 public class MainApp extends Application {
+	private final static int SPACE = 50;
+	private final static int PRE_LOAD = 5;
+
 	private ImageView iv;
 	private VBox vBox;
 	private Label labelCollectionPath;
@@ -431,8 +434,6 @@ public class MainApp extends Application {
 		String text = Logic.printMetadata(currentPicture.getMetadata());
 		labelMeta.setText(text);
 
-		// check the cache
-		// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 		RealPicture key;
 		if (currentPicture instanceof RealPicture) {
 			key = (RealPicture) currentPicture;
@@ -472,12 +473,16 @@ public class MainApp extends Application {
 			showPicture(tempCollection.get(indexTempCollection));
 		} else {
 			// within the currently selected real collection
-			if (newIndex >= currentCollection.getPictures().size()) {
+			int size = currentCollection.getPictures().size();
+			if (newIndex >= size) {
 				throw new IllegalArgumentException();
 			}
 			indexCurrentCollection = newIndex;
-			labelIndex.setText((indexCurrentCollection + 1) + " / " + currentCollection.getPictures().size());
+			labelIndex.setText((indexCurrentCollection + 1) + " / " + size);
 			showPicture(currentCollection.getPictures().get(indexCurrentCollection));
+			// pre-load next pictures
+			requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection + PRE_LOAD + size) % size));
+			requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection - PRE_LOAD + size) % size));
 		}
 	}
 
@@ -498,6 +503,13 @@ public class MainApp extends Application {
 		clearCache();
 		currentPicture = null;
 		updateCollectionLabel();
+        // request pictures
+        int size = currentCollection.getPictures().size();
+		for (int i = 0; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
+        	requestWithoutCallback(currentCollection.getPictures().get(i));
+        	requestWithoutCallback(currentCollection.getPictures().get((size - i) % size));
+        }
+
         changeIndex(0);
 
         // load metadata
@@ -511,11 +523,23 @@ public class MainApp extends Application {
 		new Thread(task).start();
 	}
 
+	private void requestWithoutCallback(Picture picture) {
+		RealPicture key;
+		if (picture instanceof RealPicture) {
+			key = (RealPicture) picture;
+		} else {
+			key = ((LinkedPicture) picture).getRealPicture();
+		}
+		if (!imageCache.isLoadedOrLoading(key)) {
+			imageCache.request(key, null);
+		}
+	}
+
 	private void clearCache() {
 		if (imageCache != null) {
 			imageCache.stop();
 		}
-		imageCache = new ObjectCache<RealPicture, Image>(50) {
+		imageCache = new ObjectCache<RealPicture, Image>(SPACE) {
 			@Override
 			protected Image load(RealPicture key) {
 				// löst anscheinend selbstständig SymLinks auf !!

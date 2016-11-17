@@ -56,7 +56,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 
 	protected final Object sync = new Object();
 
-	protected final Map<K, Double> content; // TODO: Relevanz speichern, um das Entfernen besser steuern zu können!
+	protected final Map<K, Double> content; // Relevanz speichern, um das Entfernen besser steuern zu können!
 	protected final List<Tripel> loading; // order is not relevant
 	protected final List<Tripel> requested; // first element will be loaded next
 
@@ -88,6 +88,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 						throw new IllegalStateException();
 					}
 					synchronized (sync) {
+						// TODO: Grenze berücksichtigen!! und Elemente wieder rauslöschen!
 						content.put(next.key, new Double(loadedValue, next.callbacks.size()));
 						loading.remove(next);
 					}
@@ -121,6 +122,12 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	public boolean isRequested(K key) {
 		synchronized (sync) {
 			return contains(key, requested) != null;
+		}
+	}
+
+	public boolean isLoadedOrLoading(K key) {
+		synchronized (sync) {
+			return isLoaded(key) || isLoading(key);
 		}
 	}
 
