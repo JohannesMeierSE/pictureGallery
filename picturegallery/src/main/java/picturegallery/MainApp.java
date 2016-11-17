@@ -8,15 +8,15 @@ import gallery.RealPicture;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -30,9 +30,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-
-import org.apache.commons.collections4.map.LRUMap;
-
+import picturegallery.persistency.ObjectCache;
+import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
@@ -58,7 +57,7 @@ public class MainApp extends Application {
 	private PictureCollection linktoCollection;
 
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
-	private Map<String, Image> imageCache = Collections.synchronizedMap(new LRUMap<>(50, 50));
+	private ObjectCache<RealPicture, Image> imageCache;
 
 	public static void main(String[] args) throws Exception {
         launch(args);
@@ -434,38 +433,29 @@ public class MainApp extends Application {
 
 		// check the cache
 		// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
-		Image storedImage = imageCache.get(currentPicture.getName());
-		if (storedImage == null) {
-			// load image
-			// https://stackoverflow.com/questions/26554814/javafx-updating-gui
-			Task<Image> task = new Task<Image>() {
-				@Override
-				protected Image call() throws Exception {
-					// löst anscheinend selbstständig SymLinks auf !!
-					Image loaded = new Image(new File(currentPicture.getFullPath()).toURI().toURL().toString());
-					return loaded;
-				}
-			};
-			task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-				@Override
-				public void handle(WorkerStateEvent event) {
-					try {
-						Image availableImage = task.get();
-						if (availableImage == null) {
-							System.err.println("laoded image is null!");
-							return;
-						}
-						imageCache.put(currentPicture.getName(), availableImage);
-						iv.setImage(availableImage);
-					} catch (InterruptedException | ExecutionException e) {
-						e.printStackTrace();
-					}
-				}
-			});
-			new Thread(task).start();
+		RealPicture key;
+		if (currentPicture instanceof RealPicture) {
+			key = (RealPicture) currentPicture;
 		} else {
-			iv.setImage(storedImage);
+			key = ((LinkedPicture) currentPicture).getRealPicture();
 		}
+		imageCache.request(key, new CallBack<RealPicture, Image>() {
+			@Override
+			public void loaded(RealPicture key, Image value) {
+				// https://stackoverflow.com/questions/26554814/javafx-updating-gui
+				// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
+				if (Platform.isFxApplicationThread()) {
+					iv.setImage(value);
+				} else {
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							iv.setImage(value);
+						}
+					});
+				}
+			}
+		});
 	}
 
 	private void changeIndex(int newIndex) {
@@ -522,7 +512,22 @@ public class MainApp extends Application {
 	}
 
 	private void clearCache() {
-		imageCache.clear();
+		if (imageCache != null) {
+			imageCache.stop();
+		}
+		imageCache = new ObjectCache<RealPicture, Image>(50) {
+			@Override
+			protected Image load(RealPicture key) {
+				// löst anscheinend selbstständig SymLinks auf !!
+				Image loaded = null;
+				try {
+					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+				return loaded;
+			}
+		};
 	}
 
 	private void deletePicture(Picture picture, boolean updateGui) {
@@ -534,6 +539,7 @@ public class MainApp extends Application {
 				deletePicture(linked, false);
 				linked.setRealPicture(null);
 			}
+			imageCache.remove(realToDelete);
 		}
 
 		// update the GUI berücksichtigen
@@ -541,7 +547,6 @@ public class MainApp extends Application {
 		int previousIndexTemp = tempCollection.indexOf(picture);
 		
 		tempCollection.remove(picture);
-		imageCache.remove(picture.getName());
 		
 		// delete file in file system
 		try {
@@ -580,7 +585,9 @@ public class MainApp extends Application {
 			@Override
 			protected Void call() throws Exception {
 				// remove the picture from some other variable stores
-				imageCache.remove(picture.getName());
+				if (picture instanceof RealPicture) {
+					imageCache.remove((RealPicture) picture);
+				}
 				tempCollection.remove(picture);
 
 				if (picture instanceof RealPicture) {
