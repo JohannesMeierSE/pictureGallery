@@ -171,6 +171,7 @@ public class MainApp extends Application {
 				}
 				// (Pos/Home) go to the first picture
 				if (event.getCode() == KeyCode.HOME) {
+			        requestNearPictures(0);
 					changeIndex(0);
 				}
 				// (H) hide information
@@ -514,11 +515,7 @@ public class MainApp extends Application {
 		currentPicture = null;
 		updateCollectionLabel();
         // initially, request some pictures
-        int size = currentCollection.getPictures().size();
-		for (int i = 0; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
-        	requestWithoutCallback(currentCollection.getPictures().get(i));
-        	requestWithoutCallback(currentCollection.getPictures().get((size - i) % size));
-        }
+        requestNearPictures(0);
 
         changeIndex(0);
 
@@ -531,6 +528,14 @@ public class MainApp extends Application {
 			}
 		};
 		new Thread(task).start();
+	}
+
+	private void requestNearPictures(int position) {
+		int size = currentCollection.getPictures().size();
+		for (int i = 0; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
+        	requestWithoutCallback(currentCollection.getPictures().get((position + i) % size));
+        	requestWithoutCallback(currentCollection.getPictures().get((position + size - i) % size));
+        }
 	}
 
 	private void requestWithoutCallback(Picture picture) {
