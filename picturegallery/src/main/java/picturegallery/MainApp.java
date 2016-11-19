@@ -117,8 +117,7 @@ public class MainApp extends Application {
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
     			+ "(N) create new collection\n"
     			+ "(R) rename existing collection\n"
-    			+ "(F11) start/stop full screen mode\n"
-    			+ "(Q) clear cache\n\n");
+    			+ "(F11) start/stop full screen mode\n\n");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -369,10 +368,6 @@ public class MainApp extends Application {
 				if (event.getCode() == KeyCode.F11) {
 					stage.setFullScreen(!stage.isFullScreen());
 				}
-				// (Q) clear cache TODO: Hack to fix problems with full cache!
-				if (event.getCode() == KeyCode.Q) {
-					clearCache();
-				}
     		}
     	});
 
@@ -513,7 +508,7 @@ public class MainApp extends Application {
 		clearCache();
 		currentPicture = null;
 		updateCollectionLabel();
-        // request pictures
+        // initially, request some pictures
         int size = currentCollection.getPictures().size();
 		for (int i = 0; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
         	requestWithoutCallback(currentCollection.getPictures().get(i));
