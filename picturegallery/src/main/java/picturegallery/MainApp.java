@@ -108,6 +108,7 @@ public class MainApp extends Application {
     	labelKeys.setText("(H) hide/show these information\n"
     			+ "(Right) next picture\n"
     			+ "(Left) previous picture\n"
+    			+ "(Pos/Home) go to the first picture\n"
     			+ "(T) add to/remove from temp collection\n"
     			+ "(S) show temp collection / exit and clear temp collection\n"
     			+ "(C) select another collection\n"
@@ -167,6 +168,10 @@ public class MainApp extends Application {
 					}
 					changeIndex(newIndex);
 					return;
+				}
+				// (Pos/Home) go to the first picture
+				if (event.getCode() == KeyCode.HOME) {
+					changeIndex(0);
 				}
 				// (H) hide information
 				if (event.getCode() == KeyCode.H) {
