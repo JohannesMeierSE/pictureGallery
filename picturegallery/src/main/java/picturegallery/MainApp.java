@@ -36,7 +36,7 @@ import picturegallery.persistency.Settings;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
 public class MainApp extends Application {
-	private final static int SPACE = 50;
+	private final static int SPACE = 25;
 	private final static int PRE_LOAD = 5;
 
 	private ImageView iv;

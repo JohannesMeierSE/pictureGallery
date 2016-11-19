@@ -2,8 +2,10 @@ package picturegallery.persistency;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Loading priority: 1. number of requests descending, 2. time of last request (last time is more important)
@@ -56,17 +58,21 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 
 	protected final Object sync = new Object();
 
-	protected final Map<K, Double> content; // Relevanz speichern, um das Entfernen besser steuern zu können!
+	protected final Map<K, Double> content; // Relevanz speichern, um das Entfernen besser steuern zu können! => wird erstmal ignoriert!
+	protected final Queue<K> contentSorted; // keys of the content-map in sorted order: (ignored: 1. count descending) 2. time (from oldest to newest)
 	protected final List<Tripel> loading; // order is not relevant
 	protected final List<Tripel> requested; // first element will be loaded next
+	protected final int maxSize;
 
 	private Thread thread;
 
 	public ObjectCache(int size) {
 		super();
-		content = new HashMap<>(size * 2);
+		maxSize = size;
+		content = new HashMap<>(maxSize * 2);
+		contentSorted = new LinkedList<>();
 		loading = new ArrayList<>(2);
-		requested = new ArrayList<>(size);
+		requested = new ArrayList<>(maxSize);
 
 		thread = new Thread() {
 			@Override
@@ -88,8 +94,15 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 						throw new IllegalStateException();
 					}
 					synchronized (sync) {
-						// TODO: Grenze berücksichtigen!! und Elemente wieder rauslöschen!
+						// Grenze berücksichtigen!! und Elemente wieder rauslöschen!
+						while (content.size() >= maxSize) {
+							K keyToRemove = contentSorted.remove();
+							content.remove(keyToRemove);
+						}
+						// save new key
 						content.put(next.key, new Double(loadedValue, next.callbacks.size()));
+						contentSorted.add(next.key);
+						// key is not loading anymore
 						loading.remove(next);
 					}
 					for (CallBack<K, V> call : next.callbacks) {
@@ -152,6 +165,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	public void remove(K key) {
 		synchronized (sync) {
 			Double found = content.remove(key);
+			contentSorted.remove(key);
 			if (found == null) {
 				int index = indexOf(key, requested);
 				if (index >= 0) {
@@ -201,6 +215,10 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 					sync.notifyAll();
 				}
 				return;
+			} else {
+				// move the requested and available element to "the end"
+				contentSorted.remove(key);
+				contentSorted.add(key);
 			}
 		}
 		if (value != null) {
