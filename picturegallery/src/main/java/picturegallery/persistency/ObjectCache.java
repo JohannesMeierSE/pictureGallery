@@ -91,22 +91,23 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 					}
 					V loadedValue = load(next.key);
 					if (loadedValue == null) {
-						throw new IllegalStateException();
-					}
-					synchronized (sync) {
-						// Grenze berücksichtigen!! und Elemente wieder rauslöschen!
-						while (content.size() >= maxSize) {
-							K keyToRemove = contentSorted.remove();
-							content.remove(keyToRemove);
+						// try it again!
+					} else {
+						synchronized (sync) {
+							// Grenze berücksichtigen!! und Elemente wieder rauslöschen!
+							while (content.size() >= maxSize) {
+								K keyToRemove = contentSorted.remove();
+								content.remove(keyToRemove);
+							}
+							// save new key
+							content.put(next.key, new Double(loadedValue, next.callbacks.size()));
+							contentSorted.add(next.key);
+							// key is not loading anymore
+							loading.remove(next);
 						}
-						// save new key
-						content.put(next.key, new Double(loadedValue, next.callbacks.size()));
-						contentSorted.add(next.key);
-						// key is not loading anymore
-						loading.remove(next);
-					}
-					for (CallBack<K, V> call : next.callbacks) {
-						call.loaded(next.key, loadedValue);
+						for (CallBack<K, V> call : next.callbacks) {
+							call.loaded(next.key, loadedValue);
+						}
 					}
 				}
 			}
@@ -116,6 +117,14 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 
 	public void stop() {
 		thread.interrupt();
+		synchronized (sync) {
+			content.clear();
+			contentSorted.clear();
+			loading.clear();
+			requested.clear();
+		}
+		// https://stackoverflow.com/questions/5690309/garbage-collector-in-java-set-an-object-null
+		System.gc();
 	}
 
 	protected abstract V load(K key);

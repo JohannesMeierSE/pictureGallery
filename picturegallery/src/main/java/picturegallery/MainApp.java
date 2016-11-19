@@ -85,7 +85,8 @@ public class MainApp extends Application {
     	iv = new ImageView();
     	iv.setPreserveRatio(true);
     	iv.setSmooth(true);
-    	iv.setCache(true);
+    	// https://stackoverflow.com/questions/15003897/is-there-any-way-to-force-javafx-to-release-video-memory
+    	iv.setCache(false);
     	// https://stackoverflow.com/questions/12630296/resizing-images-to-fit-the-parent-node
     	iv.fitWidthProperty().bind(root.widthProperty());
     	iv.fitHeightProperty().bind(root.heightProperty());
@@ -560,8 +561,12 @@ public class MainApp extends Application {
 				// löst anscheinend selbstständig SymLinks auf !!
 				Image loaded = null;
 				try {
+					// TODO: Optimierung: Bilder nur so groß wie benötigt laden!! https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
 					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
 				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (OutOfMemoryError e) {
+					// TODO
 					e.printStackTrace();
 				}
 				return loaded;
