@@ -434,13 +434,9 @@ public class MainApp extends Application {
 		String text = Logic.printMetadata(currentPicture.getMetadata());
 		labelMeta.setText(text);
 
-		RealPicture key;
-		if (currentPicture instanceof RealPicture) {
-			key = (RealPicture) currentPicture;
-		} else {
-			key = ((LinkedPicture) currentPicture).getRealPicture();
-		}
-		imageCache.request(key, new CallBack<RealPicture, Image>() {
+		RealPicture currentRealPicture;
+		currentRealPicture = getCurrentRealPicture();
+		imageCache.request(currentRealPicture, new CallBack<RealPicture, Image>() {
 			@Override
 			public void loaded(RealPicture key, Image value) {
 				// https://stackoverflow.com/questions/26554814/javafx-updating-gui
@@ -451,12 +447,26 @@ public class MainApp extends Application {
 					Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
-							iv.setImage(value);
+							if (key.equals(getCurrentRealPicture())) {
+								iv.setImage(value);
+							} else {
+								// ignore the result, because another picture should be shown
+							}
 						}
 					});
 				}
 			}
 		});
+	}
+
+	private RealPicture getCurrentRealPicture() {
+		RealPicture key;
+		if (currentPicture instanceof RealPicture) {
+			key = (RealPicture) currentPicture;
+		} else {
+			key = ((LinkedPicture) currentPicture).getRealPicture();
+		}
+		return key;
 	}
 
 	private void changeIndex(int newIndex) {
