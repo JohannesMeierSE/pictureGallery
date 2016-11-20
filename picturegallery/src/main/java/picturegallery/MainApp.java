@@ -5,6 +5,7 @@ import gallery.LinkedPicture;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
+import gallery.RealPictureCollection;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class MainApp extends Application {
 	private Label labelKeys;
 	private Label labelMeta;
 
-	private PictureCollection baseCollection;
+	private RealPictureCollection baseCollection;
 	private PictureCollection currentCollection;
 	private Picture currentPicture;
 	private int indexCurrentCollection;
@@ -56,8 +57,8 @@ public class MainApp extends Application {
 	private int indexTempCollection;
 	private List<Picture> tempCollection = new ArrayList<>();
 
-	private PictureCollection movetoCollection;
-	private PictureCollection linktoCollection;
+	private RealPictureCollection movetoCollection;
+	private RealPictureCollection linktoCollection;
 
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 	private ObjectCache<RealPicture, Image> imageCache;
@@ -113,7 +114,7 @@ public class MainApp extends Application {
     			+ "(T) add to/remove from temp collection\n"
     			+ "(S) show temp collection / exit and clear temp collection\n"
     			+ "(C) select another collection\n"
-    			+ "(X) move the current picture into another collection\n"
+    			+ "(X) move the current picture into another collection (and closes the temp collection)\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
@@ -207,20 +208,21 @@ public class MainApp extends Application {
 				}
 				// (C) select another collection
 				if (event.getCode() == KeyCode.C && !showTempCollection) {
-					PictureCollection newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, false);
+					PictureCollection newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, false, true);
 					if (newCol != null) {
 						changeCollection(newCol);
 					}
 					return;
 				}
-				// move the current picture into another collection (X); (X + Shift) => select another collection!
+				// (X) move the current picture into another collection (and closes the temp collection)
+				// (X + Shift) => select another collection!
 				if (event.getCode() == KeyCode.X) {
 					if (event.isShiftDown()) {
 						movetoCollection = null;
 					}
 					if (movetoCollection == null) {
-						movetoCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
-								true, true, Collections.singletonList(currentCollection));
+						movetoCollection = (RealPictureCollection) Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
+								true, true, false, Collections.singletonList(currentCollection));
 						if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
 							// Verschieben innerhalb der eigenen Collection macht keinen Sinn!
 							movetoCollection = null;
@@ -246,8 +248,8 @@ public class MainApp extends Application {
 						linktoCollection = null;
 					}
 					if (linktoCollection == null) {
-						linktoCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
-								true, true, Collections.singletonList(currentCollection));
+						linktoCollection = (RealPictureCollection) Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
+								true, true, false, Collections.singletonList(currentCollection));
 						if (linktoCollection == currentCollection) {
 							// sollte eigentlich gar nciht möglich sein (macht inhaltlich auch keinen Sinn)
 							linktoCollection = null;
@@ -290,9 +292,10 @@ public class MainApp extends Application {
 					// kein Update der GUI nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
 					return;
 				}
-				// create new collection (N)
+				// create new collection (N) => only RealCollections!
 				if (event.getCode() == KeyCode.N) {
-					PictureCollection parentOfNewCollection = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, true);
+					RealPictureCollection parentOfNewCollection = (RealPictureCollection) Logic.selectCollection(
+							baseCollection, currentCollection, movetoCollection, true, true, false);
 					if (parentOfNewCollection != null) {
 						// get the name of the new collection
 					    String newName = Logic.askForString("Name of the new collection",
@@ -307,7 +310,7 @@ public class MainApp extends Application {
 					    	}
 					    }
 					    // update EMF model
-					    PictureCollection newCollection = GalleryFactory.eINSTANCE.createPictureCollection();
+					    RealPictureCollection newCollection = GalleryFactory.eINSTANCE.createRealPictureCollection();
 					    newCollection.setName(newName);
 					    newCollection.setSuperCollection(parentOfNewCollection);
 					    parentOfNewCollection.getSubCollections().add(newCollection);
@@ -321,10 +324,10 @@ public class MainApp extends Application {
 					}
 					return;
 				}
-				// (R) rename existing collection (but not the base collection)
+				// (R) rename existing collection (but not the base collection) => only RealCollections
 				if (event.getCode() == KeyCode.R) {
-					PictureCollection collectionToRename = Logic.selectCollection(baseCollection,
-							currentCollection, movetoCollection, true, true, Collections.singletonList(baseCollection));
+					RealPictureCollection collectionToRename = (RealPictureCollection) Logic.selectCollection(baseCollection,
+							currentCollection, movetoCollection, true, true, false, Collections.singletonList(baseCollection));
 					if (collectionToRename == null) {
 						return;
 					}
@@ -395,7 +398,7 @@ public class MainApp extends Application {
         	public void handle(WorkerStateEvent event) {
         		PictureCollection newCol = Logic.findFirstNonEmptyCollection(baseCollection);
         		if (newCol != null) {
-        			newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, false, false);
+        			newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, false, false, true);
         		}
         		if (newCol == null) {
         			System.err.println("the library does not contain any picture!!");
@@ -605,7 +608,7 @@ public class MainApp extends Application {
 		updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, updateGui);
 	}
 
-	private void movePicture(Picture picture, PictureCollection newCollection) {
+	private void movePicture(Picture picture, RealPictureCollection newCollection) {
 		if (picture == null || newCollection == null) {
 			throw new IllegalArgumentException();
 		}

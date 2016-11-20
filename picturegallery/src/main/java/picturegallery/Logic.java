@@ -2,10 +2,12 @@ package picturegallery;
 
 import gallery.GalleryFactory;
 import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.PictureLibrary;
 import gallery.RealPicture;
+import gallery.RealPictureCollection;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,17 +59,18 @@ import org.xml.sax.SAXException;
 
 public class Logic {
 	public static void loadDirectory(PictureLibrary library, boolean recursive) {
-		PictureCollection baseCollection = library.getBaseCollection();
-    	Map<String, RealPicture> map = new HashMap<>(); // full path (String) -> RealPicture
-    	List<Pair<Path, PictureCollection>> symlinks = new ArrayList<>();
+		RealPictureCollection baseCollection = library.getBaseCollection();
+    	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
+    	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
+    	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>();
 
-    	loadDirectoryLogic(baseCollection, recursive, map, symlinks);
+    	loadDirectoryLogic(baseCollection, recursive, mapPictures, mapCollections, symlinks);
 
     	List<PictureCollection> collectionsToSort = new ArrayList<>(); // collects the collections which have to be sorted again, because linked picture were added!
     	String baseFullPath = baseCollection.getFullPath();
     	// handle symlinks
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
-		for (Pair<Path, PictureCollection> symlink : symlinks) {
+		for (Pair<Path, RealPictureCollection> symlink : symlinks) {
 			Path real = null;
 			try {
 				real = symlink.getKey().toRealPath();
@@ -82,10 +85,25 @@ public class Logic {
 			}
 			if (Files.isDirectory(real)) {
 				// symlink onto a directory
-				System.err.println("symlink to directory: ignored!");
-				// werden bislang nicht erkannt und sollen in jedem Fall ignoriert werden!
+				RealPictureCollection ref = mapCollections.get(r);
+				if (ref == null) {
+					String message = "missing link on directory: " + r + " of " + symlink.toString();
+					System.err.println(message);
+					throw new IllegalArgumentException(message);
+				} else {
+					LinkedPictureCollection linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
+					ref.getLinkedBy().add(linkedCollection);
+					linkedCollection.setRealCollection(ref);
+					symlink.getValue().getSubCollections().add(linkedCollection);
+					linkedCollection.setSuperCollection(symlink.getValue());
+					String name = symlink.getKey().toString();
+					linkedCollection.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.length()));
+					System.err.println("created linked collection: " + linkedCollection.getFullPath());
+					// TODO: sort sub-collections again!
+				}
 			} else {
-				RealPicture ref = map.get(r);
+				// symlink onto a picture
+				RealPicture ref = mapPictures.get(r);
 				if (ref == null) {
 					String message = "missing link: " + r + " of " + symlink.toString();
 					System.err.println(message);
@@ -109,8 +127,9 @@ public class Logic {
 		}
 	}
 
-	private static void loadDirectoryLogic(PictureCollection currentCollection, boolean recursive,
-			Map<String, RealPicture> map, List<Pair<Path, PictureCollection>> symlinks) {
+	private static void loadDirectoryLogic(RealPictureCollection currentCollection, boolean recursive,
+			Map<String, RealPicture> mapPictures, Map<String, RealPictureCollection> mapCollections,
+			List<Pair<Path, RealPictureCollection>> symlinks) {
 		String baseDir = currentCollection.getFullPath();
         try {
 	        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
@@ -124,10 +143,11 @@ public class Logic {
 			    		return FileVisitResult.CONTINUE;
 			    	}
 			    	if (recursive) {
-			    		PictureCollection sub = GalleryFactory.eINSTANCE.createPictureCollection();
+			    		RealPictureCollection sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
 			    		sub.setSuperCollection(currentCollection);
 			    		currentCollection.getSubCollections().add(sub);
 			    		sub.setName(name.substring(name.lastIndexOf(File.separator) + 1));
+			    		mapCollections.put(sub.getFullPath(), sub);
 			    	}
 					return FileVisitResult.SKIP_SUBTREE;
 				}
@@ -136,20 +156,20 @@ public class Logic {
 			    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					String name = file.toAbsolutePath().toString();
 					String nameLower = name.toLowerCase();
-			        if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg") || nameLower.endsWith(".gif")) {
+		        	if (FileUtils.isSymlink(new File(name))) {
+		        		symlinks.add(new Pair<Path, RealPictureCollection>(file, currentCollection));
+		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg") || nameLower.endsWith(".gif")) {
 			        	/*
 			        	 * scheinbar nicht funktionierende Gifs:
 			        	 * - https://www.tutorials.de/threads/animierte-gifs.180222/ => GIFs fehlerhaft, ohne entsprechend 100ms Delay zwischen den Bildern(?)
 			        	 * - oder die Bilddateien sind einfach beschädigt ... !
 			        	 */
-			        	if (FileUtils.isSymlink(new File(name))) {
-			        		symlinks.add(new Pair<Path, PictureCollection>(file, currentCollection));
-			        	} else {
-			        		RealPicture pic = GalleryFactory.eINSTANCE.createRealPicture();
-			        		initPicture(currentCollection, name, pic);
+		        		RealPicture pic = GalleryFactory.eINSTANCE.createRealPicture();
+		        		initPicture(currentCollection, name, pic);
 
-			        		map.put(pic.getFullPath(), pic);
-			        	}
+		        		mapPictures.put(pic.getFullPath(), pic);
+			        } else {
+			        	System.err.println("ignored: " + file.toString());
 			        }
 			        return FileVisitResult.CONTINUE;
 			    }
@@ -161,19 +181,19 @@ public class Logic {
         sortSubCollections(currentCollection, false);
         if (recursive) {
         	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
-        		loadDirectoryLogic(newSubCollection, recursive, map, symlinks);
+        		loadDirectoryLogic((RealPictureCollection) newSubCollection, recursive, mapPictures, mapCollections, symlinks);
         	}
         }
 	}
 
-	private static void initPicture(PictureCollection currentCollection, String name, Picture pic) {
+	private static void initPicture(RealPictureCollection currentCollection, String name, Picture pic) {
 		pic.setCollection(currentCollection);
 		currentCollection.getPictures().add(pic);
 		pic.setFileExtension(name.substring(name.lastIndexOf(".") + 1));
 		pic.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")));
 	}
 
-	public static PictureCollection createEmptyLibrary(final String baseDir) {
+	public static RealPictureCollection createEmptyLibrary(final String baseDir) {
 		String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
         String dirName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1);
         System.out.println(baseDir + " == " + parentDir + " + " + dirName);
@@ -182,7 +202,7 @@ public class Logic {
         lib.setBasePath(parentDir);
         lib.setName("TestLibrary");
 
-        PictureCollection base = GalleryFactory.eINSTANCE.createPictureCollection();
+        RealPictureCollection base = GalleryFactory.eINSTANCE.createRealPictureCollection();
         base.setLibrary(lib);
         lib.setBaseCollection(base);
         base.setName(dirName);
@@ -553,13 +573,16 @@ public class Logic {
 
 	public static PictureCollection selectCollection(PictureCollection base,
 			PictureCollection currentCollection, PictureCollection movetoCollection,
-			boolean allowNull, boolean allowEmptyCollectionForSelection) {
-		return Logic.selectCollection(base, currentCollection, movetoCollection, allowNull, allowEmptyCollectionForSelection, Collections.emptyList());
+			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections) {
+		return Logic.selectCollection(base, currentCollection, movetoCollection,
+				allowNull, allowEmptyCollectionForSelection, allowLinkedCollections,
+				Collections.emptyList());
 	}
 
 	public static PictureCollection selectCollection(PictureCollection base,
 			PictureCollection currentCollection, PictureCollection movetoCollection,
-			boolean allowNull, boolean allowEmptyCollectionForSelection, List<PictureCollection> ignoredCollections) {
+			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections,
+			List<PictureCollection> ignoredCollections) {
 		PictureCollection result = null;
 		boolean found = false;
 	
@@ -578,11 +601,11 @@ public class Logic {
 			}
 			Button selectButton = (Button) dialog.getDialogPane().lookupButton(select);
 			selectButton.setDisable(true);
-			
+
 			// create the tree view
 			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
 			rootItem.setExpanded(true);
-			Logic.handleTreeItem(rootItem);
+			Logic.handleTreeItem(rootItem, allowLinkedCollections);
 			TreeView<PictureCollection> tree = new TreeView<>(rootItem);
 			tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
 				@Override
@@ -604,6 +627,10 @@ public class Logic {
 								}
 								if (item == movetoCollection) {
 									textToShow = textToShow + " [currently moving into]";
+								}
+								// show the source of this link
+								if (item instanceof LinkedPictureCollection) {
+									textToShow = textToShow + " [=> " + ((LinkedPictureCollection) item).getRealCollection().getRelativePath() + "]";
 								}
 								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
 								boolean ignore = disabled || ignoredCollections.contains(item);
@@ -680,12 +707,15 @@ public class Logic {
 		return result;
 	}
 
-	private static void handleTreeItem(TreeItem<PictureCollection> item) {
+	private static void handleTreeItem(TreeItem<PictureCollection> item, boolean showLinkedCollections) {
 		for (PictureCollection subCol : item.getValue().getSubCollections()) {
+			if (subCol instanceof LinkedPictureCollection && !showLinkedCollections) {
+				continue;
+			}
 			TreeItem<PictureCollection> newItem = new TreeItem<PictureCollection>(subCol);
-			newItem.setExpanded(true);
+			newItem.setExpanded(subCol instanceof RealPictureCollection); // expand only not-linked collections == expand only real collections
 			item.getChildren().add(newItem);
-			handleTreeItem(newItem);
+			handleTreeItem(newItem, showLinkedCollections);
 		}
 	}
 
