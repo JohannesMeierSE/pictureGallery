@@ -114,6 +114,22 @@ public class GallerySwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case GalleryPackage.REAL_PICTURE_COLLECTION: {
+				RealPictureCollection realPictureCollection = (RealPictureCollection)theEObject;
+				T result = caseRealPictureCollection(realPictureCollection);
+				if (result == null) result = casePictureCollection(realPictureCollection);
+				if (result == null) result = casePathElement(realPictureCollection);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case GalleryPackage.LINKED_PICTURE_COLLECTION: {
+				LinkedPictureCollection linkedPictureCollection = (LinkedPictureCollection)theEObject;
+				T result = caseLinkedPictureCollection(linkedPictureCollection);
+				if (result == null) result = casePictureCollection(linkedPictureCollection);
+				if (result == null) result = casePathElement(linkedPictureCollection);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			default: return defaultCase(theEObject);
 		}
 	}
@@ -220,6 +236,36 @@ public class GallerySwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseMetadata(Metadata object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Real Picture Collection</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Real Picture Collection</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseRealPictureCollection(RealPictureCollection object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Linked Picture Collection</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Linked Picture Collection</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseLinkedPictureCollection(LinkedPictureCollection object) {
 		return null;
 	}
 

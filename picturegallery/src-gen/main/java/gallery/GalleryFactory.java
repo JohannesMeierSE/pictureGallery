@@ -22,15 +22,6 @@ public interface GalleryFactory extends EFactory {
 	GalleryFactory eINSTANCE = gallery.impl.GalleryFactoryImpl.init();
 
 	/**
-	 * Returns a new object of class '<em>Picture Collection</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Picture Collection</em>'.
-	 * @generated
-	 */
-	PictureCollection createPictureCollection();
-
-	/**
 	 * Returns a new object of class '<em>Real Picture</em>'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -65,6 +56,24 @@ public interface GalleryFactory extends EFactory {
 	 * @generated
 	 */
 	Metadata createMetadata();
+
+	/**
+	 * Returns a new object of class '<em>Real Picture Collection</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Real Picture Collection</em>'.
+	 * @generated
+	 */
+	RealPictureCollection createRealPictureCollection();
+
+	/**
+	 * Returns a new object of class '<em>Linked Picture Collection</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Linked Picture Collection</em>'.
+	 * @generated
+	 */
+	LinkedPictureCollection createLinkedPictureCollection();
 
 	/**
 	 * Returns the package supported by this factory.

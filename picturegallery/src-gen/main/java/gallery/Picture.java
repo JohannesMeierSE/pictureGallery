@@ -11,8 +11,8 @@ package gallery;
  * <p>
  * The following features are supported:
  * <ul>
- *   <li>{@link gallery.Picture#getCollection <em>Collection</em>}</li>
  *   <li>{@link gallery.Picture#getFileExtension <em>File Extension</em>}</li>
+ *   <li>{@link gallery.Picture#getCollection <em>Collection</em>}</li>
  * </ul>
  * </p>
  *
@@ -23,7 +23,7 @@ package gallery;
 public interface Picture extends PathElement {
 	/**
 	 * Returns the value of the '<em><b>Collection</b></em>' container reference.
-	 * It is bidirectional and its opposite is '{@link gallery.PictureCollection#getPictures <em>Pictures</em>}'.
+	 * It is bidirectional and its opposite is '{@link gallery.RealPictureCollection#getPictures <em>Pictures</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Collection</em>' container reference isn't clear,
@@ -31,13 +31,13 @@ public interface Picture extends PathElement {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Collection</em>' container reference.
-	 * @see #setCollection(PictureCollection)
+	 * @see #setCollection(RealPictureCollection)
 	 * @see gallery.GalleryPackage#getPicture_Collection()
-	 * @see gallery.PictureCollection#getPictures
+	 * @see gallery.RealPictureCollection#getPictures
 	 * @model opposite="pictures" required="true" transient="false"
 	 * @generated
 	 */
-	PictureCollection getCollection();
+	RealPictureCollection getCollection();
 
 	/**
 	 * Sets the value of the '{@link gallery.Picture#getCollection <em>Collection</em>}' container reference.
@@ -47,7 +47,7 @@ public interface Picture extends PathElement {
 	 * @see #getCollection()
 	 * @generated
 	 */
-	void setCollection(PictureCollection value);
+	void setCollection(RealPictureCollection value);
 
 	/**
 	 * Returns the value of the '<em><b>File Extension</b></em>' attribute.

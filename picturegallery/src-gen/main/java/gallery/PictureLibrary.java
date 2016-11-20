@@ -13,8 +13,8 @@ import org.eclipse.emf.ecore.EObject;
  * The following features are supported:
  * <ul>
  *   <li>{@link gallery.PictureLibrary#getBasePath <em>Base Path</em>}</li>
- *   <li>{@link gallery.PictureLibrary#getBaseCollection <em>Base Collection</em>}</li>
  *   <li>{@link gallery.PictureLibrary#getName <em>Name</em>}</li>
+ *   <li>{@link gallery.PictureLibrary#getBaseCollection <em>Base Collection</em>}</li>
  * </ul>
  * </p>
  *
@@ -51,7 +51,7 @@ public interface PictureLibrary extends EObject {
 
 	/**
 	 * Returns the value of the '<em><b>Base Collection</b></em>' containment reference.
-	 * It is bidirectional and its opposite is '{@link gallery.PictureCollection#getLibrary <em>Library</em>}'.
+	 * It is bidirectional and its opposite is '{@link gallery.RealPictureCollection#getLibrary <em>Library</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Base Collection</em>' containment reference isn't clear,
@@ -59,13 +59,13 @@ public interface PictureLibrary extends EObject {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Base Collection</em>' containment reference.
-	 * @see #setBaseCollection(PictureCollection)
+	 * @see #setBaseCollection(RealPictureCollection)
 	 * @see gallery.GalleryPackage#getPictureLibrary_BaseCollection()
-	 * @see gallery.PictureCollection#getLibrary
+	 * @see gallery.RealPictureCollection#getLibrary
 	 * @model opposite="library" containment="true" required="true"
 	 * @generated
 	 */
-	PictureCollection getBaseCollection();
+	RealPictureCollection getBaseCollection();
 
 	/**
 	 * Sets the value of the '{@link gallery.PictureLibrary#getBaseCollection <em>Base Collection</em>}' containment reference.
@@ -75,7 +75,7 @@ public interface PictureLibrary extends EObject {
 	 * @see #getBaseCollection()
 	 * @generated
 	 */
-	void setBaseCollection(PictureCollection value);
+	void setBaseCollection(RealPictureCollection value);
 
 	/**
 	 * Returns the value of the '<em><b>Name</b></em>' attribute.

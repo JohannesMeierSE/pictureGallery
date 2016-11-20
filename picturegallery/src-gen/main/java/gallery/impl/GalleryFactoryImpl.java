@@ -56,24 +56,15 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	@Override
 	public EObject create(EClass eClass) {
 		switch (eClass.getClassifierID()) {
-			case GalleryPackage.PICTURE_COLLECTION: return createPictureCollection();
 			case GalleryPackage.REAL_PICTURE: return createRealPicture();
 			case GalleryPackage.LINKED_PICTURE: return createLinkedPicture();
 			case GalleryPackage.PICTURE_LIBRARY: return createPictureLibrary();
 			case GalleryPackage.METADATA: return createMetadata();
+			case GalleryPackage.REAL_PICTURE_COLLECTION: return createRealPictureCollection();
+			case GalleryPackage.LINKED_PICTURE_COLLECTION: return createLinkedPictureCollection();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public PictureCollection createPictureCollection() {
-		PictureCollectionImpl pictureCollection = new PictureCollectionImpl();
-		return pictureCollection;
 	}
 
 	/**
@@ -114,6 +105,26 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	public Metadata createMetadata() {
 		MetadataImpl metadata = new MetadataImpl();
 		return metadata;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public RealPictureCollection createRealPictureCollection() {
+		RealPictureCollectionImpl realPictureCollection = new RealPictureCollectionImpl();
+		return realPictureCollection;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public LinkedPictureCollection createLinkedPictureCollection() {
+		LinkedPictureCollectionImpl linkedPictureCollection = new LinkedPictureCollectionImpl();
+		return linkedPictureCollection;
 	}
 
 	/**

@@ -5,11 +5,9 @@ package gallery.impl;
 import gallery.GalleryPackage;
 import gallery.Metadata;
 import gallery.Picture;
-import gallery.PictureCollection;
-
+import gallery.RealPictureCollection;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.util.EList;
@@ -25,8 +23,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link gallery.impl.PictureImpl#getCollection <em>Collection</em>}</li>
  *   <li>{@link gallery.impl.PictureImpl#getFileExtension <em>File Extension</em>}</li>
+ *   <li>{@link gallery.impl.PictureImpl#getCollection <em>Collection</em>}</li>
  * </ul>
  * </p>
  *
@@ -77,9 +75,9 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public PictureCollection getCollection() {
+	public RealPictureCollection getCollection() {
 		if (eContainerFeatureID() != GalleryPackage.PICTURE__COLLECTION) return null;
-		return (PictureCollection)eInternalContainer();
+		return (RealPictureCollection)eInternalContainer();
 	}
 
 	/**
@@ -87,7 +85,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public NotificationChain basicSetCollection(PictureCollection newCollection, NotificationChain msgs) {
+	public NotificationChain basicSetCollection(RealPictureCollection newCollection, NotificationChain msgs) {
 		msgs = eBasicSetContainer((InternalEObject)newCollection, GalleryPackage.PICTURE__COLLECTION, msgs);
 		return msgs;
 	}
@@ -97,7 +95,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setCollection(PictureCollection newCollection) {
+	public void setCollection(RealPictureCollection newCollection) {
 		if (newCollection != eInternalContainer() || (eContainerFeatureID() != GalleryPackage.PICTURE__COLLECTION && newCollection != null)) {
 			if (EcoreUtil.isAncestor(this, newCollection))
 				throw new IllegalArgumentException("Recursive containment not allowed for " + toString());
@@ -105,7 +103,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 			if (eInternalContainer() != null)
 				msgs = eBasicRemoveFromContainer(msgs);
 			if (newCollection != null)
-				msgs = ((InternalEObject)newCollection).eInverseAdd(this, GalleryPackage.PICTURE_COLLECTION__PICTURES, PictureCollection.class, msgs);
+				msgs = ((InternalEObject)newCollection).eInverseAdd(this, GalleryPackage.REAL_PICTURE_COLLECTION__PICTURES, RealPictureCollection.class, msgs);
 			msgs = basicSetCollection(newCollection, msgs);
 			if (msgs != null) msgs.dispatch();
 		}
@@ -156,7 +154,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 			case GalleryPackage.PICTURE__COLLECTION:
 				if (eInternalContainer() != null)
 					msgs = eBasicRemoveFromContainer(msgs);
-				return basicSetCollection((PictureCollection)otherEnd, msgs);
+				return basicSetCollection((RealPictureCollection)otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -184,7 +182,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	public NotificationChain eBasicRemoveFromContainerFeature(NotificationChain msgs) {
 		switch (eContainerFeatureID()) {
 			case GalleryPackage.PICTURE__COLLECTION:
-				return eInternalContainer().eInverseRemove(this, GalleryPackage.PICTURE_COLLECTION__PICTURES, PictureCollection.class, msgs);
+				return eInternalContainer().eInverseRemove(this, GalleryPackage.REAL_PICTURE_COLLECTION__PICTURES, RealPictureCollection.class, msgs);
 		}
 		return super.eBasicRemoveFromContainerFeature(msgs);
 	}
@@ -197,10 +195,10 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
-			case GalleryPackage.PICTURE__COLLECTION:
-				return getCollection();
 			case GalleryPackage.PICTURE__FILE_EXTENSION:
 				return getFileExtension();
+			case GalleryPackage.PICTURE__COLLECTION:
+				return getCollection();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -213,11 +211,11 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	@Override
 	public void eSet(int featureID, Object newValue) {
 		switch (featureID) {
-			case GalleryPackage.PICTURE__COLLECTION:
-				setCollection((PictureCollection)newValue);
-				return;
 			case GalleryPackage.PICTURE__FILE_EXTENSION:
 				setFileExtension((String)newValue);
+				return;
+			case GalleryPackage.PICTURE__COLLECTION:
+				setCollection((RealPictureCollection)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -231,11 +229,11 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	@Override
 	public void eUnset(int featureID) {
 		switch (featureID) {
-			case GalleryPackage.PICTURE__COLLECTION:
-				setCollection((PictureCollection)null);
-				return;
 			case GalleryPackage.PICTURE__FILE_EXTENSION:
 				setFileExtension(FILE_EXTENSION_EDEFAULT);
+				return;
+			case GalleryPackage.PICTURE__COLLECTION:
+				setCollection((RealPictureCollection)null);
 				return;
 		}
 		super.eUnset(featureID);
@@ -249,10 +247,10 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	@Override
 	public boolean eIsSet(int featureID) {
 		switch (featureID) {
-			case GalleryPackage.PICTURE__COLLECTION:
-				return getCollection() != null;
 			case GalleryPackage.PICTURE__FILE_EXTENSION:
 				return FILE_EXTENSION_EDEFAULT == null ? fileExtension != null : !FILE_EXTENSION_EDEFAULT.equals(fileExtension);
+			case GalleryPackage.PICTURE__COLLECTION:
+				return getCollection() != null;
 		}
 		return super.eIsSet(featureID);
 	}

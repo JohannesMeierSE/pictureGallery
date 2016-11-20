@@ -105,6 +105,17 @@ public abstract class PathElementImpl extends MinimalEObjectImpl.Container imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getRelativePath() {
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
@@ -168,6 +179,8 @@ public abstract class PathElementImpl extends MinimalEObjectImpl.Container imple
 		switch (operationID) {
 			case GalleryPackage.PATH_ELEMENT___GET_FULL_PATH:
 				return getFullPath();
+			case GalleryPackage.PATH_ELEMENT___GET_RELATIVE_PATH:
+				return getRelativePath();
 		}
 		return super.eInvoke(operationID, arguments);
 	}

@@ -3,15 +3,12 @@
 package gallery.impl;
 
 import gallery.GalleryPackage;
-import gallery.PictureCollection;
 import gallery.PictureLibrary;
-
+import gallery.RealPictureCollection;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
@@ -23,8 +20,8 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  * The following features are implemented:
  * <ul>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getBasePath <em>Base Path</em>}</li>
- *   <li>{@link gallery.impl.PictureLibraryImpl#getBaseCollection <em>Base Collection</em>}</li>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getName <em>Name</em>}</li>
+ *   <li>{@link gallery.impl.PictureLibraryImpl#getBaseCollection <em>Base Collection</em>}</li>
  * </ul>
  * </p>
  *
@@ -52,16 +49,6 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	protected String basePath = BASE_PATH_EDEFAULT;
 
 	/**
-	 * The cached value of the '{@link #getBaseCollection() <em>Base Collection</em>}' containment reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getBaseCollection()
-	 * @generated
-	 * @ordered
-	 */
-	protected PictureCollection baseCollection;
-
-	/**
 	 * The default value of the '{@link #getName() <em>Name</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -80,6 +67,16 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * @ordered
 	 */
 	protected String name = NAME_EDEFAULT;
+
+	/**
+	 * The cached value of the '{@link #getBaseCollection() <em>Base Collection</em>}' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getBaseCollection()
+	 * @generated
+	 * @ordered
+	 */
+	protected RealPictureCollection baseCollection;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -126,7 +123,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public PictureCollection getBaseCollection() {
+	public RealPictureCollection getBaseCollection() {
 		return baseCollection;
 	}
 
@@ -135,8 +132,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public NotificationChain basicSetBaseCollection(PictureCollection newBaseCollection, NotificationChain msgs) {
-		PictureCollection oldBaseCollection = baseCollection;
+	public NotificationChain basicSetBaseCollection(RealPictureCollection newBaseCollection, NotificationChain msgs) {
+		RealPictureCollection oldBaseCollection = baseCollection;
 		baseCollection = newBaseCollection;
 		if (eNotificationRequired()) {
 			ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION, oldBaseCollection, newBaseCollection);
@@ -150,13 +147,13 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setBaseCollection(PictureCollection newBaseCollection) {
+	public void setBaseCollection(RealPictureCollection newBaseCollection) {
 		if (newBaseCollection != baseCollection) {
 			NotificationChain msgs = null;
 			if (baseCollection != null)
-				msgs = ((InternalEObject)baseCollection).eInverseRemove(this, GalleryPackage.PICTURE_COLLECTION__LIBRARY, PictureCollection.class, msgs);
+				msgs = ((InternalEObject)baseCollection).eInverseRemove(this, GalleryPackage.REAL_PICTURE_COLLECTION__LIBRARY, RealPictureCollection.class, msgs);
 			if (newBaseCollection != null)
-				msgs = ((InternalEObject)newBaseCollection).eInverseAdd(this, GalleryPackage.PICTURE_COLLECTION__LIBRARY, PictureCollection.class, msgs);
+				msgs = ((InternalEObject)newBaseCollection).eInverseAdd(this, GalleryPackage.REAL_PICTURE_COLLECTION__LIBRARY, RealPictureCollection.class, msgs);
 			msgs = basicSetBaseCollection(newBaseCollection, msgs);
 			if (msgs != null) msgs.dispatch();
 		}
@@ -196,7 +193,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
 				if (baseCollection != null)
 					msgs = ((InternalEObject)baseCollection).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION, null, msgs);
-				return basicSetBaseCollection((PictureCollection)otherEnd, msgs);
+				return basicSetBaseCollection((RealPictureCollection)otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -225,10 +222,10 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 		switch (featureID) {
 			case GalleryPackage.PICTURE_LIBRARY__BASE_PATH:
 				return getBasePath();
-			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
-				return getBaseCollection();
 			case GalleryPackage.PICTURE_LIBRARY__NAME:
 				return getName();
+			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
+				return getBaseCollection();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -244,11 +241,11 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 			case GalleryPackage.PICTURE_LIBRARY__BASE_PATH:
 				setBasePath((String)newValue);
 				return;
-			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
-				setBaseCollection((PictureCollection)newValue);
-				return;
 			case GalleryPackage.PICTURE_LIBRARY__NAME:
 				setName((String)newValue);
+				return;
+			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
+				setBaseCollection((RealPictureCollection)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -265,11 +262,11 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 			case GalleryPackage.PICTURE_LIBRARY__BASE_PATH:
 				setBasePath(BASE_PATH_EDEFAULT);
 				return;
-			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
-				setBaseCollection((PictureCollection)null);
-				return;
 			case GalleryPackage.PICTURE_LIBRARY__NAME:
 				setName(NAME_EDEFAULT);
+				return;
+			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
+				setBaseCollection((RealPictureCollection)null);
 				return;
 		}
 		super.eUnset(featureID);
@@ -285,10 +282,10 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 		switch (featureID) {
 			case GalleryPackage.PICTURE_LIBRARY__BASE_PATH:
 				return BASE_PATH_EDEFAULT == null ? basePath != null : !BASE_PATH_EDEFAULT.equals(basePath);
-			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
-				return baseCollection != null;
 			case GalleryPackage.PICTURE_LIBRARY__NAME:
 				return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
+			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
+				return baseCollection != null;
 		}
 		return super.eIsSet(featureID);
 	}

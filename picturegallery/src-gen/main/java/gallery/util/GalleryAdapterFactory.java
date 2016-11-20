@@ -96,6 +96,14 @@ public class GalleryAdapterFactory extends AdapterFactoryImpl {
 				return createMetadataAdapter();
 			}
 			@Override
+			public Adapter caseRealPictureCollection(RealPictureCollection object) {
+				return createRealPictureCollectionAdapter();
+			}
+			@Override
+			public Adapter caseLinkedPictureCollection(LinkedPictureCollection object) {
+				return createLinkedPictureCollectionAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -210,6 +218,34 @@ public class GalleryAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createMetadataAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link gallery.RealPictureCollection <em>Real Picture Collection</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see gallery.RealPictureCollection
+	 * @generated
+	 */
+	public Adapter createRealPictureCollectionAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link gallery.LinkedPictureCollection <em>Linked Picture Collection</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see gallery.LinkedPictureCollection
+	 * @generated
+	 */
+	public Adapter createLinkedPictureCollectionAdapter() {
 		return null;
 	}
 

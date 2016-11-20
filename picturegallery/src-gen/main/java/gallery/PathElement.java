@@ -55,4 +55,12 @@ public interface PathElement extends EObject {
 	 */
 	String getFullPath();
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation" required="true"
+	 * @generated
+	 */
+	String getRelativePath();
+
 } // PathElement
