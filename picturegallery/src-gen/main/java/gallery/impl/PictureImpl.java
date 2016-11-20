@@ -6,8 +6,10 @@ import gallery.GalleryPackage;
 import gallery.Metadata;
 import gallery.Picture;
 import gallery.RealPictureCollection;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.util.EList;
@@ -291,6 +293,14 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	@Override
 	public String getFullPath() {
 		return getCollection().getFullPath() + File.separator + getName() + "." + getFileExtension();
+	}
+
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getRelativePath() {
+		return getCollection().getRelativePath() + File.separator + getName() + "." + getFileExtension();
 	}
 
 } //PictureImpl

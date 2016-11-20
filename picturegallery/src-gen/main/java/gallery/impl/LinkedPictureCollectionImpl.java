@@ -4,14 +4,15 @@ package gallery.impl;
 
 import gallery.GalleryPackage;
 import gallery.LinkedPictureCollection;
+import gallery.Picture;
+import gallery.PictureCollection;
 import gallery.RealPictureCollection;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
@@ -206,4 +207,17 @@ public class LinkedPictureCollectionImpl extends PictureCollectionImpl implement
 		return super.eIsSet(featureID);
 	}
 
+	/**
+	 * user-defined code!
+	 */
+	public EList<PictureCollection> getSubCollections() {
+		return getRealCollection().getSubCollections();
+	}
+
+	/**
+	 * user-defined code!
+	 */
+	public EList<Picture> getPictures() {
+		return getRealCollection().getPictures();
+	}
 } //LinkedPictureCollectionImpl

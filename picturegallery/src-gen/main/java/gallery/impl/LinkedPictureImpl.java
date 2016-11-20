@@ -205,8 +205,8 @@ public class LinkedPictureImpl extends PictureImpl implements LinkedPicture {
 		return super.eIsSet(featureID);
 	}
 
-	/*
-	 * own code
+	/**
+	 * user-defined code!
 	 */
 	@Override
 	public Metadata getMetadata() {

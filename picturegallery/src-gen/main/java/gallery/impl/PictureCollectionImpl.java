@@ -6,8 +6,10 @@ import gallery.GalleryPackage;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.util.EList;
@@ -52,11 +54,9 @@ public abstract class PictureCollectionImpl extends PathElementImpl implements P
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
+	 * @generated NOT
 	 */
 	public EList<PictureCollection> getSubCollections() {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
@@ -104,11 +104,9 @@ public abstract class PictureCollectionImpl extends PathElementImpl implements P
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
+	 * @generated NOT
 	 */
 	public EList<Picture> getPictures() {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
@@ -241,6 +239,18 @@ public abstract class PictureCollectionImpl extends PathElementImpl implements P
 			return ((RealPictureCollection) this).getLibrary().getBasePath() + File.separator + getName();
 		} else {
 			return getSuperCollection().getFullPath() + File.separator + getName();
+		}
+	}
+
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getRelativePath() {
+		if (getSuperCollection() == null) {
+			return getName();
+		} else {
+			return getSuperCollection().getRelativePath() + File.separator + getName();
 		}
 	}
 
