@@ -743,6 +743,17 @@ public class Logic {
 		}
 	}
 
+	public static void createSymlinkCollection(LinkedPictureCollection collection) {
+		try {
+			Path linkPathAbsolute = Paths.get(collection.getFullPath());
+			Path sourcePathAbsolute = Paths.get(collection.getRealCollection().getFullPath());
+			Path sourcePathRelative = linkPathAbsolute.getParent().relativize(sourcePathAbsolute);
+			Files.createSymbolicLink(linkPathAbsolute, sourcePathRelative);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void deleteSymlink(LinkedPicture linked) {
 		try {
 			Files.delete(Paths.get(linked.getFullPath()));
@@ -757,6 +768,23 @@ public class Logic {
 			FileUtils.moveFileToDirectory(new File(previousFullPath), new File(newDirectoryFullPath), false);
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public static boolean isCollectionNameUnique(RealPictureCollection parent, String newName) {
+		for (PictureCollection sub : parent.getSubCollections()) {
+			if (sub.getName().equals(newName)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static RealPictureCollection getRealCollection(PictureCollection collection) {
+		if (collection instanceof RealPictureCollection) {
+			return (RealPictureCollection) collection;
+		} else {
+			return ((LinkedPictureCollection) collection).getRealCollection();
 		}
 	}
 }

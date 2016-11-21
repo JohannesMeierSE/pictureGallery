@@ -2,6 +2,7 @@ package picturegallery;
 
 import gallery.GalleryFactory;
 import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
@@ -118,6 +119,7 @@ public class MainApp extends Application {
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
+    			+ "(L) select a real collection and select real collections link them into it\n"
     			+ "(N) create new collection\n"
     			+ "(R) rename existing collection\n"
     			+ "(F11) start/stop full screen mode\n\n");
@@ -251,7 +253,7 @@ public class MainApp extends Application {
 						linktoCollection = (RealPictureCollection) Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
 								true, true, false, Collections.singletonList(currentCollection));
 						if (linktoCollection == currentCollection) {
-							// sollte eigentlich gar nciht möglich sein (macht inhaltlich auch keinen Sinn)
+							// sollte eigentlich gar nicht möglich sein (macht inhaltlich auch keinen Sinn)
 							linktoCollection = null;
 						}
 					}
@@ -292,6 +294,41 @@ public class MainApp extends Application {
 					// kein Update der GUI nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
 					return;
 				}
+				// (L) select a real collection and select real collections link them into it
+				if (event.getCode() == KeyCode.L) {
+					RealPictureCollection collectionWithNewLinks = (RealPictureCollection) Logic.selectCollection(baseCollection,
+							currentCollection, movetoCollection, true, true, false);
+					if (collectionWithNewLinks == null) {
+						return;
+					}
+					List<PictureCollection> collectionsToIgnore = new ArrayList<>();
+					collectionsToIgnore.add(collectionWithNewLinks);
+					for (PictureCollection sub : collectionWithNewLinks.getSubCollections()) {
+						collectionsToIgnore.add(Logic.getRealCollection(sub)); // prevents real sub collections and already linked collections!!
+					}
+					PictureCollection target = Logic.selectCollection(baseCollection,
+							currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
+					while (target != null) {
+						RealPictureCollection realTarget = Logic.getRealCollection(target);
+						String newName = realTarget.getName();
+					    // check for uniqueness
+					    if (Logic.isCollectionNameUnique(collectionWithNewLinks, newName)) {
+					    	// update EMF model
+					    	LinkedPictureCollection newLink = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
+					    	newLink.setName(newName);
+					    	realTarget.getLinkedBy().add(newLink);
+					    	newLink.setRealCollection(realTarget);
+					    	collectionWithNewLinks.getSubCollections().add(newLink);
+					    	newLink.setSuperCollection(collectionWithNewLinks);
+
+					    	// create link in file system
+					    	Logic.createSymlinkCollection(newLink);
+					    }
+						target = Logic.selectCollection(baseCollection,
+								currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
+					}
+					return;
+				}
 				// create new collection (N) => only RealCollections!
 				if (event.getCode() == KeyCode.N) {
 					RealPictureCollection parentOfNewCollection = (RealPictureCollection) Logic.selectCollection(
@@ -304,10 +341,8 @@ public class MainApp extends Application {
 					    	return;
 					    }
 					    // check for uniqueness
-					    for (PictureCollection sub : parentOfNewCollection.getSubCollections()) {
-					    	if (sub.getName().equals(newName)) {
-					    		return;
-					    	}
+					    if (!Logic.isCollectionNameUnique(parentOfNewCollection, newName)) {
+					    	return;
 					    }
 					    // update EMF model
 					    RealPictureCollection newCollection = GalleryFactory.eINSTANCE.createRealPictureCollection();
