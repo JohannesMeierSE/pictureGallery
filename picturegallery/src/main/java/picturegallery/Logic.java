@@ -787,4 +787,12 @@ public class Logic {
 			return ((LinkedPictureCollection) collection).getRealCollection();
 		}
 	}
+
+	public static RealPicture getRealPicture(Picture picture) {
+		if (picture instanceof RealPicture) {
+			return (RealPicture) picture;
+		} else {
+			return ((LinkedPicture) picture).getRealPicture();
+		}
+	}
 }

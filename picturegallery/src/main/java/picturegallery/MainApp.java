@@ -463,20 +463,18 @@ public class MainApp extends Application {
 		// update the text description of the picture
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
 		if (currentPicture instanceof LinkedPicture) {
-			pictureText = pictureText + "    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getFullPath();
-		} else {
-			for (LinkedPicture link : ((RealPicture) currentPicture).getLinkedBy()) {
-				pictureText = pictureText + "\n      <=  " + link.getFullPath();
-			}
+			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getFullPath();
+		}
+		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture);
+		for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
+			pictureText = pictureText + "\n        <=  " + link.getFullPath();
 		}
 		labelPictureName.setText(pictureText);
 		// print metadata
 		String text = Logic.printMetadata(currentPicture.getMetadata());
 		labelMeta.setText(text);
 
-		RealPicture currentRealPicture;
-		currentRealPicture = getCurrentRealPicture();
-		imageCache.request(currentRealPicture, new CallBack<RealPicture, Image>() {
+		imageCache.request(realCurrentPicture, new CallBack<RealPicture, Image>() {
 			@Override
 			public void loaded(RealPicture key, Image value) {
 				// https://stackoverflow.com/questions/26554814/javafx-updating-gui
@@ -499,14 +497,8 @@ public class MainApp extends Application {
 		});
 	}
 
-	private RealPicture getCurrentRealPicture() {
-		RealPicture key;
-		if (currentPicture instanceof RealPicture) {
-			key = (RealPicture) currentPicture;
-		} else {
-			key = ((LinkedPicture) currentPicture).getRealPicture();
-		}
-		return key;
+	private Object getCurrentRealPicture() {
+		return Logic.getRealPicture(currentPicture);
 	}
 
 	private void changeIndex(int newIndex) {
@@ -765,10 +757,18 @@ public class MainApp extends Application {
 	}
 
 	private void updateCollectionLabel() {
+		String value = "";
 		if (showTempCollection) {
-			labelCollectionPath.setText("temp collection within " + currentCollection.getFullPath());
-		} else {
-			labelCollectionPath.setText(currentCollection.getFullPath());
+			value =  value + "temp collection within ";
 		}
+		value =  value + currentCollection.getFullPath();
+		if (currentCollection instanceof LinkedPictureCollection) {
+			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getFullPath();
+		}
+		RealPictureCollection real = Logic.getRealCollection(currentCollection);
+		for (LinkedPictureCollection link : real.getLinkedBy()) {
+			value = value + "\n        <= " + link.getFullPath();
+		}
+		labelCollectionPath.setText(value);
 	}
 }
