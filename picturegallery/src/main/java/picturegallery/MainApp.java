@@ -463,11 +463,14 @@ public class MainApp extends Application {
 		// update the text description of the picture
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
 		if (currentPicture instanceof LinkedPicture) {
-			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getFullPath();
+			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getRelativePath();
 		}
 		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture);
 		for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
-			pictureText = pictureText + "\n        <=  " + link.getFullPath();
+			pictureText = pictureText + "\n        <=  " + link.getRelativePath();
+			if (link == currentPicture) {
+				pictureText = pictureText + " (this picture)";
+			}
 		}
 		labelPictureName.setText(pictureText);
 		// print metadata
@@ -763,11 +766,14 @@ public class MainApp extends Application {
 		}
 		value =  value + currentCollection.getFullPath();
 		if (currentCollection instanceof LinkedPictureCollection) {
-			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getFullPath();
+			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getRelativePath();
 		}
 		RealPictureCollection real = Logic.getRealCollection(currentCollection);
 		for (LinkedPictureCollection link : real.getLinkedBy()) {
-			value = value + "\n        <= " + link.getFullPath();
+			value = value + "\n        <= " + link.getRelativePath();
+			if (link == currentCollection) {
+				value = value + " (this collection)";
+			}
 		}
 		labelCollectionPath.setText(value);
 	}
