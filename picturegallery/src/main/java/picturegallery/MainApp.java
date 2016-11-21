@@ -522,16 +522,6 @@ public class MainApp extends Application {
         requestNearPictures(0);
 
         changeIndex(0);
-
-        // load metadata
-        Task<Void> task = new Task<Void>() {
-			@Override
-			protected Void call() throws Exception {
-				Logic.extractMetadata(currentCollection);
-				return null;
-			}
-		};
-		new Thread(task).start();
 	}
 
 	private void requestNearPictures(int position) {
@@ -566,6 +556,12 @@ public class MainApp extends Application {
 				try {
 					// TODO: Optimierung: Bilder nur so groß wie benötigt laden!! https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
 					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
+					// load meta data directly with the image => improves the initial loading time!
+					try {
+						Logic.extractMetadata(key);
+					} catch (Throwable e) {
+						// ignore
+					}
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
