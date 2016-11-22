@@ -303,6 +303,12 @@ public class MainApp extends Application {
 					}
 					List<PictureCollection> collectionsToIgnore = new ArrayList<>();
 					collectionsToIgnore.add(collectionWithNewLinks);
+					// ignore parents to prevent loops!
+					PictureCollection parent = collectionWithNewLinks.getSuperCollection();
+					while (parent != null) {
+						collectionsToIgnore.add(parent);
+						parent = parent.getSuperCollection();
+					}
 					for (PictureCollection sub : collectionWithNewLinks.getSubCollections()) {
 						collectionsToIgnore.add(Logic.getRealCollection(sub)); // prevents real sub collections and already linked collections!!
 					}
@@ -310,11 +316,14 @@ public class MainApp extends Application {
 							currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
 					while (target != null) {
 						RealPictureCollection realTarget = Logic.getRealCollection(target);
+						collectionsToIgnore.add(target);
+						collectionsToIgnore.add(realTarget);
 						String newName = realTarget.getName();
 					    // check for uniqueness
 					    if (Logic.isCollectionNameUnique(collectionWithNewLinks, newName)) {
 					    	// update EMF model
 					    	LinkedPictureCollection newLink = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
+					    	collectionsToIgnore.add(newLink);
 					    	newLink.setName(newName);
 					    	realTarget.getLinkedBy().add(newLink);
 					    	newLink.setRealCollection(realTarget);
