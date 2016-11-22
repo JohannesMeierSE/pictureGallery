@@ -729,7 +729,7 @@ public class Logic {
 		}
 	}
 
-	public static void createSymlink(LinkedPicture picture) {
+	public static void createSymlinkPicture(LinkedPicture picture) {
 		try {
 			// https://stackoverflow.com/questions/17926459/creating-a-symbolic-link-with-java
 			// https://stackoverflow.com/questions/32625105/how-to-create-relative-symlink-in-java-nio-2
@@ -754,20 +754,20 @@ public class Logic {
 		}
 	}
 
-	public static void deleteSymlink(LinkedPicture linked) {
+	public static void deleteSymlinkPicture(LinkedPicture link) {
+		deleteSymlink(link.getFullPath());
+	}
+
+	private static void deleteSymlink(String linkFullPath) {
 		try {
-			Files.delete(Paths.get(linked.getFullPath()));
+			Files.delete(Paths.get(linkFullPath));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void deleteSymlinkCollection(LinkedPictureCollection link) {
-		try {
-			Files.delete(Paths.get(link.getFullPath()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		deleteSymlink(link.getFullPath());
 	}
 
 	public static void moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {

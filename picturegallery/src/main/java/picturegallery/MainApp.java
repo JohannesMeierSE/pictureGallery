@@ -119,7 +119,7 @@ public class MainApp extends Application {
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
-    			+ "(L) select a real collection and select real collections link them into it\n"
+    			+ "(L) select a real collection and select real collections to link them into the first collection\n"
     			+ "(N) create new collection\n"
     			+ "(R) rename existing collection\n"
     			+ "(F11) start/stop full screen mode\n\n");
@@ -287,7 +287,7 @@ public class MainApp extends Application {
 						linktoCollection.getPictures().add(newLink);
 						Logic.sortPicturesInCollection(linktoCollection);
 						// add link in file system
-						Logic.createSymlink(newLink);
+						Logic.createSymlinkPicture(newLink);
 					} else {
 						// => remove existing link
 						deletePicture(existingLink, false);
@@ -295,7 +295,7 @@ public class MainApp extends Application {
 					// kein Update der GUI nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
 					return;
 				}
-				// (L) select a real collection and select real collections link them into it
+				// (L) select a real collection and select collections to link them into the first collection
 				if (event.getCode() == KeyCode.L) {
 					RealPictureCollection collectionWithNewLinks = (RealPictureCollection) Logic.selectCollection(baseCollection,
 							currentCollection, movetoCollection, true, true, false);
@@ -319,7 +319,10 @@ public class MainApp extends Application {
 						RealPictureCollection realTarget = Logic.getRealCollection(target);
 						collectionsToIgnore.add(target);
 						collectionsToIgnore.add(realTarget);
-						String newName = realTarget.getName();
+						String newName = realTarget.getRelativePath().replaceAll(File.separator, "--");
+						newName = Logic.askForString("Select name of linked collection",
+								"Select a name for the new collection linking on " + realTarget.getRelativePath(),
+								"New name:", true, newName);
 					    // check for uniqueness
 					    if (Logic.isCollectionNameUnique(collectionWithNewLinks, newName)) {
 					    	// update EMF model
@@ -333,6 +336,8 @@ public class MainApp extends Application {
 
 					    	// create link in file system
 					    	Logic.createSymlinkCollection(newLink);
+					    } else {
+					    	// ignore this request
 					    }
 						target = Logic.selectCollection(baseCollection,
 								currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
@@ -397,7 +402,7 @@ public class MainApp extends Application {
 						List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
 						// remove all links linking on pictures contained (recursively) in the collection to rename
 						for (LinkedPicture link : linksToReGenerate) {
-							Logic.deleteSymlink(link);
+							Logic.deleteSymlinkPicture(link);
 						}
 						// remove all links on the collection to rename
 						RealPictureCollection realCollectionToRename = (RealPictureCollection) collectionToRename;
@@ -415,7 +420,7 @@ public class MainApp extends Application {
 						}
 						// create all deleted links again
 						for (LinkedPicture link : linksToReGenerate) {
-							Logic.createSymlink(link);
+							Logic.createSymlinkPicture(link);
 						}
 						// create all deleted links on the renamed collection again
 						for (LinkedPictureCollection link : realCollectionToRename.getLinkedBy()) {
@@ -710,7 +715,7 @@ public class MainApp extends Application {
 					// handle pictures linking on this moved real picture:
 					// delete symlinks ...
 					for (LinkedPicture linked : pictureToMove.getLinkedBy()) {
-						Logic.deleteSymlink(linked);
+						Logic.deleteSymlinkPicture(linked);
 					}
 
 					// update the EMF model
@@ -721,12 +726,12 @@ public class MainApp extends Application {
 					
 					// ... and create them all again with changed target
 					for (LinkedPicture linked : pictureToMove.getLinkedBy()) {
-						Logic.createSymlink(linked);
+						Logic.createSymlinkPicture(linked);
 					}
 				} else {
 					// verschieben funktioniert bei relativen Links nicht!!
 					LinkedPicture pictureToMove = (LinkedPicture) picture;
-					Logic.deleteSymlink(pictureToMove); // ... erst löschen
+					Logic.deleteSymlinkPicture(pictureToMove); // ... erst löschen
 
 					// könnte dazu führen, dass Linked und Real im selben Ordner gelandet sind, ist aber erstmal egal!
 
@@ -736,7 +741,7 @@ public class MainApp extends Application {
 					picture.setCollection(newCollection);
 					Logic.sortPicturesInCollection(newCollection);
 
-					Logic.createSymlink(pictureToMove); // ... und dann neu erstellen
+					Logic.createSymlinkPicture(pictureToMove); // ... und dann neu erstellen
 				}
 
 				return null;
@@ -802,7 +807,7 @@ public class MainApp extends Application {
 		if (showTempCollection) {
 			value =  value + "temp collection within ";
 		}
-		value =  value + currentCollection.getFullPath();
+		value =  value + currentCollection.getRelativePath();
 		if (currentCollection instanceof LinkedPictureCollection) {
 			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getRelativePath();
 		}
