@@ -190,6 +190,7 @@ public class MainApp extends Application {
 					} else {
 						tempCollection.add(currentPicture);
 					}
+					updatePictureLabel();
 					return;
 				}
 				// (S) show temp collection / exit and clear temp collection
@@ -396,7 +397,7 @@ public class MainApp extends Application {
 						}
 					}
 
-					// after testing all pre-conditions, starts with the renaming itself ...
+					// after testing all pre-conditions, start with the renaming itself ...
 					List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
 					// remove all links linking on pictures contained (recursively) in the collection to rename
 					for (LinkedPicture link : linksToReGenerate) {
@@ -469,23 +470,13 @@ public class MainApp extends Application {
 			return;
 		}
 		currentPicture = newPicture;
-		// update the text description of the picture
-		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
-		if (currentPicture instanceof LinkedPicture) {
-			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getRelativePath();
-		}
-		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture);
-		for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
-			pictureText = pictureText + "\n        <=  " + link.getRelativePath();
-			if (link == currentPicture) {
-				pictureText = pictureText + " (this picture)";
-			}
-		}
-		labelPictureName.setText(pictureText);
+		updatePictureLabel();
+
 		// print metadata
 		String text = Logic.printMetadata(currentPicture.getMetadata());
 		labelMeta.setText(text);
 
+		RealPicture realCurrentPicture = getCurrentRealPicture();
 		imageCache.request(realCurrentPicture, new CallBack<RealPicture, Image>() {
 			@Override
 			public void loaded(RealPicture key, Image value) {
@@ -509,7 +500,28 @@ public class MainApp extends Application {
 		});
 	}
 
-	private Object getCurrentRealPicture() {
+	private RealPicture updatePictureLabel() {
+		// update the text description of the picture
+		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
+		// inform, weather the current picture is in the temp collection
+		if (!showTempCollection && tempCollection.contains(currentPicture)) {
+			pictureText = pictureText + "  (in temp collection)";
+		}
+		if (currentPicture instanceof LinkedPicture) {
+			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getRelativePath();
+		}
+		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture);
+		for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
+			pictureText = pictureText + "\n        <=  " + link.getRelativePath();
+			if (link == currentPicture) {
+				pictureText = pictureText + " (this picture)";
+			}
+		}
+		labelPictureName.setText(pictureText);
+		return realCurrentPicture;
+	}
+
+	private RealPicture getCurrentRealPicture() {
 		return Logic.getRealPicture(currentPicture);
 	}
 
