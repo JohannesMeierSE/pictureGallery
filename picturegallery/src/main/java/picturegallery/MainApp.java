@@ -371,8 +371,8 @@ public class MainApp extends Application {
 				}
 				// (R) rename existing collection (but not the base collection) => only RealCollections
 				if (event.getCode() == KeyCode.R) {
-					RealPictureCollection collectionToRename = (RealPictureCollection) Logic.selectCollection(baseCollection,
-							currentCollection, movetoCollection, true, true, false, Collections.singletonList(baseCollection));
+					PictureCollection collectionToRename = Logic.selectCollection(baseCollection,
+							currentCollection, movetoCollection, true, true, true, Collections.singletonList(baseCollection));
 					if (collectionToRename == null) {
 						return;
 					}
@@ -387,37 +387,54 @@ public class MainApp extends Application {
 						return; // same name like before => nothing to do!
 					}
 					// check for uniqueness
-					for (PictureCollection sibling : collectionToRename.getSuperCollection().getSubCollections()) {
-						if (sibling == collectionToRename) {
-							continue;
-						}
-						if (sibling.getName().equals(newName)) {
-							System.err.println("The new name " + newName + " is not unique!");
-							return; // the new name is not unique!!
-						}
+					if (!Logic.isCollectionNameUnique(collectionToRename.getSuperCollection(), newName)) {
+						System.err.println("The new name " + newName + " is not unique!");
+						return; // the new name is not unique!
 					}
 
-					// after testing all pre-conditions, start with the renaming itself ...
-					List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
-					// remove all links linking on pictures contained (recursively) in the collection to rename
-					for (LinkedPicture link : linksToReGenerate) {
-						Logic.deleteSymlink(link);
-					}
-					// rename in file system
-					// http://www.java-examples.com/rename-file-or-directory
-					File oldFile = new File(collectionToRename.getFullPath());
-					oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName));
-					// rename in EMF model
-					collectionToRename.setName(newName);
-					if (currentCollection == collectionToRename) {
-						updateCollectionLabel();
-					}
-					// create all deleted links again
-					for (LinkedPicture link : linksToReGenerate) {
-						Logic.createSymlink(link);
+					if (collectionToRename instanceof RealPictureCollection) {
+						// after testing all pre-conditions, start with the renaming itself ...
+						List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
+						// remove all links linking on pictures contained (recursively) in the collection to rename
+						for (LinkedPicture link : linksToReGenerate) {
+							Logic.deleteSymlink(link);
+						}
+						// remove all links on the collection to rename
+						RealPictureCollection realCollectionToRename = (RealPictureCollection) collectionToRename;
+						for (LinkedPictureCollection link : realCollectionToRename.getLinkedBy()) {
+							Logic.deleteSymlinkCollection(link);
+						}
+						// rename in file system
+						// http://www.java-examples.com/rename-file-or-directory
+						File oldFile = new File(collectionToRename.getFullPath());
+						oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName));
+						// rename in EMF model
+						collectionToRename.setName(newName);
+						if (currentCollection == collectionToRename) {
+							updateCollectionLabel();
+						}
+						// create all deleted links again
+						for (LinkedPicture link : linksToReGenerate) {
+							Logic.createSymlink(link);
+						}
+						// create all deleted links on the renamed collection again
+						for (LinkedPictureCollection link : realCollectionToRename.getLinkedBy()) {
+							Logic.createSymlinkCollection(link);
+						}
+					} else {
+						// rename in file system
+						// http://www.java-examples.com/rename-file-or-directory
+						File oldFile = new File(collectionToRename.getFullPath());
+						oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName));
+						// rename in EMF model
+						collectionToRename.setName(newName);
+						if (currentCollection == collectionToRename) {
+							updateCollectionLabel();
+						}
 					}
 					// sort the collections within the parent collection
 					Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
+					updateCollectionLabel();
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {

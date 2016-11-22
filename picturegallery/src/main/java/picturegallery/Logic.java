@@ -762,6 +762,14 @@ public class Logic {
 		}
 	}
 
+	public static void deleteSymlinkCollection(LinkedPictureCollection link) {
+		try {
+			Files.delete(Paths.get(link.getFullPath()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
 		// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
 		try {
