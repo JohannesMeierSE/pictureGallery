@@ -319,7 +319,7 @@ public class MainApp extends Application {
 						RealPictureCollection realTarget = Logic.getRealCollection(target);
 						collectionsToIgnore.add(target);
 						collectionsToIgnore.add(realTarget);
-						String newName = realTarget.getRelativePath().replaceAll(File.separator, "--");
+						String newName = realTarget.getRelativePath().replaceAll(File.separator, "-");
 						newName = Logic.askForString("Select name of linked collection",
 								"Select a name for the new collection linking on " + realTarget.getRelativePath(),
 								"New name:", true, newName);
@@ -342,6 +342,7 @@ public class MainApp extends Application {
 						target = Logic.selectCollection(baseCollection,
 								currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
 					}
+					Logic.sortSubCollections(collectionWithNewLinks, false);
 					return;
 				}
 				// create new collection (N) => only RealCollections!
