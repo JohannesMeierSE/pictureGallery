@@ -67,6 +67,7 @@ public class Logic {
     	loadDirectoryLogic(baseCollection, recursive, mapPictures, mapCollections, symlinks);
 
     	List<PictureCollection> collectionsToSort = new ArrayList<>(); // collects the collections which have to be sorted again, because linked picture were added!
+    	List<PictureCollection> subcollectionsToSort = new ArrayList<>(); // collects the collections from which their subcollections have to be sorted again, because linked collections were added as subcollection!
     	String baseFullPath = baseCollection.getFullPath();
     	// handle symlinks
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
@@ -98,8 +99,11 @@ public class Logic {
 					linkedCollection.setSuperCollection(symlink.getValue());
 					String name = symlink.getKey().toString();
 					linkedCollection.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.length()));
-					System.err.println("created linked collection: " + linkedCollection.getFullPath());
-					// TODO: sort sub-collections again!
+
+					// sort sub-collections again
+					if (!subcollectionsToSort.contains(symlink.getValue())) {
+						subcollectionsToSort.add(symlink.getValue());
+					}
 				}
 			} else {
 				// symlink onto a picture
@@ -124,6 +128,10 @@ public class Logic {
 		// sort collection with additional LinkedPictures (again)
 		for (PictureCollection col : collectionsToSort) {
 			sortPicturesInCollection(col);
+		}
+		// sort sub-collections (again)
+		for (PictureCollection col : subcollectionsToSort) {
+			sortSubCollections(col, false);
 		}
 	}
 
