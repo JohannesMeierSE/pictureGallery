@@ -708,6 +708,18 @@ public class Logic {
 				}
 			});
 	
+			// jump to the currently selected item!
+			if (currentCollection != null) {
+				TreeItem<PictureCollection> currentSelectedItem = searchForEntry(currentCollection, rootItem);
+				if (currentSelectedItem != null) {
+					// https://stackoverflow.com/questions/17413206/listview-not-showing-selected-item-when-selected-programatically
+					tree.getSelectionModel().select(currentSelectedItem);
+					int row = tree.getRow(currentSelectedItem);
+					tree.getFocusModel().focus(row);
+					tree.scrollTo(row);
+				}
+			}
+
 			// run the dialog
 			Optional<PictureCollection> dialogResult = dialog.showAndWait();
 			if (dialogResult.isPresent()) {
@@ -735,6 +747,19 @@ public class Logic {
 			item.getChildren().add(newItem);
 			handleTreeItem(newItem, showLinkedCollections);
 		}
+	}
+
+	private static <T> TreeItem<T> searchForEntry(T element, TreeItem<T> root) {
+		if (root.getValue().equals(element)) {
+			return root;
+		}
+		for (TreeItem<T> sub : root.getChildren()) {
+			TreeItem<T> result = searchForEntry(element, sub);
+			if (result != null) {
+				return result;
+			}
+		}
+		return null;
 	}
 
 	public static void createSymlinkPicture(LinkedPicture picture) {
