@@ -840,15 +840,30 @@ public class Logic {
 		}
 	}
 
-	public static String getHashOfPicture(Picture picture) {
+	public static String getOrLoadHashOfPicture(Picture picture) {
+		// requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
+		if (picture.getHash() != null) {
+			return picture.getHash();
+		}
+
 		// https://github.com/pragone/jphash
 		RealPicture real = getRealPicture(picture);
 		try {
 			RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
-			return hash1 + "";
+			real.setHash(hash1 + "");
 		} catch (IOException e) {
 			e.printStackTrace();
-			return null;
 		}
+		return real.getHash();
+	}
+
+	public static double getSimilarity(Picture p1, Picture p2) {
+		RadialHash h1 = RadialHash.fromString(getOrLoadHashOfPicture(p1));
+		RadialHash h2 = RadialHash.fromString(getOrLoadHashOfPicture(p2));
+		return jpHash.getSimilarity(h1, h2);
+	}
+	public static boolean arePicturesIdentical(Picture p1, Picture p2) {
+		// similar to itself == 1.0 !!
+		return getSimilarity(p1, p2) >= 1.0;
 	}
 }

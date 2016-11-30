@@ -17,9 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.pragone.jphash.jpHash;
-import com.pragone.jphash.image.radial.RadialHash;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -126,6 +123,7 @@ public class MainApp extends Application {
     			+ "(L) select a real collection and select real collections to link them into the first collection\n"
     			+ "(N) create new collection\n"
     			+ "(R) rename existing collection\n"
+    			+ "(D) search for duplicates within this collection\n"
     			+ "(F11) start/stop full screen mode\n\n");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
@@ -150,8 +148,9 @@ public class MainApp extends Application {
     		@Override
     		public void handle(KeyEvent event) {
     			int size = 0;
-    			if (currentCollection != null) {
-    				size = currentCollection.getPictures().size();
+    			int sizeCC = currentCollection.getPictures().size();
+				if (currentCollection != null) {
+    				size = sizeCC;
     			}
 				int sizeTemp = tempCollection.size();
 
@@ -445,10 +444,37 @@ public class MainApp extends Application {
 					// sort the collections within the parent collection
 					Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
 					updateCollectionLabel();
+					return;
+				}
+				// (D) search for duplicates within this collection
+				if (event.getCode() == KeyCode.D) {
+			        Task<Void> task = new Task<Void>() {
+			        	@Override
+			        	protected Void call() throws Exception {
+							System.out.println("beginning!");
+							for (int i = 0; i < sizeCC - 1; i++) {
+								for (int j = i + 1; j < sizeCC; j++) {
+									if (i == 0) {
+										System.out.println("next: " + j);
+									}
+									Picture p1 = currentCollection.getPictures().get(i);
+									Picture p2 = currentCollection.getPictures().get(j);
+									if (Logic.arePicturesIdentical(p1, p2)) {
+										System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
+									}
+								}
+							}
+							System.out.println("ready!");
+			        		return null;
+			        	}
+			        };
+			        new Thread(task).start();
+					return;
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {
 					stage.setFullScreen(!stage.isFullScreen());
+					return;
 				}
     		}
     	});
@@ -643,10 +669,7 @@ public class MainApp extends Application {
 					}
 
 					// load image hash
-					String hash = Logic.getHashOfPicture(key);
-					RadialHash h = RadialHash.fromString(hash);
-					System.out.println("hash == " + hash + " ; similar to itself: " + jpHash.getSimilarity(h, h));
-					// similar to itself == 1.0 !!)
+//					Logic.getOrLoadHashOfPicture(key);
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
