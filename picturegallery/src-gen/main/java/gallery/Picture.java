@@ -83,4 +83,12 @@ public interface Picture extends PathElement {
 	 */
 	Metadata getMetadata();
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation"
+	 * @generated
+	 */
+	String getHash();
+
 } // Picture

@@ -230,6 +230,15 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EOperation getPicture__GetHash() {
+		return pictureEClass.getEOperations().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getRealPicture() {
 		return realPictureEClass;
 	}
@@ -250,6 +259,15 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 	 */
 	public EReference getRealPicture_Metadata() {
 		return (EReference)realPictureEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getRealPicture_Hash() {
+		return (EAttribute)realPictureEClass.getEStructuralFeatures().get(2);
 	}
 
 	/**
@@ -514,10 +532,12 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 		createEAttribute(pictureEClass, PICTURE__FILE_EXTENSION);
 		createEReference(pictureEClass, PICTURE__COLLECTION);
 		createEOperation(pictureEClass, PICTURE___GET_METADATA);
+		createEOperation(pictureEClass, PICTURE___GET_HASH);
 
 		realPictureEClass = createEClass(REAL_PICTURE);
 		createEReference(realPictureEClass, REAL_PICTURE__LINKED_BY);
 		createEReference(realPictureEClass, REAL_PICTURE__METADATA);
+		createEAttribute(realPictureEClass, REAL_PICTURE__HASH);
 
 		linkedPictureEClass = createEClass(LINKED_PICTURE);
 		createEReference(linkedPictureEClass, LINKED_PICTURE__REAL_PICTURE);
@@ -600,9 +620,12 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 
 		initEOperation(getPicture__GetMetadata(), this.getMetadata(), "getMetadata", 0, 1, IS_UNIQUE, IS_ORDERED);
 
+		initEOperation(getPicture__GetHash(), ecorePackage.getEString(), "getHash", 0, 1, IS_UNIQUE, IS_ORDERED);
+
 		initEClass(realPictureEClass, RealPicture.class, "RealPicture", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getRealPicture_LinkedBy(), this.getLinkedPicture(), this.getLinkedPicture_RealPicture(), "linkedBy", null, 0, -1, RealPicture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRealPicture_Metadata(), this.getMetadata(), this.getMetadata_Picture(), "metadata", null, 0, 1, RealPicture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getRealPicture_Hash(), ecorePackage.getEString(), "hash", null, 0, 1, RealPicture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(linkedPictureEClass, LinkedPicture.class, "LinkedPicture", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getLinkedPicture_RealPicture(), this.getRealPicture(), this.getRealPicture_LinkedBy(), "realPicture", null, 1, 1, LinkedPicture.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

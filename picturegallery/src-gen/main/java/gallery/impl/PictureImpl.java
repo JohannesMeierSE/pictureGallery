@@ -150,6 +150,17 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getHash() {
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
@@ -267,6 +278,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 		switch (operationID) {
 			case GalleryPackage.PICTURE___GET_METADATA:
 				return getMetadata();
+			case GalleryPackage.PICTURE___GET_HASH:
+				return getHash();
 		}
 		return super.eInvoke(operationID, arguments);
 	}

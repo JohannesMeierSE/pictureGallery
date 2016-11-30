@@ -30,6 +30,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
  * <ul>
  *   <li>{@link gallery.impl.RealPictureImpl#getLinkedBy <em>Linked By</em>}</li>
  *   <li>{@link gallery.impl.RealPictureImpl#getMetadata <em>Metadata</em>}</li>
+ *   <li>{@link gallery.impl.RealPictureImpl#getHash <em>Hash</em>}</li>
  * </ul>
  * </p>
  *
@@ -55,6 +56,26 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	 * @ordered
 	 */
 	protected Metadata metadata;
+
+	/**
+	 * The default value of the '{@link #getHash() <em>Hash</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getHash()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String HASH_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getHash() <em>Hash</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getHash()
+	 * @generated
+	 * @ordered
+	 */
+	protected String hash = HASH_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -135,6 +156,27 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getHash() {
+		return hash;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setHash(String newHash) {
+		String oldHash = hash;
+		hash = newHash;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.REAL_PICTURE__HASH, oldHash, hash));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
@@ -177,6 +219,8 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 				return getLinkedBy();
 			case GalleryPackage.REAL_PICTURE__METADATA:
 				return getMetadata();
+			case GalleryPackage.REAL_PICTURE__HASH:
+				return getHash();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -197,6 +241,9 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 			case GalleryPackage.REAL_PICTURE__METADATA:
 				setMetadata((Metadata)newValue);
 				return;
+			case GalleryPackage.REAL_PICTURE__HASH:
+				setHash((String)newValue);
+				return;
 		}
 		super.eSet(featureID, newValue);
 	}
@@ -215,6 +262,9 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 			case GalleryPackage.REAL_PICTURE__METADATA:
 				setMetadata((Metadata)null);
 				return;
+			case GalleryPackage.REAL_PICTURE__HASH:
+				setHash(HASH_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -231,8 +281,26 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 				return linkedBy != null && !linkedBy.isEmpty();
 			case GalleryPackage.REAL_PICTURE__METADATA:
 				return metadata != null;
+			case GalleryPackage.REAL_PICTURE__HASH:
+				return HASH_EDEFAULT == null ? hash != null : !HASH_EDEFAULT.equals(hash);
 		}
 		return super.eIsSet(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public String toString() {
+		if (eIsProxy()) return super.toString();
+
+		StringBuffer result = new StringBuffer(super.toString());
+		result.append(" (hash: ");
+		result.append(hash);
+		result.append(')');
+		return result.toString();
 	}
 
 } //RealPictureImpl

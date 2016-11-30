@@ -268,13 +268,22 @@ public interface GalleryPackage extends EPackage {
 	int PICTURE___GET_METADATA = PATH_ELEMENT_OPERATION_COUNT + 0;
 
 	/**
+	 * The operation id for the '<em>Get Hash</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE___GET_HASH = PATH_ELEMENT_OPERATION_COUNT + 1;
+
+	/**
 	 * The number of operations of the '<em>Picture</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int PICTURE_OPERATION_COUNT = PATH_ELEMENT_OPERATION_COUNT + 1;
+	int PICTURE_OPERATION_COUNT = PATH_ELEMENT_OPERATION_COUNT + 2;
 
 	/**
 	 * The meta object id for the '{@link gallery.impl.RealPictureImpl <em>Real Picture</em>}' class.
@@ -332,13 +341,22 @@ public interface GalleryPackage extends EPackage {
 	int REAL_PICTURE__METADATA = PICTURE_FEATURE_COUNT + 1;
 
 	/**
+	 * The feature id for the '<em><b>Hash</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE__HASH = PICTURE_FEATURE_COUNT + 2;
+
+	/**
 	 * The number of structural features of the '<em>Real Picture</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int REAL_PICTURE_FEATURE_COUNT = PICTURE_FEATURE_COUNT + 2;
+	int REAL_PICTURE_FEATURE_COUNT = PICTURE_FEATURE_COUNT + 3;
 
 	/**
 	 * The operation id for the '<em>Get Full Path</em>' operation.
@@ -366,6 +384,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int REAL_PICTURE___GET_METADATA = PICTURE___GET_METADATA;
+
+	/**
+	 * The operation id for the '<em>Get Hash</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE___GET_HASH = PICTURE___GET_HASH;
 
 	/**
 	 * The number of operations of the '<em>Real Picture</em>' class.
@@ -457,6 +484,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int LINKED_PICTURE___GET_METADATA = PICTURE___GET_METADATA;
+
+	/**
+	 * The operation id for the '<em>Get Hash</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int LINKED_PICTURE___GET_HASH = PICTURE___GET_HASH;
 
 	/**
 	 * The number of operations of the '<em>Linked Picture</em>' class.
@@ -909,6 +945,16 @@ public interface GalleryPackage extends EPackage {
 	EOperation getPicture__GetMetadata();
 
 	/**
+	 * Returns the meta object for the '{@link gallery.Picture#getHash() <em>Get Hash</em>}' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the '<em>Get Hash</em>' operation.
+	 * @see gallery.Picture#getHash()
+	 * @generated
+	 */
+	EOperation getPicture__GetHash();
+
+	/**
 	 * Returns the meta object for class '{@link gallery.RealPicture <em>Real Picture</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -939,6 +985,17 @@ public interface GalleryPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getRealPicture_Metadata();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.RealPicture#getHash <em>Hash</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Hash</em>'.
+	 * @see gallery.RealPicture#getHash()
+	 * @see #getRealPicture()
+	 * @generated
+	 */
+	EAttribute getRealPicture_Hash();
 
 	/**
 	 * Returns the meta object for class '{@link gallery.LinkedPicture <em>Linked Picture</em>}'.
@@ -1299,6 +1356,14 @@ public interface GalleryPackage extends EPackage {
 		EOperation PICTURE___GET_METADATA = eINSTANCE.getPicture__GetMetadata();
 
 		/**
+		 * The meta object literal for the '<em><b>Get Hash</b></em>' operation.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EOperation PICTURE___GET_HASH = eINSTANCE.getPicture__GetHash();
+
+		/**
 		 * The meta object literal for the '{@link gallery.impl.RealPictureImpl <em>Real Picture</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -1323,6 +1388,14 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EReference REAL_PICTURE__METADATA = eINSTANCE.getRealPicture_Metadata();
+
+		/**
+		 * The meta object literal for the '<em><b>Hash</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute REAL_PICTURE__HASH = eINSTANCE.getRealPicture_Hash();
 
 		/**
 		 * The meta object literal for the '{@link gallery.impl.LinkedPictureImpl <em>Linked Picture</em>}' class.

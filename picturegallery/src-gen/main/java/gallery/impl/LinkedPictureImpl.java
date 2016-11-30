@@ -213,4 +213,12 @@ public class LinkedPictureImpl extends PictureImpl implements LinkedPicture {
 		return getRealPicture().getMetadata();
 	}
 
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getHash() {
+		return getRealPicture().getHash();
+	}
+
 } //LinkedPictureImpl
