@@ -57,6 +57,9 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.emf.common.util.ECollections;
 import org.xml.sax.SAXException;
 
+import com.pragone.jphash.jpHash;
+import com.pragone.jphash.image.radial.RadialHash;
+
 public class Logic {
 	public static void loadDirectory(PictureLibrary library, boolean recursive) {
 		RealPictureCollection baseCollection = library.getBaseCollection();
@@ -834,6 +837,18 @@ public class Logic {
 			return (RealPicture) picture;
 		} else {
 			return ((LinkedPicture) picture).getRealPicture();
+		}
+	}
+
+	public static String getHashOfPicture(Picture picture) {
+		// https://github.com/pragone/jphash
+		RealPicture real = getRealPicture(picture);
+		try {
+			RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
+			return hash1 + "";
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 }

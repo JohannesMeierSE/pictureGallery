@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.pragone.jphash.jpHash;
+import com.pragone.jphash.image.radial.RadialHash;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -73,6 +76,7 @@ public class MainApp extends Application {
      * https://github.com/javafx-maven-plugin/javafx-basic-archetype
      * https://github.com/javafx-maven-plugin/javafx-maven-plugin
      * create jar: run "mvn jfx:jar"
+     * (mvn install -DskipTests)
      *
      * start from Eclipse: use "-Xms1024m" !
      *
@@ -630,12 +634,19 @@ public class MainApp extends Application {
 				try {
 					// TODO: Optimierung: Bilder nur so groß wie benötigt laden!! https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
 					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
+
 					// load meta data directly with the image => improves the initial loading time!
 					try {
 						Logic.extractMetadata(key);
 					} catch (Throwable e) {
 						// ignore
 					}
+
+					// load image hash
+					String hash = Logic.getHashOfPicture(key);
+					RadialHash h = RadialHash.fromString(hash);
+					System.out.println("hash == " + hash + " ; similar to itself: " + jpHash.getSimilarity(h, h));
+					// similar to itself == 1.0 !!)
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
