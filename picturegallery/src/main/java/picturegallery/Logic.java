@@ -61,6 +61,8 @@ import com.pragone.jphash.jpHash;
 import com.pragone.jphash.image.radial.RadialHash;
 
 public class Logic {
+	public static final String NO_HASH = "nohash!";
+
 	public static void loadDirectory(PictureLibrary library, boolean recursive) {
 		RealPictureCollection baseCollection = library.getBaseCollection();
     	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
@@ -840,8 +842,12 @@ public class Logic {
 		}
 	}
 
+	/**
+	 * requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
+	 * @param picture
+	 * @return null, if the hash was not calculated
+	 */
 	public static String getOrLoadHashOfPicture(Picture picture) {
-		// requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
 		if (picture.getHash() != null) {
 			return picture.getHash();
 		}
@@ -853,17 +859,49 @@ public class Logic {
 			real.setHash(hash1 + "");
 		} catch (IOException e) {
 			e.printStackTrace();
+			real.setHash(NO_HASH);
+		} catch (Throwable e) {
+			e.printStackTrace();
+			real.setHash(NO_HASH);
 		}
 		return real.getHash();
 	}
 
 	public static double getSimilarity(Picture p1, Picture p2) {
-		RadialHash h1 = RadialHash.fromString(getOrLoadHashOfPicture(p1));
-		RadialHash h2 = RadialHash.fromString(getOrLoadHashOfPicture(p2));
+		String hs1 = getOrLoadHashOfPicture(p1);
+		if (hs1 == null || hs1.equals(NO_HASH)) {
+			return 0.0;
+		}
+		RadialHash h1 = RadialHash.fromString(hs1);
+
+		String hs2 = getOrLoadHashOfPicture(p2);
+		if (hs2 == null || hs2.equals(NO_HASH)) {
+			return 0.0;
+		}
+		RadialHash h2 = RadialHash.fromString(hs2);
+
 		return jpHash.getSimilarity(h1, h2);
 	}
 	public static boolean arePicturesIdentical(Picture p1, Picture p2) {
 		// similar to itself == 1.0 !!
 		return getSimilarity(p1, p2) >= 1.0;
+	}
+
+	public static void similarity(PictureCollection currentCollection) {
+		int sizeCC = currentCollection.getPictures().size();
+		System.out.println("beginning!");
+		for (int i = 0; i < sizeCC - 1; i++) {
+			for (int j = i + 1; j < sizeCC; j++) {
+				if (i == 0) {
+					System.out.println("next: " + j);
+				}
+				Picture p1 = currentCollection.getPictures().get(i);
+				Picture p2 = currentCollection.getPictures().get(j);
+				if (Logic.arePicturesIdentical(p1, p2)) {
+					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
+				}
+			}
+		}
+		System.out.println("ready!");
 	}
 }

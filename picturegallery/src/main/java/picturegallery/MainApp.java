@@ -448,28 +448,16 @@ public class MainApp extends Application {
 				}
 				// (D) search for duplicates within this collection
 				if (event.getCode() == KeyCode.D) {
-			        Task<Void> task = new Task<Void>() {
-			        	@Override
-			        	protected Void call() throws Exception {
-							System.out.println("beginning!");
-							for (int i = 0; i < sizeCC - 1; i++) {
-								for (int j = i + 1; j < sizeCC; j++) {
-									if (i == 0) {
-										System.out.println("next: " + j);
-									}
-									Picture p1 = currentCollection.getPictures().get(i);
-									Picture p2 = currentCollection.getPictures().get(j);
-									if (Logic.arePicturesIdentical(p1, p2)) {
-										System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
-									}
-								}
-							}
-							System.out.println("ready!");
-			        		return null;
-			        	}
-			        };
-			        new Thread(task).start();
-					return;
+//			        Task<Void> task = new Task<Void>() {
+//			        	@Override
+//			        	protected Void call() throws Exception {
+//							Logic.similarity(currentCollection);
+//			        		return null;
+//			        	}
+//			        };
+//			        new Thread(task).start();
+//					return;
+					Logic.similarity(currentCollection);
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {
