@@ -32,6 +32,8 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
@@ -594,6 +596,23 @@ public class Logic {
 		}
 	}
 
+	public static boolean askForConfirmation(String title, String header, String content) {
+		// http://code.makery.ch/blog/javafx-dialogs-official/
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle(title);
+		alert.setHeaderText(header);
+		alert.setContentText(content);
+
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == ButtonType.OK){
+		    // ... user chose OK
+			return true;
+		} else {
+		    // ... user chose CANCEL or closed the dialog
+			return false;
+		}
+	}
+
 	public static PictureCollection selectCollection(PictureCollection base,
 			PictureCollection currentCollection, PictureCollection movetoCollection,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections) {
@@ -793,10 +812,10 @@ public class Logic {
 	}
 
 	public static void deleteSymlinkPicture(LinkedPicture link) {
-		deleteSymlink(link.getFullPath());
+		deletePath(link.getFullPath());
 	}
 
-	private static void deleteSymlink(String linkFullPath) {
+	private static void deletePath(String linkFullPath) {
 		try {
 			Files.delete(Paths.get(linkFullPath));
 		} catch (IOException e) {
@@ -805,7 +824,11 @@ public class Logic {
 	}
 
 	public static void deleteSymlinkCollection(LinkedPictureCollection link) {
-		deleteSymlink(link.getFullPath());
+		deletePath(link.getFullPath());
+	}
+
+	public static void deleteRealPicture(RealPicture real) {
+		deletePath(real.getFullPath());
 	}
 
 	public static void moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
@@ -824,6 +847,45 @@ public class Logic {
 			}
 		}
 		return true;
+	}
+
+	public static void replaceRealByLinkedPicture(RealPicture oldReal, RealPicture newRef) {
+		// check the input
+		if (oldReal == null || newRef == null) {
+			throw new IllegalArgumentException();
+		}
+
+		// fix the symlinks onto the old real picture
+		List<LinkedPicture> links = new ArrayList<>(oldReal.getLinkedBy());
+		for (LinkedPicture link : links) {
+			deleteSymlinkPicture(link);
+
+			oldReal.getLinkedBy().remove(link);
+			newRef.getLinkedBy().add(link);
+			link.setRealPicture(newRef);
+
+			createSymlinkPicture(link);
+		}
+
+		// create new link
+		LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
+		newLink.setName(oldReal.getName());
+		newLink.setFileExtension(oldReal.getFileExtension());
+		newRef.getLinkedBy().add(newLink);
+		newLink.setRealPicture(newRef);
+
+		oldReal.getCollection().getPictures().add(newLink);
+		newLink.setCollection(oldReal.getCollection());
+
+		// remove old picture
+		deleteRealPicture(oldReal);
+		oldReal.getCollection().getPictures().remove(oldReal);
+		oldReal.setCollection(null);
+
+		// old real and new linked picture have the same name => 1. remove old real, 2. create new link
+		createSymlinkPicture(newLink);
+
+		sortPicturesInCollection(newLink.getCollection());
 	}
 
 	public static RealPictureCollection getRealCollection(PictureCollection collection) {
@@ -851,9 +913,11 @@ public class Logic {
 		if (picture.getHash() != null) {
 			return picture.getHash();
 		}
+		// andere: https://github.com/bytedeco/javacv-examples/blob/master/OpenCV2_Cookbook/README.md
 
 		// https://github.com/pragone/jphash
 		RealPicture real = getRealPicture(picture);
+		System.out.println("load next");
 		try {
 			RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
 			real.setHash(hash1 + "");
@@ -887,21 +951,69 @@ public class Logic {
 		return getSimilarity(p1, p2) >= 1.0;
 	}
 
-	public static void similarity(PictureCollection currentCollection) {
-		int sizeCC = currentCollection.getPictures().size();
+	public static void findIdenticalInOneCollection(PictureCollection collection) {
+		int size = collection.getPictures().size();
 		System.out.println("beginning!");
-		for (int i = 0; i < sizeCC - 1; i++) {
-			for (int j = i + 1; j < sizeCC; j++) {
+		for (int i = 0; i < size - 1; i++) {
+			for (int j = i + 1; j < size; j++) {
 				if (i == 0) {
 					System.out.println("next: " + j);
 				}
-				Picture p1 = currentCollection.getPictures().get(i);
-				Picture p2 = currentCollection.getPictures().get(j);
+				Picture p1 = collection.getPictures().get(i);
+				Picture p2 = collection.getPictures().get(j);
 				if (Logic.arePicturesIdentical(p1, p2)) {
 					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
 				}
 			}
 		}
 		System.out.println("ready!");
+	}
+
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection) {
+		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
+		findIdenticalInSubcollectionsLogic(baseCollection, baseCollection, result);
+		return result;
+	}
+	private static void findIdenticalInSubcollectionsLogic(PictureCollection baseCollection, PictureCollection current,
+			List<Pair<RealPicture, RealPicture>> result) {
+		for (PictureCollection sub : current.getSubCollections()) {
+			if (sub instanceof LinkedPictureCollection) {
+				continue;
+			}
+			List<Pair<RealPicture, RealPicture>> r = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures());
+			if (r != null) {
+				result.addAll(r);
+			}
+			findIdenticalInSubcollectionsLogic(baseCollection, sub, result);
+		}
+	}
+
+	/**
+	 * Searches in two for duplicated real picture of one.
+	 * @param one
+	 * @param two
+	 */
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two) {
+		if (one.isEmpty() || two.isEmpty()) {
+			return null;
+		}
+		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
+		System.out.println("start");
+		for (Picture p : two) {
+			if (p instanceof LinkedPicture) {
+				continue;
+			}
+			for (Picture o : one) {
+				if (o instanceof LinkedPicture) {
+					continue;
+				}
+				if (arePicturesIdentical(p, o)) {
+					System.out.println(p.getRelativePath() + " == " + o.getRelativePath());
+					result.add(new Pair<>((RealPicture) p, (RealPicture) o));
+				}
+			}
+		}
+		System.out.println("end");
+		return result;
 	}
 }

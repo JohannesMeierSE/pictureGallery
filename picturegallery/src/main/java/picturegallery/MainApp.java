@@ -32,6 +32,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
@@ -457,7 +458,25 @@ public class MainApp extends Application {
 //			        };
 //			        new Thread(task).start();
 //					return;
-					Logic.similarity(currentCollection);
+					if (event.isShiftDown()) {
+						List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection);
+						if (result.isEmpty()) {
+							return;
+						}
+						String files = "";
+						for (Pair<RealPicture, RealPicture> pair : result) {
+							files = files + pair.getKey().getRelativePath() + " ==> " + pair.getValue().getRelativePath() + "\n";
+						}
+						files = files.trim();
+						boolean replace = Logic.askForConfirmation("Find and replace duplications", "Replace duplicated pictures by links?", files);
+						if (replace) {
+							for (Pair<RealPicture, RealPicture> pair : result) {
+								Logic.replaceRealByLinkedPicture(pair.getKey(), pair.getValue());
+							}
+						}
+					} else {
+						Logic.findIdenticalInOneCollection(currentCollection);
+					}
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {
