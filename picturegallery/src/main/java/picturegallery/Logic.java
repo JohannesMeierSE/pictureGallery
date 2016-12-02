@@ -910,10 +910,18 @@ public class Logic {
 	 * @return null, if the hash was not calculated
 	 */
 	public static String getOrLoadHashOfPicture(Picture picture, boolean fast) {
-		if (picture.getHash() != null) {
-			return picture.getHash();
+		// is the hash already available?
+		if (fast) {
+			if (picture.getHashFast() != null) {
+				return picture.getHashFast();
+			}
+		} else {
+			if (picture.getHash() != null) {
+				return picture.getHash();
+			}
 		}
-		/* andere:
+
+		/* other hashing algorithms:
 		 * https://github.com/bytedeco/javacv-examples/blob/master/OpenCV2_Cookbook/README.md
 		 * http://www.jguru.com/faq/view.jsp?EID=216274
 		 */
@@ -930,7 +938,7 @@ public class Logic {
 				FileInputStream fis = new FileInputStream(new File(real.getFullPath()));
 				String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
 				fis.close();
-				real.setHash(md5);
+				real.setHashFast(md5);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -973,7 +981,14 @@ public class Logic {
 		if (p1.equals(p2)) {
 			return true;
 		}
-		return getSimilarity(p1, p2, true) >= 1.0; // TODO: das "true" kann optimiert werden: 1. was vorhanden ist 2. fast 3. nicht fast
+
+		// check which values are available: if the slower==complexer==better is available for both pictures => use the slower hash!
+		if (p1.getHash() != null && !p1.getHash().equals(NO_HASH)
+				&& p2.getHash() != null && !p2.getHash().equals(NO_HASH)) {
+			return getSimilarity(p1, p2, false) >= 1.0;
+		} else {
+			return getSimilarity(p1, p2, true) >= 1.0;
+		}
 	}
 
 	public static void findIdenticalInOneCollection(PictureCollection collection) {
