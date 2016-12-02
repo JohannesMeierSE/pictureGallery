@@ -31,6 +31,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *   <li>{@link gallery.impl.RealPictureImpl#getLinkedBy <em>Linked By</em>}</li>
  *   <li>{@link gallery.impl.RealPictureImpl#getMetadata <em>Metadata</em>}</li>
  *   <li>{@link gallery.impl.RealPictureImpl#getHash <em>Hash</em>}</li>
+ *   <li>{@link gallery.impl.RealPictureImpl#getHashFast <em>Hash Fast</em>}</li>
  * </ul>
  * </p>
  *
@@ -76,6 +77,26 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	 * @ordered
 	 */
 	protected String hash = HASH_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getHashFast() <em>Hash Fast</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getHashFast()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String HASH_FAST_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getHashFast() <em>Hash Fast</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getHashFast()
+	 * @generated
+	 * @ordered
+	 */
+	protected String hashFast = HASH_FAST_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -177,6 +198,27 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getHashFast() {
+		return hashFast;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setHashFast(String newHashFast) {
+		String oldHashFast = hashFast;
+		hashFast = newHashFast;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, GalleryPackage.REAL_PICTURE__HASH_FAST, oldHashFast, hashFast));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
@@ -221,6 +263,8 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 				return getMetadata();
 			case GalleryPackage.REAL_PICTURE__HASH:
 				return getHash();
+			case GalleryPackage.REAL_PICTURE__HASH_FAST:
+				return getHashFast();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -244,6 +288,9 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 			case GalleryPackage.REAL_PICTURE__HASH:
 				setHash((String)newValue);
 				return;
+			case GalleryPackage.REAL_PICTURE__HASH_FAST:
+				setHashFast((String)newValue);
+				return;
 		}
 		super.eSet(featureID, newValue);
 	}
@@ -265,6 +312,9 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 			case GalleryPackage.REAL_PICTURE__HASH:
 				setHash(HASH_EDEFAULT);
 				return;
+			case GalleryPackage.REAL_PICTURE__HASH_FAST:
+				setHashFast(HASH_FAST_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -283,6 +333,8 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 				return metadata != null;
 			case GalleryPackage.REAL_PICTURE__HASH:
 				return HASH_EDEFAULT == null ? hash != null : !HASH_EDEFAULT.equals(hash);
+			case GalleryPackage.REAL_PICTURE__HASH_FAST:
+				return HASH_FAST_EDEFAULT == null ? hashFast != null : !HASH_FAST_EDEFAULT.equals(hashFast);
 		}
 		return super.eIsSet(featureID);
 	}
@@ -299,6 +351,8 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 		StringBuffer result = new StringBuffer(super.toString());
 		result.append(" (hash: ");
 		result.append(hash);
+		result.append(", hashFast: ");
+		result.append(hashFast);
 		result.append(')');
 		return result.toString();
 	}

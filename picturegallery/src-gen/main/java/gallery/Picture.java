@@ -91,4 +91,12 @@ public interface Picture extends PathElement {
 	 */
 	String getHash();
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation"
+	 * @generated
+	 */
+	String getHashFast();
+
 } // Picture

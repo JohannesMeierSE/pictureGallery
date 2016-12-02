@@ -10,6 +10,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="Picture" abstract="true" eSuperTypes="#//PathElement">
     <eOperations name="getMetadata" eType="#//Metadata"/>
     <eOperations name="getHash" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eOperations name="getHashFast" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileExtension" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="collection" lowerBound="1"
@@ -21,6 +22,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="metadata" eType="#//Metadata"
         containment="true" eOpposite="#//Metadata/picture"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="hash" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hashFast" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LinkedPicture" eSuperTypes="#//Picture">
     <eStructuralFeatures xsi:type="ecore:EReference" name="realPicture" lowerBound="1"

@@ -15,6 +15,7 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link gallery.RealPicture#getLinkedBy <em>Linked By</em>}</li>
  *   <li>{@link gallery.RealPicture#getMetadata <em>Metadata</em>}</li>
  *   <li>{@link gallery.RealPicture#getHash <em>Hash</em>}</li>
+ *   <li>{@link gallery.RealPicture#getHashFast <em>Hash Fast</em>}</li>
  * </ul>
  * </p>
  *
@@ -94,5 +95,31 @@ public interface RealPicture extends Picture {
 	 * @generated
 	 */
 	void setHash(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Hash Fast</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Hash Fast</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Hash Fast</em>' attribute.
+	 * @see #setHashFast(String)
+	 * @see gallery.GalleryPackage#getRealPicture_HashFast()
+	 * @model
+	 * @generated
+	 */
+	String getHashFast();
+
+	/**
+	 * Sets the value of the '{@link gallery.RealPicture#getHashFast <em>Hash Fast</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Hash Fast</em>' attribute.
+	 * @see #getHashFast()
+	 * @generated
+	 */
+	void setHashFast(String value);
 
 } // RealPicture
