@@ -1041,4 +1041,22 @@ public class Logic {
 		System.out.println("end");
 		return result;
 	}
+
+	public static void replaceIdenticalPicturesInSubcollectionsByLink(PictureCollection currentCollection) {
+		List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection);
+		if (result.isEmpty()) {
+			return;
+		}
+		String files = "";
+		for (Pair<RealPicture, RealPicture> pair : result) {
+			files = files + pair.getKey().getRelativePath() + " ==> " + pair.getValue().getRelativePath() + "\n";
+		}
+		files = files.trim();
+		boolean replace = Logic.askForConfirmation("Find and replace duplications", "Replace duplicated pictures by links?", files);
+		if (replace) {
+			for (Pair<RealPicture, RealPicture> pair : result) {
+				Logic.replaceRealByLinkedPicture(pair.getKey(), pair.getValue());
+			}
+		}
+	}
 }

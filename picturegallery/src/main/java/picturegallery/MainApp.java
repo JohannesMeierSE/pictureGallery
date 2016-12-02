@@ -32,7 +32,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
@@ -125,6 +124,7 @@ public class MainApp extends Application {
     			+ "(N) create new collection\n"
     			+ "(R) rename existing collection\n"
     			+ "(D) search for duplicates within this collection\n"
+    			+ "(D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures\n"
     			+ "(F11) start/stop full screen mode\n\n");
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
@@ -448,35 +448,21 @@ public class MainApp extends Application {
 					return;
 				}
 				// (D) search for duplicates within this collection
+				// (D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures
 				if (event.getCode() == KeyCode.D) {
-//			        Task<Void> task = new Task<Void>() {
-//			        	@Override
-//			        	protected Void call() throws Exception {
-//							Logic.similarity(currentCollection);
-//			        		return null;
-//			        	}
-//			        };
-//			        new Thread(task).start();
-//					return;
-					if (event.isShiftDown()) {
-						List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection);
-						if (result.isEmpty()) {
-							return;
-						}
-						String files = "";
-						for (Pair<RealPicture, RealPicture> pair : result) {
-							files = files + pair.getKey().getRelativePath() + " ==> " + pair.getValue().getRelativePath() + "\n";
-						}
-						files = files.trim();
-						boolean replace = Logic.askForConfirmation("Find and replace duplications", "Replace duplicated pictures by links?", files);
-						if (replace) {
-							for (Pair<RealPicture, RealPicture> pair : result) {
-								Logic.replaceRealByLinkedPicture(pair.getKey(), pair.getValue());
-							}
-						}
-					} else {
-						Logic.findIdenticalInOneCollection(currentCollection);
-					}
+			        Task<Void> task = new Task<Void>() {
+			        	@Override
+			        	protected Void call() throws Exception {
+			        		if (event.isShiftDown()) {
+			        			Logic.replaceIdenticalPicturesInSubcollectionsByLink(currentCollection);
+			        		} else {
+			        			Logic.findIdenticalInOneCollection(currentCollection);
+			        		}
+							return null;
+			        	}
+			        };
+			        new Thread(task).start();
+					return;
 				}
 				// (F11) start/stop full screen mode
 				if (event.getCode() == KeyCode.F11) {
