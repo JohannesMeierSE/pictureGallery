@@ -725,6 +725,19 @@ public class MainApp extends Application {
 		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
 		int previousIndexTemp = tempCollection.indexOf(picture);
 
+		if (picture instanceof RealPicture && !((RealPicture) picture).getLinkedBy().isEmpty()) {
+			// if this (real) picture is linked by other pictures => ask the user for confirmation before moving!!
+			String content = "";
+			for (LinkedPicture link : ((RealPicture) picture).getLinkedBy()) {
+				content = content + "<= " + link.getRelativePath() + "\n";
+			}
+			content = content.trim();
+			if (!Logic.askForConfirmation("Move picture", "This (real) picture " + picture.getRelativePath()
+					+ " is linked by the following pictures: Do you really want to move the picture? "
+					+ "The links will be changed accordingly.", content)) {
+				return;
+			}
+		}
 		Task<Void> task = new Task<Void>() { // do the long-running moving in another thread!
 			@Override
 			protected Void call() throws Exception {
