@@ -913,7 +913,10 @@ public class Logic {
 		if (picture.getHash() != null) {
 			return picture.getHash();
 		}
-		// andere: https://github.com/bytedeco/javacv-examples/blob/master/OpenCV2_Cookbook/README.md
+		/* andere:
+		 * https://github.com/bytedeco/javacv-examples/blob/master/OpenCV2_Cookbook/README.md
+		 * http://www.jguru.com/faq/view.jsp?EID=216274
+		 */
 
 		RealPicture real = getRealPicture(picture);
 		System.out.println("load next");
@@ -962,12 +965,18 @@ public class Logic {
 			}
 		}
 	}
-	public static boolean arePicturesIdentical(Picture p1, Picture p2, boolean fast) {
+	public static boolean arePicturesIdentical(Picture p1, Picture p2) {
 		// similar to itself == 1.0 !!
-		return getSimilarity(p1, p2, fast) >= 1.0;
+		if (p1 == null || p2 == null) {
+			throw new IllegalArgumentException();
+		}
+		if (p1.equals(p2)) {
+			return true;
+		}
+		return getSimilarity(p1, p2, true) >= 1.0; // TODO: das "true" kann optimiert werden: 1. was vorhanden ist 2. fast 3. nicht fast
 	}
 
-	public static void findIdenticalInOneCollection(PictureCollection collection, boolean fast) {
+	public static void findIdenticalInOneCollection(PictureCollection collection) {
 		int size = collection.getPictures().size();
 		System.out.println("beginning!");
 		for (int i = 0; i < size - 1; i++) {
@@ -977,7 +986,7 @@ public class Logic {
 				}
 				Picture p1 = collection.getPictures().get(i);
 				Picture p2 = collection.getPictures().get(j);
-				if (Logic.arePicturesIdentical(p1, p2, fast)) {
+				if (Logic.arePicturesIdentical(p1, p2)) {
 					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
 				}
 			}
@@ -985,22 +994,22 @@ public class Logic {
 		System.out.println("ready!");
 	}
 
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection, boolean fast) {
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection) {
 		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
-		findIdenticalInSubcollectionsLogic(baseCollection, baseCollection, result, fast);
+		findIdenticalInSubcollectionsLogic(baseCollection, baseCollection, result);
 		return result;
 	}
 	private static void findIdenticalInSubcollectionsLogic(PictureCollection baseCollection, PictureCollection current,
-			List<Pair<RealPicture, RealPicture>> result, boolean fast) {
+			List<Pair<RealPicture, RealPicture>> result) {
 		for (PictureCollection sub : current.getSubCollections()) {
 			if (sub instanceof LinkedPictureCollection) {
 				continue;
 			}
-			List<Pair<RealPicture, RealPicture>> r = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures(), fast);
+			List<Pair<RealPicture, RealPicture>> r = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures());
 			if (r != null) {
 				result.addAll(r);
 			}
-			findIdenticalInSubcollectionsLogic(baseCollection, sub, result, fast);
+			findIdenticalInSubcollectionsLogic(baseCollection, sub, result);
 		}
 	}
 
@@ -1009,7 +1018,7 @@ public class Logic {
 	 * @param one
 	 * @param two
 	 */
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two, boolean fast) {
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two) {
 		if (one.isEmpty() || two.isEmpty()) {
 			return null;
 		}
@@ -1023,7 +1032,7 @@ public class Logic {
 				if (o instanceof LinkedPicture) {
 					continue;
 				}
-				if (arePicturesIdentical(p, o, fast)) {
+				if (arePicturesIdentical(p, o)) {
 					System.out.println(p.getRelativePath() + " == " + o.getRelativePath());
 					result.add(new Pair<>((RealPicture) p, (RealPicture) o));
 				}
