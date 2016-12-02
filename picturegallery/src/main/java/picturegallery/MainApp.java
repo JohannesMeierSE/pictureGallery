@@ -459,7 +459,7 @@ public class MainApp extends Application {
 //			        new Thread(task).start();
 //					return;
 					if (event.isShiftDown()) {
-						List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection);
+						List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection, true);
 						if (result.isEmpty()) {
 							return;
 						}
@@ -475,7 +475,7 @@ public class MainApp extends Application {
 							}
 						}
 					} else {
-						Logic.findIdenticalInOneCollection(currentCollection);
+						Logic.findIdenticalInOneCollection(currentCollection, true);
 					}
 				}
 				// (F11) start/stop full screen mode

@@ -905,22 +905,30 @@ public class Logic {
 	}
 
 	/**
-	 * requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
+	 * !fast: requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
 	 * @param picture
 	 * @return null, if the hash was not calculated
 	 */
-	public static String getOrLoadHashOfPicture(Picture picture) {
+	public static String getOrLoadHashOfPicture(Picture picture, boolean fast) {
 		if (picture.getHash() != null) {
 			return picture.getHash();
 		}
 		// andere: https://github.com/bytedeco/javacv-examples/blob/master/OpenCV2_Cookbook/README.md
 
-		// https://github.com/pragone/jphash
 		RealPicture real = getRealPicture(picture);
 		System.out.println("load next");
 		try {
-			RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
-			real.setHash(hash1 + "");
+			if (!fast) {
+				// https://github.com/pragone/jphash
+				RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
+				real.setHash(hash1 + "");
+			} else {
+				// https://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java
+				FileInputStream fis = new FileInputStream(new File(real.getFullPath()));
+				String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
+				fis.close();
+				real.setHash(md5);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			real.setHash(NO_HASH);
@@ -931,27 +939,35 @@ public class Logic {
 		return real.getHash();
 	}
 
-	public static double getSimilarity(Picture p1, Picture p2) {
-		String hs1 = getOrLoadHashOfPicture(p1);
+	public static double getSimilarity(Picture p1, Picture p2, boolean fast) {
+		String hs1 = getOrLoadHashOfPicture(p1, fast);
 		if (hs1 == null || hs1.equals(NO_HASH)) {
 			return 0.0;
 		}
-		RadialHash h1 = RadialHash.fromString(hs1);
 
-		String hs2 = getOrLoadHashOfPicture(p2);
+		String hs2 = getOrLoadHashOfPicture(p2, fast);
 		if (hs2 == null || hs2.equals(NO_HASH)) {
 			return 0.0;
 		}
-		RadialHash h2 = RadialHash.fromString(hs2);
 
-		return jpHash.getSimilarity(h1, h2);
+		if (!fast) {
+			RadialHash h1 = RadialHash.fromString(hs1);
+			RadialHash h2 = RadialHash.fromString(hs2);
+			return jpHash.getSimilarity(h1, h2);
+		} else {
+			if (hs1.equals(hs2)) {
+				return 1.0;
+			} else {
+				return 0.1;
+			}
+		}
 	}
-	public static boolean arePicturesIdentical(Picture p1, Picture p2) {
+	public static boolean arePicturesIdentical(Picture p1, Picture p2, boolean fast) {
 		// similar to itself == 1.0 !!
-		return getSimilarity(p1, p2) >= 1.0;
+		return getSimilarity(p1, p2, fast) >= 1.0;
 	}
 
-	public static void findIdenticalInOneCollection(PictureCollection collection) {
+	public static void findIdenticalInOneCollection(PictureCollection collection, boolean fast) {
 		int size = collection.getPictures().size();
 		System.out.println("beginning!");
 		for (int i = 0; i < size - 1; i++) {
@@ -961,7 +977,7 @@ public class Logic {
 				}
 				Picture p1 = collection.getPictures().get(i);
 				Picture p2 = collection.getPictures().get(j);
-				if (Logic.arePicturesIdentical(p1, p2)) {
+				if (Logic.arePicturesIdentical(p1, p2, fast)) {
 					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
 				}
 			}
@@ -969,22 +985,22 @@ public class Logic {
 		System.out.println("ready!");
 	}
 
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection) {
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection, boolean fast) {
 		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
-		findIdenticalInSubcollectionsLogic(baseCollection, baseCollection, result);
+		findIdenticalInSubcollectionsLogic(baseCollection, baseCollection, result, fast);
 		return result;
 	}
 	private static void findIdenticalInSubcollectionsLogic(PictureCollection baseCollection, PictureCollection current,
-			List<Pair<RealPicture, RealPicture>> result) {
+			List<Pair<RealPicture, RealPicture>> result, boolean fast) {
 		for (PictureCollection sub : current.getSubCollections()) {
 			if (sub instanceof LinkedPictureCollection) {
 				continue;
 			}
-			List<Pair<RealPicture, RealPicture>> r = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures());
+			List<Pair<RealPicture, RealPicture>> r = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures(), fast);
 			if (r != null) {
 				result.addAll(r);
 			}
-			findIdenticalInSubcollectionsLogic(baseCollection, sub, result);
+			findIdenticalInSubcollectionsLogic(baseCollection, sub, result, fast);
 		}
 	}
 
@@ -993,7 +1009,7 @@ public class Logic {
 	 * @param one
 	 * @param two
 	 */
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two) {
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two, boolean fast) {
 		if (one.isEmpty() || two.isEmpty()) {
 			return null;
 		}
@@ -1007,7 +1023,7 @@ public class Logic {
 				if (o instanceof LinkedPicture) {
 					continue;
 				}
-				if (arePicturesIdentical(p, o)) {
+				if (arePicturesIdentical(p, o, fast)) {
 					System.out.println(p.getRelativePath() + " == " + o.getRelativePath());
 					result.add(new Pair<>((RealPicture) p, (RealPicture) o));
 				}
