@@ -347,6 +347,7 @@ public class MainApp extends Application {
 								currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
 					}
 					Logic.sortSubCollections(collectionWithNewLinks, false);
+					updateCollectionLabel(); // special cases: show new links
 					return;
 				}
 				// create new collection (N) => only RealCollections!
