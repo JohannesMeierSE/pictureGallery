@@ -296,7 +296,8 @@ public class MainApp extends Application {
 						// => remove existing link
 						deletePicture(existingLink, false);
 					}
-					// kein Update der GUI nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
+					updatePictureLabel();
+					// kein Update des Collection-Labels nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
 					return;
 				}
 				// (L) select a real collection and select collections to link them into the first collection
@@ -734,7 +735,7 @@ public class MainApp extends Application {
 			}
 			content = content.trim();
 			if (!Logic.askForConfirmation("Move picture", "This (real) picture " + picture.getRelativePath()
-					+ " is linked by the following pictures: Do you really want to move the picture? "
+					+ " is linked by the following pictures:\nDo you really want to move the picture?\n"
 					+ "The links will be changed accordingly.", content)) {
 				return;
 			}
