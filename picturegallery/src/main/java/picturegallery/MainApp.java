@@ -72,6 +72,7 @@ public class MainApp extends Application {
      * generate JavaFX project:
      * https://github.com/javafx-maven-plugin/javafx-basic-archetype
      * https://github.com/javafx-maven-plugin/javafx-maven-plugin
+     * https://stackoverflow.com/questions/15278215/maven-project-with-javafx-with-jar-file-in-lib
      * create jar: run "mvn jfx:jar"
      * (mvn install -DskipTests)
      *
@@ -265,13 +266,8 @@ public class MainApp extends Application {
 					if (linktoCollection == null) {
 						return;
 					}
-					// bestimme das Ziel
-					RealPicture linkedPicture;
-					if (currentPicture instanceof LinkedPicture) {
-						linkedPicture = ((LinkedPicture) currentPicture).getRealPicture();
-					} else {
-						linkedPicture = (RealPicture) currentPicture;
-					}
+					// determine the real picture with the new link
+					RealPicture linkedPicture = Logic.getRealPicture(currentPicture);
 					// search for an existing link
 					LinkedPicture existingLink = null;
 					for (LinkedPicture l : linkedPicture.getLinkedBy()) {
@@ -294,7 +290,7 @@ public class MainApp extends Application {
 						Logic.createSymlinkPicture(newLink);
 					} else {
 						// => remove existing link
-						deletePicture(existingLink, false);
+						deletePicture(existingLink, false); // TODO: ist das wirklich so erwünscht => besser ignorieren oder nachfragen!!
 					}
 					updatePictureLabel();
 					// kein Update des Collection-Labels nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
@@ -662,9 +658,6 @@ public class MainApp extends Application {
 					} catch (Throwable e) {
 						// ignore
 					}
-
-					// load image hash
-//					Logic.getOrLoadHashOfPicture(key);
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
@@ -679,7 +672,6 @@ public class MainApp extends Application {
 	private void deletePicture(Picture picture, boolean updateGui) {
 		// real => alle verlinkten Bilder werden auch gelöscht!!
 		if (picture instanceof RealPicture) {
-			// TODO: linked => linked => real  muss irgendwie verboten und verhindert werden!
 			RealPicture realToDelete = (RealPicture) picture;
 			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
 				deletePicture(linked, false);
@@ -723,7 +715,18 @@ public class MainApp extends Application {
 				return;
 			}
 		}
-// TODO: dürfen Real- und LinkedPicture (mit Bezug zueinander) im selben Ordner/Collection landen ??
+		// Real- und LinkedPicture (mit Bezug zueinander) dürfen NICHT im selben Ordner/Collection landen
+		if (picture instanceof LinkedPicture) {
+			if (((LinkedPicture) picture).getRealPicture().getCollection() == newCollection) {
+				return;
+			}
+		} else {
+			for (LinkedPicture link : ((RealPicture) picture).getLinkedBy()) {
+				if (link.getCollection() == newCollection) {
+					return;
+				}
+			}
+		}
 		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
 		int previousIndexTemp = tempCollection.indexOf(picture);
 
