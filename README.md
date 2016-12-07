@@ -23,3 +23,13 @@ An individual picture viewer written in Java.
   * generated sourcecode: `picturegallery/src-gen/main/java`
 * jpHash for image comparison: https://github.com/pragone/jphash
 * Maven as build tool
+
+## How to start the pictureGallery
+1. Get the sourcecode: `git clone https://github.com/JohannesMeierSE/pictureGallery.git`
+2. `cd pictureGallery/picturegallery`
+3. Use Maven to
+  * directly start the picture viewer with `mvn jfx:run`, or to
+  * create an executable JAR with the steps
+    1. `mvn jfx:jar`
+    2. `java -jar target/jfx/app/picturegallery-jfx.jar`, or to
+  * create a native bundle with `mvn jfx:native`
