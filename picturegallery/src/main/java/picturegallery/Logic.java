@@ -1058,6 +1058,18 @@ public class Logic {
 	}
 
 	public static void replaceIdenticalPicturesInSubcollectionsByLink(PictureCollection currentCollection) {
+		// linked collections => do nothing!
+		if (currentCollection instanceof LinkedPictureCollection) {
+			return;
+		}
+		// current collection is empty => link to pictures of sub-collections
+		if (currentCollection.getPictures().isEmpty()) {
+			for (PictureCollection sub : currentCollection.getSubCollections()) {
+				replaceIdenticalPicturesInSubcollectionsByLink(sub);
+			}
+			return;
+		}
+		// current collection contains pictures:
 		List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection);
 		if (result.isEmpty()) {
 			return;
