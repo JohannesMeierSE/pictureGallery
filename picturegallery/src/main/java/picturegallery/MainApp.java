@@ -619,12 +619,18 @@ public class MainApp extends Application {
         changeIndex(0);
 	}
 
-	private void requestNearPictures(int position) {
+	private void requestNearPictures(int position) { // TODO: funktioniert nur für die currentCollection!!
 		int size = currentCollection.getPictures().size();
-		for (int i = 0; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
+
+		// load initially the directly sibbling ones (will be loaded directly, if the loading thread was inactive before)!
+    	requestWithoutCallback(currentCollection.getPictures().get((position) % size));
+//		for (int i = 1; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
+		for (int i = Math.min(PRE_LOAD, size / 2); i >= 1; i--) {
         	requestWithoutCallback(currentCollection.getPictures().get((position + i) % size));
         	requestWithoutCallback(currentCollection.getPictures().get((position + size - i) % size));
         }
+		// the directly requested picture has the highest priority!
+    	requestWithoutCallback(currentCollection.getPictures().get((position) % size));
 	}
 
 	private void requestWithoutCallback(Picture picture) {
