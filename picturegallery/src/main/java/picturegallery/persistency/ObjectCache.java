@@ -232,7 +232,9 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 		}
 		if (value != null) {
 			value.count.increment();
-			callback.loaded(key, value.value);
+			if (callback != null) {
+				callback.loaded(key, value.value);
+			}
 		}
 	}
 }

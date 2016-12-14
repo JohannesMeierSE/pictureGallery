@@ -628,12 +628,7 @@ public class MainApp extends Application {
 	}
 
 	private void requestWithoutCallback(Picture picture) {
-		RealPicture key;
-		if (picture instanceof RealPicture) {
-			key = (RealPicture) picture;
-		} else {
-			key = ((LinkedPicture) picture).getRealPicture();
-		}
+		RealPicture key = Logic.getRealPicture(picture);
 		if (!imageCache.isLoadedOrLoading(key)) {
 			imageCache.request(key, null);
 		}
