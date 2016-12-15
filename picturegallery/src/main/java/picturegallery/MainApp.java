@@ -32,6 +32,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
@@ -473,6 +474,14 @@ public class MainApp extends Application {
     	stage.setFullScreenExitHint("Press F11 or ESC to exit full-screen mode.");
         stage.setTitle("Picture Gallery");
         stage.setScene(scene);
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent event) {
+				if (imageCache != null) {
+					imageCache.stop();
+				}
+			}
+		});
         stage.show();
 
         Task<Void> task = new Task<Void>() {

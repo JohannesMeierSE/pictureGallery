@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Loading priority: 1. number of requests descending, 2. time of last request (last time is more important)
@@ -65,6 +66,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	protected final int maxSize;
 
 	private Thread thread;
+	private final AtomicBoolean stopped;
 
 	public ObjectCache(int size) {
 		super();
@@ -74,18 +76,25 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 		loading = new ArrayList<>(2);
 		requested = new ArrayList<>(maxSize);
 
+		stopped = new AtomicBoolean(false);
 		thread = new Thread() {
 			@Override
 			public void run() {
-				while (!isInterrupted()) {
+				while (!isInterrupted() && !stopped.get()) {
 					Tripel next = null;
 					synchronized (sync) {
-						while (requested.isEmpty()) {
+						while (requested.isEmpty() && !stopped.get()) {
 							try {
 								sync.wait();
 							} catch (InterruptedException e) {
 							}
 						}
+						// loading was stopped (currently, no requests available)
+						if (stopped.get()) {
+							System.out.println("Loading thread: ready and stopped");
+							return;
+						}
+						// load the next element
 						next = requested.remove(0);
 						loading.add(0, next);
 					}
@@ -110,18 +119,23 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 						}
 					}
 				}
+				// there were still requests for loading ...
+				System.out.println("Loading thread: working, but stopped");
 			}
 		};
 		thread.start();
 	}
 
 	public void stop() {
+		stopped.set(true);
 		thread.interrupt();
 		synchronized (sync) {
 			content.clear();
 			contentSorted.clear();
 			loading.clear();
 			requested.clear();
+
+			sync.notifyAll(); // => activate the thread, if there was nothing to load!
 		}
 		// https://stackoverflow.com/questions/5690309/garbage-collector-in-java-set-an-object-null
 		System.gc();
