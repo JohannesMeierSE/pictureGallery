@@ -471,15 +471,15 @@ public class MainApp extends Application {
     		}
     	});
 
+    	initCache();
+
     	stage.setFullScreenExitHint("Press F11 or ESC to exit full-screen mode.");
         stage.setTitle("Picture Gallery");
         stage.setScene(scene);
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent event) {
-				if (imageCache != null) {
-					imageCache.stop();
-				}
+				stopCache();
 			}
 		});
         stage.show();
@@ -619,7 +619,6 @@ public class MainApp extends Application {
 		tempCollection.clear();
 		showTempCollection = false;
 		// current collection
-		clearCache();
 		currentPicture = null;
 		updateCollectionLabel();
         // initially, request some pictures
@@ -649,10 +648,13 @@ public class MainApp extends Application {
 		}
 	}
 
-	private void clearCache() {
+	private void stopCache() {
 		if (imageCache != null) {
 			imageCache.stop();
 		}
+	}
+
+	private void initCache() {
 		imageCache = new ObjectCache<RealPicture, Image>(SPACE) {
 			@Override
 			protected Image load(RealPicture key) {
