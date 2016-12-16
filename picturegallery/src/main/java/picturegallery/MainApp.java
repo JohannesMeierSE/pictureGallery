@@ -291,7 +291,11 @@ public class MainApp extends Application {
 						Logic.createSymlinkPicture(newLink);
 					} else {
 						// => remove existing link
-						deletePicture(existingLink, false); // TODO: ist das wirklich so erwünscht => besser ignorieren oder nachfragen!!
+						if (Logic.askForConfirmation("Link current picture", "The current picture is already linked into the selected collection:",
+								"Confirm to remove the link from the collection.")) {
+							// ask before removing the link
+							deletePicture(existingLink, false);
+						}
 					}
 					updatePictureLabel();
 					// kein Update des Collection-Labels nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
