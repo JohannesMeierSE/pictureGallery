@@ -250,7 +250,7 @@ public class MainApp extends Application {
 					movePicture(currentPicture, movetoCollection);
 					return;
 				}
-    			// (V) add the current picture as link into another collection
+    			// (V) add the current picture as link into another collection / remove the link from that collection
 				if (event.getCode() == KeyCode.V) {
 					// (V + Shift) select another collection and add the current picture as link into this collection
 					if (event.isShiftDown()) {
@@ -687,7 +687,6 @@ public class MainApp extends Application {
 			RealPicture realToDelete = (RealPicture) picture;
 			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
 				deletePicture(linked, false);
-				linked.setRealPicture(null);
 			}
 			imageCache.remove(realToDelete);
 		}
@@ -695,9 +694,9 @@ public class MainApp extends Application {
 		// update the GUI berücksichtigen
 		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
 		int previousIndexTemp = tempCollection.indexOf(picture);
-		
+
 		tempCollection.remove(picture);
-		
+
 		// delete file in file system
 		try {
 			Files.delete(Paths.get(picture.getFullPath()));
@@ -705,7 +704,14 @@ public class MainApp extends Application {
 			e.printStackTrace();
 		}
 
+		// update the EMF model
 		picture.getCollection().getPictures().remove(picture);
+		picture.setCollection(null);
+		if (picture instanceof LinkedPicture) {
+			LinkedPicture lp = (LinkedPicture) picture;
+			lp.getRealPicture().getLinkedBy().remove(lp);
+			lp.setRealPicture(null);
+		}
 
 		// update GUI
 		updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, updateGui);
