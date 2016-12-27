@@ -41,6 +41,7 @@ import picturegallery.persistency.Settings;
 public class MainApp extends Application {
 	private final static int SPACE = 25;
 	private final static int PRE_LOAD = 5;
+	private final static int JUMP_SIZE = 10;
 
 	private ImageView iv;
 	private VBox vBox;
@@ -58,6 +59,7 @@ public class MainApp extends Application {
 	private boolean showTempCollection;
 	private int indexTempCollection;
 	private List<Picture> tempCollection = new ArrayList<>();
+	private boolean jumpedBefore = false;
 
 	private RealPictureCollection movetoCollection;
 	private RealPictureCollection linktoCollection;
@@ -115,6 +117,7 @@ public class MainApp extends Application {
     			+ "(Right) next picture\n"
     			+ "(Left) previous picture\n"
     			+ "(Pos/Home) go to the first picture\n"
+    			+ "(Page down/up) jump to the next/previous 10th picture\n"
     			+ "(T) add to/remove from temp collection\n"
     			+ "(S) show temp collection / exit and clear temp collection\n"
     			+ "(C) select another collection\n"
@@ -159,30 +162,29 @@ public class MainApp extends Application {
 
 				// next picture (RIGHT)
 				if (event.getCode() == KeyCode.RIGHT && size >= 2) {
-					int newIndex = -1;
-					if (showTempCollection) {
-						newIndex = ( indexTempCollection + 1 ) % sizeTemp;
-					} else {
-						newIndex = ( indexCurrentCollection + 1 ) % size;
-					}
-					changeIndex(newIndex);
+					gotoPicture(1, true);
 					return;
 				}
 				// previous picture (LEFT)
 				if (event.getCode() == KeyCode.LEFT && size >= 2) {
-					int newIndex = -1;
-					if (showTempCollection) {
-						newIndex = ( indexTempCollection + sizeTemp - 1 ) % sizeTemp;
-					} else {
-						newIndex = ( indexCurrentCollection + size - 1 ) % size;
-					}
-					changeIndex(newIndex);
+					gotoPicture(-1, true);
 					return;
 				}
 				// (Pos/Home) go to the first picture
 				if (event.getCode() == KeyCode.HOME) {
-			        requestNearPictures(0);
-					changeIndex(0);
+					jumpedBefore = true;
+					changeIndex(0, true);
+				}
+				// (Page down/up) jump to the next/previous 10th picture (does not work in temp collections and in very small collections)
+				if (event.getCode() == KeyCode.PAGE_DOWN && size > JUMP_SIZE && !showTempCollection) {
+					jumpedBefore = true;
+					gotoPicture(JUMP_SIZE, false);
+					return;
+				}
+				if (event.getCode() == KeyCode.PAGE_UP && size > JUMP_SIZE && !showTempCollection) {
+					jumpedBefore = true;
+					gotoPicture(-JUMP_SIZE, false);
+					return;
 				}
 				// (H) hide information
 				if (event.getCode() == KeyCode.H) {
@@ -205,12 +207,12 @@ public class MainApp extends Application {
 						// exit and clear temp collection (s)
 						showTempCollection = false;
 						tempCollection.clear();
-						changeIndex(indexCurrentCollection);
+						changeIndex(indexCurrentCollection, true);
 					} else if (tempCollection.size() >= 2) {
 						// show temp collection (s)
 						Logic.sortPictures(tempCollection);
 						showTempCollection = true;
-						changeIndex(0);
+						changeIndex(0, true);
 					}
 					updateCollectionLabel();
 					return;
@@ -512,6 +514,19 @@ public class MainApp extends Application {
         new Thread(task).start();
     }
 
+	private void gotoPicture(int diff, boolean preload) {
+		int size = currentCollection.getPictures().size();
+		int sizeTemp = tempCollection.size();
+
+		int newIndex = -1;
+		if (showTempCollection) {
+			newIndex = ( indexTempCollection + sizeTemp + diff ) % sizeTemp;
+		} else {
+			newIndex = ( indexCurrentCollection + size + diff ) % size;
+		}
+		changeIndex(newIndex, preload);
+	}
+
 	private void handleLabel(Label label) {
     	// https://assylias.wordpress.com/2013/12/08/383/
 		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
@@ -582,7 +597,7 @@ public class MainApp extends Application {
 		return Logic.getRealPicture(currentPicture);
 	}
 
-	private void changeIndex(int newIndex) {
+	private void changeIndex(int newIndex, boolean preload) {
 		if (newIndex < 0) {
 			throw new IllegalArgumentException();
 		}
@@ -594,6 +609,7 @@ public class MainApp extends Application {
 			indexTempCollection = newIndex;
 			labelIndex.setText((indexTempCollection + 1) + " / " + tempCollection.size());
 			showPicture(tempCollection.get(indexTempCollection));
+			// TODO: pre-load next temp pictures!
 		} else {
 			// within the currently selected real collection
 			int size = currentCollection.getPictures().size();
@@ -604,8 +620,14 @@ public class MainApp extends Application {
 			labelIndex.setText((indexCurrentCollection + 1) + " / " + size);
 			showPicture(currentCollection.getPictures().get(indexCurrentCollection));
 			// pre-load next pictures
-			requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection + PRE_LOAD + size) % size));
-			requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection - PRE_LOAD + size) % size));
+			if (preload) {
+				if (jumpedBefore) {
+					requestNearPictures(indexCurrentCollection);
+					jumpedBefore = false;
+				}
+				requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection + PRE_LOAD + size) % size));
+				requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection - PRE_LOAD + size) % size));
+			}
 		}
 	}
 
@@ -628,7 +650,7 @@ public class MainApp extends Application {
         // initially, request some pictures
         requestNearPictures(0);
 
-        changeIndex(0);
+        changeIndex(0, true);
 	}
 
 	private void requestNearPictures(int position) { // TODO: funktioniert nur für die currentCollection!!
@@ -855,11 +877,11 @@ public class MainApp extends Application {
 			if (updateGui) {
 				// update the GUI
 				if (showTempCollection) {
-					changeIndex(newIndexTemp);
+					changeIndex(newIndexTemp, true);
 					indexCurrentCollection = newIndexCurrent; // Auch der Index in der aktuellen Collection muss aktualisiert werden, damit man nach dem Schließen des Temp-Mode wieder da ist, wo man die Collection verlassen hatte.
 				} else {
 					if (!currentCollection.getPictures().isEmpty()) { // TODO: dafür richtigen Mode einrichten mit schwarzem Hintergrund!!
-						changeIndex(newIndexCurrent);
+						changeIndex(newIndexCurrent, true);
 					}
 					// der Temp-Index spielt außerhalb des Temp-Mode keine Rolle!
 				}
