@@ -405,7 +405,7 @@ public class Logic {
 			parser.parse(in, handler, metadata, pcontext);
 		}
 		in.close();
-		System.out.println("");
+//		System.out.println("");
 		System.out.println(picture.getFullPath());
 
 		gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
@@ -420,7 +420,7 @@ public class Logic {
 			String valueReal = new String(metadata.get(name));
 			String key = keyReal.toLowerCase();
 			String value = valueReal.toLowerCase();
-			System.out.println(name + ": " + value);
+//			System.out.println(name + ": " + value);
 
 			// orientation
 			if (key.contains("orientation")) {
