@@ -39,9 +39,9 @@ import picturegallery.persistency.Settings;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
 public class MainApp extends Application {
-	private final static int SPACE = 25;
-	private final static int PRE_LOAD = 5;
-	private final static int JUMP_SIZE = 10;
+	public final static int SPACE = 25;
+	public final static int PRE_LOAD = 5;
+	public final static int JUMP_SIZE = 10;
 
 	private ImageView iv;
 	private VBox vBox;
@@ -114,10 +114,7 @@ public class MainApp extends Application {
 
     	labelKeys = new Label("keys");
     	labelKeys.setText("(H) hide/show these information\n"
-    			+ "(Right) next picture\n"
-    			+ "(Left) previous picture\n"
-    			+ "(Pos/Home) go to the first picture\n"
-    			+ "(Page down/up) jump to the next/previous 10th picture\n"
+    			+ "(Page down/up) jump to the next/previous " + JUMP_SIZE + "th picture\n"
     			+ "(T) add to/remove from temp collection\n"
     			+ "(S) show temp collection / exit and clear temp collection\n"
     			+ "(C) select another collection\n"
@@ -153,39 +150,6 @@ public class MainApp extends Application {
     	scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
     		@Override
     		public void handle(KeyEvent event) {
-    			int size = 0;
-    			int sizeCC = currentCollection.getPictures().size();
-				if (currentCollection != null) {
-    				size = sizeCC;
-    			}
-				int sizeTemp = tempCollection.size();
-
-				// next picture (RIGHT)
-				if (event.getCode() == KeyCode.RIGHT && size >= 2) {
-					gotoPicture(1, true);
-					return;
-				}
-				// previous picture (LEFT)
-				if (event.getCode() == KeyCode.LEFT && size >= 2) {
-					gotoPicture(-1, true);
-					return;
-				}
-				// (Pos/Home) go to the first picture
-				if (event.getCode() == KeyCode.HOME) {
-					jumpedBefore = true;
-					changeIndex(0, true);
-				}
-				// (Page down/up) jump to the next/previous 10th picture (does not work in temp collections and in very small collections)
-				if (event.getCode() == KeyCode.PAGE_DOWN && size > JUMP_SIZE && !showTempCollection) {
-					jumpedBefore = true;
-					gotoPicture(JUMP_SIZE, false);
-					return;
-				}
-				if (event.getCode() == KeyCode.PAGE_UP && size > JUMP_SIZE && !showTempCollection) {
-					jumpedBefore = true;
-					gotoPicture(-JUMP_SIZE, false);
-					return;
-				}
 				// (H) hide information
 				if (event.getCode() == KeyCode.H) {
 					vBox.setVisible(! vBox.isVisible());
@@ -909,5 +873,25 @@ public class MainApp extends Application {
 			}
 		}
 		labelCollectionPath.setText(value);
+	}
+
+	public void setLabelIndexText(String newText) {
+		labelIndex.setText(newText);
+	}
+
+	public void setLabelPictureName(String newText) {
+		labelPictureName.setText(newText);
+	}
+
+	public void setLabelMeta(String newText) {
+		labelMeta.setText(newText);
+	}
+
+	public ImageView getImage() {
+		return iv;
+	}
+
+	public ObjectCache<RealPicture, Image> getImageCache() {
+		return imageCache;
 	}
 }
