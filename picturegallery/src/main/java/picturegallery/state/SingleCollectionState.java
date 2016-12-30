@@ -7,6 +7,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
+import picturegallery.action.SelectAnotherCollectionAction;
 import picturegallery.action.ShowTempCollectionAction;
 
 public class SingleCollectionState extends PictureSwitchingState {
@@ -38,24 +39,48 @@ public class SingleCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
+	public PictureCollection getCurrentCollection() {
+		return currentCollection;
+	}
+
+	public void setCurrentCollection(PictureCollection currentCollection) {
+		if (currentCollection == null) {
+			throw new IllegalArgumentException();
+		}
+
+		this.currentCollection = currentCollection;
+		movetoCollection = null;
+		linktoCollection = null;
+		indexCurrentCollection = -1;
+
+		showInitialPicture();
+	}
+
+	@Override
 	public void onInit() {
 		super.onInit();
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
 		registerAction(new ShowTempCollectionAction());
+		registerAction(new SelectAnotherCollectionAction());
 	}
 
 	@Override
 	public void onEntry(State previousState) {
-		super.onEntry(previousState);
-
 		// select the initial collection!
 		while (currentCollection == null) {
-			currentCollection = Logic.selectCollection(app.getBaseCollection(), currentCollection, movetoCollection, false, false, true);
+			PictureCollection newCol = Logic.selectCollection(app.getBaseCollection(), currentCollection, movetoCollection, false, false, true);
+			setCurrentCollection(newCol);
 		}
+
+		super.onEntry(previousState);
 	}
 
 	public TempCollectionState getTempState() {
 		return tempState;
+	}
+
+	public RealPictureCollection getMovetoCollection() {
+		return movetoCollection;
 	}
 }

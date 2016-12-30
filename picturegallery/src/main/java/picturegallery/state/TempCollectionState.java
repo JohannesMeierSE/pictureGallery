@@ -1,15 +1,19 @@
 package picturegallery.state;
 
 import gallery.Picture;
+import gallery.PictureCollection;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.ExitTempCollectionAction;
 
 public class TempCollectionState extends PictureSwitchingState {
 	protected final List<Picture> tempCollection;
+
+	private SingleCollectionState previousState;
 
 	public TempCollectionState(MainApp app) {
 		super(app);
@@ -32,7 +36,20 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
+	public PictureCollection getCurrentCollection() {
+		return previousState.getCurrentCollection();
+	}
+
+	@Override
+	public void onInit() {
+		super.onInit();
+		registerAction(new ExitTempCollectionAction());
+	}
+
+	@Override
 	public void onEntry(State previousState) {
+		this.previousState = (SingleCollectionState) previousState;
+
 		// in-place sorting
 		Logic.sortPictures(tempCollection);
 
@@ -45,5 +62,13 @@ public class TempCollectionState extends PictureSwitchingState {
 
 	public void removePicture(Picture picture) {
 		tempCollection.remove(picture);
+	}
+
+	public void clearPictures() {
+		tempCollection.clear();
+	}
+
+	public SingleCollectionState getPreviousState() {
+		return previousState;
 	}
 }

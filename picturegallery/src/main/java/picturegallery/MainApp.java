@@ -124,8 +124,6 @@ public class MainApp extends Application {
 
     	labelKeys = new Label("keys");
     	labelKeys.setText("(H) hide/show these information\n"
-    			+ "(S) show temp collection / exit and clear temp collection\n"
-    			+ "(C) select another collection\n"
     			+ "(X) move the current picture into another collection (and closes the temp collection)\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
@@ -161,30 +159,6 @@ public class MainApp extends Application {
 				// (H) hide information
 				if (event.getCode() == KeyCode.H) {
 					vBox.setVisible(! vBox.isVisible());
-					return;
-				}
-				// (S) show temp collection / exit and clear temp collection
-				if (event.getCode() == KeyCode.S) {
-					if (showTempCollection) {
-						// exit and clear temp collection (s)
-						showTempCollection = false;
-						tempCollection.clear();
-						changeIndex(indexCurrentCollection, true);
-					} else if (tempCollection.size() >= 2) {
-						// show temp collection (s)
-						Logic.sortPictures(tempCollection);
-						showTempCollection = true;
-						changeIndex(0, true);
-					}
-					updateCollectionLabel();
-					return;
-				}
-				// (C) select another collection
-				if (event.getCode() == KeyCode.C && !showTempCollection) {
-					PictureCollection newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, true, false, true);
-					if (newCol != null) {
-						changeCollection(newCol);
-					}
 					return;
 				}
 				// (X) move the current picture into another collection (and closes the temp collection)
@@ -873,7 +847,7 @@ public class MainApp extends Application {
 		labelCollectionPath.setText(value);
 	}
 
-	public void setLabelIndexText(String newText) {
+	public void setLabelIndex(String newText) {
 		labelIndex.setText(newText);
 	}
 
@@ -883,6 +857,10 @@ public class MainApp extends Application {
 
 	public void setLabelMeta(String newText) {
 		labelMeta.setText(newText);
+	}
+
+	public void setLabelCollectionPath(String newText) {
+		labelCollectionPath.setText(newText);
 	}
 
 	public ImageView getImage() {

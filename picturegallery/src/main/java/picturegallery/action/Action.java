@@ -8,6 +8,10 @@ public abstract class Action {
 		super();
 	}
 
+	/**
+	 * Will be called on the JavaFX-UI-Thread.
+	 * @param currentState
+	 */
 	public abstract void run(State currentState);
 
 	public abstract KeyCode getKey();

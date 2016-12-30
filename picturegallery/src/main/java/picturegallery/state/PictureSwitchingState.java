@@ -1,8 +1,11 @@
 package picturegallery.state;
 
 import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
 import gallery.Picture;
+import gallery.PictureCollection;
 import gallery.RealPicture;
+import gallery.RealPictureCollection;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
 import picturegallery.Logic;
@@ -16,11 +19,12 @@ public abstract class PictureSwitchingState extends State {
 	protected Picture currentPicture;
 	protected int indexCurrentCollection;
 
-	private boolean jumpedBefore = false;
+	protected boolean jumpedBefore = false;
 
 	public abstract int getSize();
 	public abstract Picture getPictureAtIndex(int index);
 	public abstract boolean containsPicture(Picture pic);
+	public abstract PictureCollection getCurrentCollection();
 
 	protected final MainApp app;
 
@@ -46,7 +50,7 @@ public abstract class PictureSwitchingState extends State {
 			throw new IllegalArgumentException();
 		}
 		indexCurrentCollection = newIndex;
-		app.setLabelIndexText((indexCurrentCollection + 1) + " / " + size);
+		app.setLabelIndex((indexCurrentCollection + 1) + " / " + size);
 		showPicture(getPictureAtIndex(indexCurrentCollection));
 
 		// pre-load next pictures
@@ -120,6 +124,26 @@ public abstract class PictureSwitchingState extends State {
 		app.setLabelPictureName(pictureText);
 	}
 
+	private void updateCollectionLabel() {
+		String value = "";
+//		if (showTempCollection) {
+//			value =  value + "temp collection within ";
+//		}
+		PictureCollection currentCollection = getCurrentCollection();
+		value =  value + currentCollection.getRelativePath();
+		if (currentCollection instanceof LinkedPictureCollection) {
+			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getRelativePath();
+		}
+		RealPictureCollection real = Logic.getRealCollection(currentCollection);
+		for (LinkedPictureCollection link : real.getLinkedBy()) {
+			value = value + "\n        <= " + link.getRelativePath();
+			if (link == currentCollection) {
+				value = value + " (this collection)";
+			}
+		}
+		app.setLabelCollectionPath(value);
+	}
+
 	private void requestWithoutCallback(Picture picture) {
 		RealPicture key = Logic.getRealPicture(picture);
 		if (!app.getImageCache().isLoadedOrLoading(key)) {
@@ -165,12 +189,18 @@ public abstract class PictureSwitchingState extends State {
 
 	@Override
 	public void onEntry(State previousState) {
+		showInitialPicture();
+	}
+
+	protected void showInitialPicture() {
+		jumpedBefore = false;
 		if (indexCurrentCollection < 0) {
 			changeIndex(0, true);
 		} else {
 			changeIndex(indexCurrentCollection, true);
 		}
 		requestNearPictures(indexCurrentCollection);
+		updateCollectionLabel();
 	}
 
 	@Override
