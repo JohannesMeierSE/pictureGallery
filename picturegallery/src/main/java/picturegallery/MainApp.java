@@ -130,7 +130,6 @@ public class MainApp extends Application {
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
     			+ "(L) select a real collection and select real collections to link them into the first collection\n"
     			+ "(N) create new collection\n"
-    			+ "(R) rename existing collection\n"
     			+ "(D) search for duplicates within this collection\n"
     			+ "(D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures\n"
     			+ "(F11) start/stop full screen mode\n\n");
@@ -318,74 +317,6 @@ public class MainApp extends Application {
 					    	e.printStackTrace();
 					    }
 					}
-					return;
-				}
-				// (R) rename existing collection (but not the base collection) => only RealCollections
-				if (event.getCode() == KeyCode.R) {
-					PictureCollection collectionToRename = Logic.selectCollection(baseCollection,
-							currentCollection, movetoCollection, true, true, true, Collections.singletonList(baseCollection));
-					if (collectionToRename == null) {
-						return;
-					}
-					if (collectionToRename == baseCollection) {
-						// sollte eigentlich gar nicht möglich sein!
-						return;
-					}
-					String newName = Logic.askForString("Rename collection",
-							"Select a new name for the collection " + collectionToRename.getName() + "!",
-							"New name: ", true, collectionToRename.getName());
-					if (newName.equals(collectionToRename.getName())) {
-						return; // same name like before => nothing to do!
-					}
-					// check for uniqueness
-					if (!Logic.isCollectionNameUnique(collectionToRename.getSuperCollection(), newName)) {
-						System.err.println("The new name " + newName + " is not unique!");
-						return; // the new name is not unique!
-					}
-
-					if (collectionToRename instanceof RealPictureCollection) {
-						// after testing all pre-conditions, start with the renaming itself ...
-						List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
-						// remove all links linking on pictures contained (recursively) in the collection to rename
-						for (LinkedPicture link : linksToReGenerate) {
-							Logic.deleteSymlinkPicture(link);
-						}
-						// remove all links on the collection to rename
-						RealPictureCollection realCollectionToRename = (RealPictureCollection) collectionToRename;
-						for (LinkedPictureCollection link : realCollectionToRename.getLinkedBy()) {
-							Logic.deleteSymlinkCollection(link);
-						}
-						// rename in file system
-						// http://www.java-examples.com/rename-file-or-directory
-						File oldFile = new File(collectionToRename.getFullPath());
-						oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName));
-						// rename in EMF model
-						collectionToRename.setName(newName);
-						if (currentCollection == collectionToRename) {
-							updateCollectionLabel();
-						}
-						// create all deleted links again
-						for (LinkedPicture link : linksToReGenerate) {
-							Logic.createSymlinkPicture(link);
-						}
-						// create all deleted links on the renamed collection again
-						for (LinkedPictureCollection link : realCollectionToRename.getLinkedBy()) {
-							Logic.createSymlinkCollection(link);
-						}
-					} else {
-						// rename in file system
-						// http://www.java-examples.com/rename-file-or-directory
-						File oldFile = new File(collectionToRename.getFullPath());
-						oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName));
-						// rename in EMF model
-						collectionToRename.setName(newName);
-						if (currentCollection == collectionToRename) {
-							updateCollectionLabel();
-						}
-					}
-					// sort the collections within the parent collection
-					Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
-					updateCollectionLabel();
 					return;
 				}
 				// (D) search for duplicates within this collection

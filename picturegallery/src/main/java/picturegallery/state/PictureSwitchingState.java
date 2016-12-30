@@ -124,7 +124,7 @@ public abstract class PictureSwitchingState extends State {
 		app.setLabelPictureName(pictureText);
 	}
 
-	private void updateCollectionLabel() {
+	public void updateCollectionLabel() {
 		String value = "";
 //		if (showTempCollection) {
 //			value =  value + "temp collection within ";
