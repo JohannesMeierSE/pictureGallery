@@ -12,7 +12,6 @@ import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
-import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
 
 //TODO: global anmelden!
@@ -24,9 +23,7 @@ public class CreateNewCollection extends Action {
 		PictureCollection movetoCollection = null;
 		if (currentState instanceof PictureSwitchingState) {
 			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
-			if (currentState instanceof SingleCollectionState) {
-				movetoCollection = ((SingleCollectionState) currentState).getMovetoCollection(); // TODO: gehört eigentlich in PictureSwitchingState! 
-			}
+			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection(); 
 		}
 
 		// get the parent of the new collection

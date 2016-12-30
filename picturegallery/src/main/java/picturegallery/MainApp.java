@@ -128,8 +128,6 @@ public class MainApp extends Application {
     	labelKeys.setText(""
     			+ "(X) move the current picture into another collection (and closes the temp collection)\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
-    			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
-    			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
     			+ "(D) search for duplicates within this collection\n"
     			+ "(D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures\n"
     			);
@@ -180,57 +178,6 @@ public class MainApp extends Application {
 						updateCollectionLabel();
 					}
 					movePicture(currentPicture, movetoCollection);
-					return;
-				}
-    			// (V) add the current picture as link into another collection / remove the link from that collection
-				if (event.getCode() == KeyCode.V) {
-					// (V + Shift) select another collection and add the current picture as link into this collection
-					if (event.isShiftDown()) {
-						linktoCollection = null;
-					}
-					if (linktoCollection == null) {
-						linktoCollection = (RealPictureCollection) Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
-								true, true, false, Collections.singletonList(currentCollection));
-						if (linktoCollection == currentCollection) {
-							// sollte eigentlich gar nicht möglich sein (macht inhaltlich auch keinen Sinn)
-							linktoCollection = null;
-						}
-					}
-					if (linktoCollection == null) {
-						return;
-					}
-					// determine the real picture with the new link
-					RealPicture linkedPicture = Logic.getRealPicture(currentPicture);
-					// search for an existing link
-					LinkedPicture existingLink = null;
-					for (LinkedPicture l : linkedPicture.getLinkedBy()) {
-						if (l.getCollection() == linktoCollection) {
-							existingLink = l;
-							break;
-						}
-					}
-					if (existingLink == null) { // => create new link
-						// update the EMF model
-						LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
-						newLink.setName(new String(linkedPicture.getName()));
-						newLink.setFileExtension(new String(linkedPicture.getFileExtension()));
-						newLink.setCollection(linktoCollection);
-						newLink.setRealPicture(linkedPicture);
-						linkedPicture.getLinkedBy().add(newLink);
-						linktoCollection.getPictures().add(newLink);
-						Logic.sortPicturesInCollection(linktoCollection);
-						// add link in file system
-						Logic.createSymlinkPicture(newLink);
-					} else {
-						// => remove existing link
-						if (Logic.askForConfirmation("Link current picture", "The current picture is already linked into the selected collection:",
-								"Confirm to remove the link from the collection.")) {
-							// ask before removing the link
-							deletePicture(existingLink, false);
-						}
-					}
-					updatePictureLabel();
-					// kein Update des Collection-Labels nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
 					return;
 				}
 				// (D) search for duplicates within this collection
@@ -488,7 +435,8 @@ public class MainApp extends Application {
 		};
 	}
 
-	private void deletePicture(Picture picture, boolean updateGui) {
+	public void deletePicture(Picture picture, boolean updateGui) {
+		// TODO: diese Methode bleibt (erstmal (?)) hier, muss aber noch an die States angepasst!!
 		// real => alle verlinkten Bilder werden auch gelöscht!!
 		if (picture instanceof RealPicture) {
 			RealPicture realToDelete = (RealPicture) picture;

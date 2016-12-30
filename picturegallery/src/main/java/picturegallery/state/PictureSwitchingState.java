@@ -10,7 +10,9 @@ import javafx.application.Platform;
 import javafx.scene.image.Image;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.ClearLinktoCollectionAction;
 import picturegallery.action.JumpFirstAction;
+import picturegallery.action.LinkPictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
 import picturegallery.persistency.ObjectCache.CallBack;
@@ -20,6 +22,8 @@ public abstract class PictureSwitchingState extends State {
 	protected int indexCurrentCollection;
 
 	protected boolean jumpedBefore = false;
+	protected RealPictureCollection linktoCollection;
+	protected RealPictureCollection movetoCollection;
 
 	public abstract int getSize();
 	public abstract Picture getPictureAtIndex(int index);
@@ -103,6 +107,14 @@ public abstract class PictureSwitchingState extends State {
 		return Logic.getRealPicture(currentPicture);
 	}
 
+	public RealPictureCollection getLinktoCollection() {
+		return linktoCollection;
+	}
+
+	public void setLinktoCollection(RealPictureCollection linktoCollection) {
+		this.linktoCollection = linktoCollection;
+	}
+
 	public void updatePictureLabel() {
 		// update the text description of the picture
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
@@ -180,6 +192,8 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new NextPictureAction());
 		registerAction(new PreviousPictureAction());
 		registerAction(new JumpFirstAction());
+		registerAction(new LinkPictureAction());
+		registerAction(new ClearLinktoCollectionAction());
 	}
 
 	@Override
@@ -206,5 +220,8 @@ public abstract class PictureSwitchingState extends State {
 	@Override
 	public void onExit(State nextState) {
 		// empty
+	}
+	public RealPictureCollection getMovetoCollection() {
+		return movetoCollection;
 	}
 }
