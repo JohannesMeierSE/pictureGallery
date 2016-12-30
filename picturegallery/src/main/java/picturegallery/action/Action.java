@@ -4,6 +4,10 @@ import javafx.scene.input.KeyCode;
 import picturegallery.state.State;
 
 public abstract class Action {
+	public Action() {
+		super();
+	}
+
 	public abstract void run(State currentState);
 
 	public abstract KeyCode getKey();

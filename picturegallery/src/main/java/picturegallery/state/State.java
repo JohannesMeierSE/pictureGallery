@@ -10,6 +10,10 @@ public abstract class State {
 
 	public abstract void onInit();
 	public abstract void onClose();
+	/**
+	 * 
+	 * @param previousState could be null, if this state is the first on within the application life
+	 */
 	public abstract void onEntry(State previousState);
 	public abstract void onExit(State nextState);
 

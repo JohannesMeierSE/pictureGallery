@@ -36,6 +36,7 @@ import javafx.stage.WindowEvent;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
+import picturegallery.state.State;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
 public class MainApp extends Application {
@@ -67,6 +68,13 @@ public class MainApp extends Application {
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 	private ObjectCache<RealPicture, Image> imageCache;
 
+	private State currentState;
+
+	private static MainApp instance;
+	public static MainApp get() {
+		return instance;
+	}
+
 	public static void main(String[] args) throws Exception {
         launch(args);
     }
@@ -86,6 +94,8 @@ public class MainApp extends Application {
      * https://www.eclipse.org/forums/index.php?t=msg&th=134237
      */
     public void start(Stage stage) throws Exception {
+    	instance = this; // hack to simplify/decrease dependencies
+
     	StackPane root = new StackPane();
     	root.setStyle("-fx-background-color: #000000;");
 
@@ -114,8 +124,6 @@ public class MainApp extends Application {
 
     	labelKeys = new Label("keys");
     	labelKeys.setText("(H) hide/show these information\n"
-    			+ "(Page down/up) jump to the next/previous " + JUMP_SIZE + "th picture\n"
-    			+ "(T) add to/remove from temp collection\n"
     			+ "(S) show temp collection / exit and clear temp collection\n"
     			+ "(C) select another collection\n"
     			+ "(X) move the current picture into another collection (and closes the temp collection)\n"
@@ -153,16 +161,6 @@ public class MainApp extends Application {
 				// (H) hide information
 				if (event.getCode() == KeyCode.H) {
 					vBox.setVisible(! vBox.isVisible());
-					return;
-				}
-				// (T) add to/remove from temp collection
-				if (event.getCode() == KeyCode.T && !showTempCollection && currentPicture != null) {
-					if (tempCollection.contains(currentPicture)) {
-						tempCollection.remove(currentPicture);
-					} else {
-						tempCollection.add(currentPicture);
-					}
-					updatePictureLabel();
 					return;
 				}
 				// (S) show temp collection / exit and clear temp collection
@@ -893,5 +891,26 @@ public class MainApp extends Application {
 
 	public ObjectCache<RealPicture, Image> getImageCache() {
 		return imageCache;
+	}
+
+	public RealPictureCollection getBaseCollection() {
+		return baseCollection;
+	}
+
+	public void switchState(State newState) {
+		if (newState == null) {
+			throw new IllegalArgumentException();
+		}
+		if (newState == currentState) {
+			throw new IllegalArgumentException();
+		}
+
+		// switch state
+		if (currentState != null) {
+			currentState.onExit(newState);
+		}
+		State previous = currentState;
+		currentState = newState;
+		newState.onEntry(previous);
 	}
 }

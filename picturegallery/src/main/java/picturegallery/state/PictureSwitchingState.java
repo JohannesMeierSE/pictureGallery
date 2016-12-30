@@ -20,12 +20,14 @@ public abstract class PictureSwitchingState extends State {
 
 	public abstract int getSize();
 	public abstract Picture getPictureAtIndex(int index);
+	public abstract boolean containsPicture(Picture pic);
 
 	protected final MainApp app;
 
 	public PictureSwitchingState(MainApp app) {
 		super();
 		this.app = app;
+		indexCurrentCollection = -1;
 	}
 
 	public void gotoPicture(int diff, boolean preload) {
@@ -62,9 +64,6 @@ public abstract class PictureSwitchingState extends State {
 		if (newPicture == null) {
 			throw new IllegalArgumentException();
 		}
-		if (newPicture == currentPicture) {
-			return;
-		}
 		currentPicture = newPicture;
 		updatePictureLabel();
 
@@ -100,9 +99,10 @@ public abstract class PictureSwitchingState extends State {
 		return Logic.getRealPicture(currentPicture);
 	}
 
-	private void updatePictureLabel() {
+	public void updatePictureLabel() {
 		// update the text description of the picture
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
+
 //		// inform, weather the current picture is in the temp collection
 //		if (!showTempCollection && tempCollection.contains(currentPicture)) {
 //			pictureText = pictureText + "  (in temp collection)";
@@ -147,30 +147,34 @@ public abstract class PictureSwitchingState extends State {
 		jumpedBefore = true;
 	}
 
+	public Picture getCurrentPicture() {
+		return currentPicture;
+	}
+
 	@Override
 	public void onInit() {
 		registerAction(new NextPictureAction());
 		registerAction(new PreviousPictureAction());
 		registerAction(new JumpFirstAction());
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void onClose() {
-		// TODO Auto-generated method stub
-		
+		currentPicture = null;
 	}
 
 	@Override
 	public void onEntry(State previousState) {
-		// TODO Auto-generated method stub
-		
+		if (indexCurrentCollection < 0) {
+			changeIndex(0, true);
+		} else {
+			changeIndex(indexCurrentCollection, true);
+		}
+		requestNearPictures(indexCurrentCollection);
 	}
 
 	@Override
 	public void onExit(State nextState) {
-		// TODO Auto-generated method stub
-		
+		// empty
 	}
 }
