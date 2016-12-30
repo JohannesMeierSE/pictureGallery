@@ -44,6 +44,7 @@ public class MainApp extends Application {
 	public final static int PRE_LOAD = 5;
 	public final static int JUMP_SIZE = 10;
 
+	private Stage stage;
 	private ImageView iv;
 	private VBox vBox;
 	private Label labelCollectionPath;
@@ -95,6 +96,7 @@ public class MainApp extends Application {
      */
     public void start(Stage stage) throws Exception {
     	instance = this; // hack to simplify/decrease dependencies
+    	this.stage = stage;
 
     	StackPane root = new StackPane();
     	root.setStyle("-fx-background-color: #000000;");
@@ -123,14 +125,14 @@ public class MainApp extends Application {
     	vBox = new VBox();
 
     	labelKeys = new Label("keys");
-    	labelKeys.setText("(H) hide/show these information\n"
+    	labelKeys.setText(""
     			+ "(X) move the current picture into another collection (and closes the temp collection)\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
     			+ "(D) search for duplicates within this collection\n"
     			+ "(D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures\n"
-    			+ "(F11) start/stop full screen mode\n\n");
+    			);
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -153,11 +155,6 @@ public class MainApp extends Application {
     	scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
     		@Override
     		public void handle(KeyEvent event) {
-				// (H) hide information
-				if (event.getCode() == KeyCode.H) {
-					vBox.setVisible(! vBox.isVisible());
-					return;
-				}
 				// (X) move the current picture into another collection (and closes the temp collection)
 				// (X + Shift) => select another collection!
 				if (event.getCode() == KeyCode.X) {
@@ -717,6 +714,14 @@ public class MainApp extends Application {
 
 	public ObjectCache<RealPicture, Image> getImageCache() {
 		return imageCache;
+	}
+
+	public VBox getVBox() {
+		return vBox;
+	}
+
+	public Stage getStage() {
+		return stage;
 	}
 
 	public RealPictureCollection getBaseCollection() {
