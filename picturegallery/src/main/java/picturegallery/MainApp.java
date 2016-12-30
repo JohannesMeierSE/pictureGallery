@@ -128,8 +128,6 @@ public class MainApp extends Application {
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
     			+ "(V) add the current picture as link into another collection / remove the link from that collection\n"
     			+ "(V + Shift) select another collection and add the current picture as link into this collection\n"
-    			+ "(L) select a real collection and select real collections to link them into the first collection\n"
-    			+ "(N) create new collection\n"
     			+ "(D) search for duplicates within this collection\n"
     			+ "(D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures\n"
     			+ "(F11) start/stop full screen mode\n\n");
@@ -236,87 +234,6 @@ public class MainApp extends Application {
 					}
 					updatePictureLabel();
 					// kein Update des Collection-Labels nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
-					return;
-				}
-				// (L) select a real collection and select collections to link them into the first collection
-				if (event.getCode() == KeyCode.L) {
-					RealPictureCollection collectionWithNewLinks = (RealPictureCollection) Logic.selectCollection(baseCollection,
-							currentCollection, movetoCollection, true, true, false);
-					if (collectionWithNewLinks == null) {
-						return;
-					}
-					List<PictureCollection> collectionsToIgnore = new ArrayList<>();
-					collectionsToIgnore.add(collectionWithNewLinks);
-					// ignore parents to prevent loops!
-					PictureCollection parent = collectionWithNewLinks.getSuperCollection();
-					while (parent != null) {
-						collectionsToIgnore.add(parent);
-						parent = parent.getSuperCollection();
-					}
-					for (PictureCollection sub : collectionWithNewLinks.getSubCollections()) {
-						collectionsToIgnore.add(Logic.getRealCollection(sub)); // prevents real sub collections and already linked collections!!
-					}
-					PictureCollection target = Logic.selectCollection(baseCollection,
-							currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
-					while (target != null) {
-						RealPictureCollection realTarget = Logic.getRealCollection(target);
-						collectionsToIgnore.add(target);
-						collectionsToIgnore.add(realTarget);
-						String newName = realTarget.getRelativePath().replaceAll(File.separator, "-");
-						newName = Logic.askForString("Select name of linked collection",
-								"Select a name for the new collection linking on " + realTarget.getRelativePath(),
-								"New name:", true, newName);
-					    // check for uniqueness
-					    if (Logic.isCollectionNameUnique(collectionWithNewLinks, newName)) {
-					    	// update EMF model
-					    	LinkedPictureCollection newLink = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
-					    	collectionsToIgnore.add(newLink);
-					    	newLink.setName(newName);
-					    	realTarget.getLinkedBy().add(newLink);
-					    	newLink.setRealCollection(realTarget);
-					    	collectionWithNewLinks.getSubCollections().add(newLink);
-					    	newLink.setSuperCollection(collectionWithNewLinks);
-
-					    	// create link in file system
-					    	Logic.createSymlinkCollection(newLink);
-					    } else {
-					    	// ignore this request
-					    }
-						target = Logic.selectCollection(baseCollection,
-								currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
-					}
-					Logic.sortSubCollections(collectionWithNewLinks, false);
-					updateCollectionLabel(); // special cases: show new links
-					return;
-				}
-				// create new collection (N) => only RealCollections!
-				if (event.getCode() == KeyCode.N) {
-					RealPictureCollection parentOfNewCollection = (RealPictureCollection) Logic.selectCollection(
-							baseCollection, currentCollection, movetoCollection, true, true, false);
-					if (parentOfNewCollection != null) {
-						// get the name of the new collection
-					    String newName = Logic.askForString("Name of the new collection",
-					    		"Select a (unique) name for the new collection!", "Name of new collection:", false, null);
-					    if (newName == null || newName.isEmpty()) {
-					    	return;
-					    }
-					    // check for uniqueness
-					    if (!Logic.isCollectionNameUnique(parentOfNewCollection, newName)) {
-					    	return;
-					    }
-					    // update EMF model
-					    RealPictureCollection newCollection = GalleryFactory.eINSTANCE.createRealPictureCollection();
-					    newCollection.setName(newName);
-					    newCollection.setSuperCollection(parentOfNewCollection);
-					    parentOfNewCollection.getSubCollections().add(newCollection);
-					    Logic.sortSubCollections(parentOfNewCollection, false);
-					    // create folder in file system
-					    try {
-					    	Files.createDirectory(Paths.get(newCollection.getFullPath()));
-					    } catch (IOException e) {
-					    	e.printStackTrace();
-					    }
-					}
 					return;
 				}
 				// (D) search for duplicates within this collection
