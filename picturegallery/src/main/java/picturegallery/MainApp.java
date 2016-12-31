@@ -2,7 +2,6 @@ package picturegallery;
 
 import gallery.LinkedPicture;
 import gallery.Picture;
-import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
 
@@ -15,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -36,7 +34,6 @@ import picturegallery.action.HideInformationAction;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.RenameCollectionAction;
 import picturegallery.persistency.ObjectCache;
-import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.SingleCollectionState;
@@ -58,14 +55,6 @@ public class MainApp extends Application {
 	private Label labelMeta;
 
 	private RealPictureCollection baseCollection;
-	private PictureCollection currentCollection;
-	private Picture currentPicture;
-	private int indexCurrentCollection;
-
-	private boolean showTempCollection;
-	private int indexTempCollection;
-	private List<Picture> tempCollection = new ArrayList<>();
-	private boolean jumpedBefore = false;
 
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 	private ObjectCache<RealPicture, Image> imageCache;
@@ -217,124 +206,6 @@ public class MainApp extends Application {
 		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
 				+ "-fx-text-fill: white;");
     	vBox.getChildren().add(label);
-	}
-
-	private void showPicture(Picture newPicture) {
-		if (newPicture == null) {
-			throw new IllegalArgumentException();
-		}
-		if (newPicture == currentPicture) {
-			return;
-		}
-		currentPicture = newPicture;
-		updatePictureLabel();
-
-		// print metadata
-		String text = Logic.printMetadata(currentPicture.getMetadata());
-		labelMeta.setText(text);
-
-		RealPicture realCurrentPicture = getCurrentRealPicture();
-		imageCache.request(realCurrentPicture, new CallBack<RealPicture, Image>() {
-			@Override
-			public void loaded(RealPicture key, Image value) {
-				// https://stackoverflow.com/questions/26554814/javafx-updating-gui
-				// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
-				if (Platform.isFxApplicationThread()) {
-					iv.setImage(value);
-				} else {
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							if (key.equals(getCurrentRealPicture())) {
-								iv.setImage(value);
-							} else {
-								// ignore the result, because another picture should be shown
-							}
-						}
-					});
-				}
-			}
-		});
-	}
-
-	private RealPicture updatePictureLabel() {
-		// update the text description of the picture
-		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
-		// inform, weather the current picture is in the temp collection
-		if (!showTempCollection && tempCollection.contains(currentPicture)) {
-			pictureText = pictureText + "  (in temp collection)";
-		}
-		if (currentPicture instanceof LinkedPicture) {
-			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getRelativePath();
-		}
-		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture);
-		for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
-			pictureText = pictureText + "\n        <=  " + link.getRelativePath();
-			if (link == currentPicture) {
-				pictureText = pictureText + " (this picture)";
-			}
-		}
-		labelPictureName.setText(pictureText);
-		return realCurrentPicture;
-	}
-
-	private RealPicture getCurrentRealPicture() {
-		return Logic.getRealPicture(currentPicture);
-	}
-
-	private void changeIndex(int newIndex, boolean preload) {
-		if (newIndex < 0) {
-			throw new IllegalArgumentException();
-		}
-		if (showTempCollection) {
-			// within temp collection
-			if (newIndex >= tempCollection.size()) {
-				throw new IllegalArgumentException();
-			}
-			indexTempCollection = newIndex;
-			labelIndex.setText((indexTempCollection + 1) + " / " + tempCollection.size());
-			showPicture(tempCollection.get(indexTempCollection));
-			// TODO: pre-load next temp pictures!
-		} else {
-			// within the currently selected real collection
-			int size = currentCollection.getPictures().size();
-			if (newIndex >= size) {
-				throw new IllegalArgumentException();
-			}
-			indexCurrentCollection = newIndex;
-			labelIndex.setText((indexCurrentCollection + 1) + " / " + size);
-			showPicture(currentCollection.getPictures().get(indexCurrentCollection));
-			// pre-load next pictures
-			if (preload) {
-				if (jumpedBefore) {
-					requestNearPictures(indexCurrentCollection);
-					jumpedBefore = false;
-				}
-				requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection + PRE_LOAD + size) % size));
-				requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection - PRE_LOAD + size) % size));
-			}
-		}
-	}
-
-	private void requestNearPictures(int position) { // TODO: funktioniert nur für die currentCollection!!
-		int size = currentCollection.getPictures().size();
-
-		// load initially the directly sibbling ones (will be loaded directly, if the loading thread was inactive before)!
-    	requestWithoutCallback(currentCollection.getPictures().get((position) % size));
-//		for (int i = 1; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
-		for (int i = Math.min(PRE_LOAD, size / 2); i >= 1; i--) {
-        	requestWithoutCallback(currentCollection.getPictures().get((position + i) % size));
-        	requestWithoutCallback(currentCollection.getPictures().get((position + size - i) % size));
-        }
-		// the directly requested picture has the highest priority!
-    	requestWithoutCallback(currentCollection.getPictures().get((position) % size));
-	}
-
-	private void requestWithoutCallback(Picture picture) {
-		RealPicture key = Logic.getRealPicture(picture);
-		if (!imageCache.isLoadedOrLoading(key)) {
-			imageCache.request(key, null);
-		}
 	}
 
 	private void stopCache() {
@@ -516,52 +387,6 @@ public class MainApp extends Application {
 			}
 		});
 		new Thread(task).start();
-	}
-
-	private void updateIndexAfterGonePicture(int indexCurrentBeforeGone, int indexTempBeforeGone, boolean updateGui) {
-		// compute the new index
-		if (indexCurrentBeforeGone < 0) {
-			// the picture was not part of the currently shown collection => do nothing
-		} else {
-			// current collection
-			int newIndexCurrent = indexCurrentCollection;
-			if (indexCurrentBeforeGone < newIndexCurrent) {
-				// Bild vor dem aktuellen Bild wird gelöscht
-				newIndexCurrent--;
-			} else {
-				// wegen Sonderfall, dass das letzte Bild gelöscht wird
-				newIndexCurrent = Math.min(newIndexCurrent, currentCollection.getPictures().size() - 1);
-			}
-
-			// temp collection
-			int newIndexTemp = indexTempCollection;
-			// ist "indexTempCollection" kleiner als 0, ändert sich durch die folgenden Zeilen nichts!
-			if (indexTempBeforeGone < 0) {
-				// picture was not shown in temp collection
-			} else {
-				if (indexTempBeforeGone < newIndexTemp) {
-					newIndexTemp--;
-				} else {
-					newIndexTemp = Math.min(newIndexTemp, tempCollection.size() - 1);
-				}
-			}
-
-			if (updateGui) {
-				// update the GUI
-				if (showTempCollection) {
-					changeIndex(newIndexTemp, true);
-					indexCurrentCollection = newIndexCurrent; // Auch der Index in der aktuellen Collection muss aktualisiert werden, damit man nach dem Schließen des Temp-Mode wieder da ist, wo man die Collection verlassen hatte.
-				} else {
-					if (!currentCollection.getPictures().isEmpty()) { // TODO: dafür richtigen Mode einrichten mit schwarzem Hintergrund!!
-						changeIndex(newIndexCurrent, true);
-					}
-					// der Temp-Index spielt außerhalb des Temp-Mode keine Rolle!
-				}
-			} else {
-				indexCurrentCollection = newIndexCurrent;
-				indexTempCollection = newIndexTemp;
-			}
-		}
 	}
 
 	public void setLabelIndex(String newText) {
