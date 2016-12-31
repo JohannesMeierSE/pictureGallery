@@ -15,6 +15,8 @@ import picturegallery.action.JumpFirstAction;
 import picturegallery.action.LinkPictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
+import picturegallery.action.SearchIdenticalAction;
+import picturegallery.action.SearchIdenticalAndReplaceAction;
 import picturegallery.persistency.ObjectCache.CallBack;
 
 public abstract class PictureSwitchingState extends State {
@@ -194,6 +196,8 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new JumpFirstAction());
 		registerAction(new LinkPictureAction());
 		registerAction(new ClearLinktoCollectionAction());
+		registerAction(new SearchIdenticalAction());
+		registerAction(new SearchIdenticalAndReplaceAction());
 	}
 
 	@Override

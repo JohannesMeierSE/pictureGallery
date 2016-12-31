@@ -1,6 +1,5 @@
 package picturegallery;
 
-import gallery.GalleryFactory;
 import gallery.LinkedPicture;
 import gallery.LinkedPictureCollection;
 import gallery.Picture;
@@ -128,8 +127,6 @@ public class MainApp extends Application {
     	labelKeys.setText(""
     			+ "(X) move the current picture into another collection (and closes the temp collection)\n"
     			+ "(X + Shift) select another collection and move the current picture into this collection\n"
-    			+ "(D) search for duplicates within this collection\n"
-    			+ "(D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures\n"
     			);
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
@@ -178,28 +175,6 @@ public class MainApp extends Application {
 						updateCollectionLabel();
 					}
 					movePicture(currentPicture, movetoCollection);
-					return;
-				}
-				// (D) search for duplicates within this collection
-				// (D + Shift) search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures
-				if (event.getCode() == KeyCode.D) {
-			        Task<Void> task = new Task<Void>() {
-			        	@Override
-			        	protected Void call() throws Exception {
-			        		if (event.isShiftDown()) {
-			        			Logic.replaceIdenticalPicturesInSubcollectionsByLink(currentCollection);
-			        		} else {
-			        			Logic.findIdenticalInOneCollection(currentCollection);
-			        		}
-							return null;
-			        	}
-			        };
-			        new Thread(task).start();
-					return;
-				}
-				// (F11) start/stop full screen mode
-				if (event.getCode() == KeyCode.F11) {
-					stage.setFullScreen(!stage.isFullScreen());
 					return;
 				}
     		}
