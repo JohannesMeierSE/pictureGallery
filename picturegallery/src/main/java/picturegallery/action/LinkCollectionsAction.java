@@ -11,7 +11,6 @@ import java.util.List;
 
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
-import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
@@ -19,7 +18,6 @@ public class LinkCollectionsAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		RealPictureCollection baseCollection = MainApp.get().getBaseCollection();
 		PictureCollection currentCollection = null;
 		PictureCollection movetoCollection = null;
 		if (currentState instanceof PictureSwitchingState) {
@@ -27,7 +25,7 @@ public class LinkCollectionsAction extends Action {
 			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection(); 
 		}
 
-		RealPictureCollection collectionWithNewLinks = (RealPictureCollection) Logic.selectCollection(baseCollection,
+		RealPictureCollection collectionWithNewLinks = (RealPictureCollection) Logic.selectCollection(
 				currentCollection, movetoCollection, true, true, false);
 		if (collectionWithNewLinks == null) {
 			return;
@@ -43,7 +41,7 @@ public class LinkCollectionsAction extends Action {
 		for (PictureCollection sub : collectionWithNewLinks.getSubCollections()) {
 			collectionsToIgnore.add(Logic.getRealCollection(sub)); // prevents real sub collections and already linked collections!!
 		}
-		PictureCollection target = Logic.selectCollection(baseCollection,
+		PictureCollection target = Logic.selectCollection(
 				currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
 		while (target != null) {
 			RealPictureCollection realTarget = Logic.getRealCollection(target);
@@ -71,7 +69,7 @@ public class LinkCollectionsAction extends Action {
 		    }
 
 		    // start next iteration ...
-		    target = Logic.selectCollection(baseCollection,
+		    target = Logic.selectCollection(
 					currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
 		}
 		Logic.sortSubCollections(collectionWithNewLinks, false);

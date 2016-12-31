@@ -613,15 +613,15 @@ public class Logic {
 		}
 	}
 
-	public static PictureCollection selectCollection(PictureCollection base,
+	public static PictureCollection selectCollection(
 			PictureCollection currentCollection, PictureCollection movetoCollection,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections) {
-		return Logic.selectCollection(base, currentCollection, movetoCollection,
+		return Logic.selectCollection(currentCollection, movetoCollection,
 				allowNull, allowEmptyCollectionForSelection, allowLinkedCollections,
 				Collections.emptyList());
 	}
 
-	public static PictureCollection selectCollection(PictureCollection base,
+	public static PictureCollection selectCollection(
 			PictureCollection currentCollection, PictureCollection movetoCollection,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections,
 			List<PictureCollection> ignoredCollections) {
@@ -645,7 +645,7 @@ public class Logic {
 			selectButton.setDisable(true);
 
 			// create the tree view
-			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
+			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
 			rootItem.setExpanded(true);
 			Logic.handleTreeItem(rootItem, allowLinkedCollections);
 			TreeView<PictureCollection> tree = new TreeView<>(rootItem);

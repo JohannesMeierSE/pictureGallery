@@ -27,7 +27,7 @@ public class RenameCollectionAction extends Action {
 			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection(); 
 		}
 
-		PictureCollection collectionToRename = Logic.selectCollection(baseCollection,
+		PictureCollection collectionToRename = Logic.selectCollection(
 				currentCollection, movetoCollection, true, true, true, Collections.singletonList(baseCollection));
 		if (collectionToRename == null) {
 			return;

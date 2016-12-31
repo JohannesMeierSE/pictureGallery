@@ -29,7 +29,7 @@ public class LinkPictureAction extends Action {
 
 		if (linktoCollection == null) {
 			linktoCollection = (RealPictureCollection) Logic.selectCollection(
-					MainApp.get().getBaseCollection(), currentCollection, movetoCollection,
+					currentCollection, movetoCollection,
 					true, true, false, Collections.singletonList(currentCollection));
 			if (linktoCollection == currentCollection) {
 				// sollte eigentlich gar nicht möglich sein (macht inhaltlich auch keinen Sinn)

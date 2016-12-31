@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
-import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
@@ -27,7 +26,7 @@ public class CreateNewCollection extends Action {
 
 		// get the parent of the new collection
 		RealPictureCollection parentOfNewCollection = (RealPictureCollection) Logic.selectCollection(
-				MainApp.get().getBaseCollection(), currentCollection, movetoCollection,
+				currentCollection, movetoCollection,
 				true, true, false);
 		if (parentOfNewCollection == null) {
 			return;

@@ -3,7 +3,6 @@ package picturegallery.action;
 import gallery.PictureCollection;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
-import picturegallery.MainApp;
 import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
 
@@ -16,7 +15,7 @@ public class SelectAnotherCollectionAction extends Action {
 		}
 		SingleCollectionState state = (SingleCollectionState) currentState;
 
-		PictureCollection newCol = Logic.selectCollection(MainApp.get().getBaseCollection(),
+		PictureCollection newCol = Logic.selectCollection(
 				state.getCurrentCollection(), state.getMovetoCollection(),
 				true, false, true);
 		if (newCol != null) {
