@@ -20,15 +20,9 @@ public class RenameCollectionAction extends Action {
 	@Override
 	public void run(State currentState) {
 		RealPictureCollection baseCollection = MainApp.get().getBaseCollection();
-		PictureCollection currentCollection = null;
-		PictureCollection movetoCollection = null;
-		if (currentState instanceof PictureSwitchingState) {
-			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
-			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection(); 
-		}
 
 		PictureCollection collectionToRename = Logic.selectCollection(
-				currentCollection, movetoCollection, true, true, true, Collections.singletonList(baseCollection));
+				currentState, true, true, true, Collections.singletonList(baseCollection));
 		if (collectionToRename == null) {
 			return;
 		}

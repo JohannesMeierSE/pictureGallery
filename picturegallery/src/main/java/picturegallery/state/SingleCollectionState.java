@@ -81,7 +81,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 	public void onEntry(State previousState) {
 		// select the initial collection!
 		while (currentCollection == null) {
-			PictureCollection newCol = Logic.selectCollection(currentCollection, movetoCollection, false, false, true);
+			PictureCollection newCol = Logic.selectCollection(this, false, false, true);
     		if (newCol == null) {
     			System.err.println("the library does not contain any picture!!");
     			break;

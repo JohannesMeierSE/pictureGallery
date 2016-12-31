@@ -25,11 +25,10 @@ public class LinkPictureAction extends Action {
 
 		RealPictureCollection linktoCollection = state.getLinktoCollection();
 		PictureCollection currentCollection = state.getCurrentCollection();
-		PictureCollection movetoCollection = state.getMovetoCollection();
 
 		if (linktoCollection == null) {
 			linktoCollection = (RealPictureCollection) Logic.selectCollection(
-					currentCollection, movetoCollection,
+					currentState,
 					true, true, false, Collections.singletonList(currentCollection));
 			if (linktoCollection == currentCollection) {
 				// sollte eigentlich gar nicht möglich sein (macht inhaltlich auch keinen Sinn)

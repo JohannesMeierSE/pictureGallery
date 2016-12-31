@@ -28,7 +28,7 @@ public class MovePictureAction extends Action {
 
 		if (movetoCollection == null) {
 			movetoCollection = (RealPictureCollection) Logic.selectCollection(
-					currentCollection, movetoCollection,
+					currentState,
 					true, true, false, Collections.singletonList(currentCollection));
 			if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
 				// Verschieben innerhalb der eigenen Collection macht keinen Sinn!

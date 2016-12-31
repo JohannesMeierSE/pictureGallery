@@ -59,6 +59,9 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.emf.common.util.ECollections;
 import org.xml.sax.SAXException;
 
+import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.State;
+
 import com.pragone.jphash.jpHash;
 import com.pragone.jphash.image.radial.RadialHash;
 
@@ -614,17 +617,29 @@ public class Logic {
 	}
 
 	public static PictureCollection selectCollection(
-			PictureCollection currentCollection, PictureCollection movetoCollection,
+			State currentState,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections) {
-		return Logic.selectCollection(currentCollection, movetoCollection,
+		return Logic.selectCollection(currentState,
 				allowNull, allowEmptyCollectionForSelection, allowLinkedCollections,
 				Collections.emptyList());
 	}
 
 	public static PictureCollection selectCollection(
-			PictureCollection currentCollection, PictureCollection movetoCollection,
+			State currentState,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections,
 			List<PictureCollection> ignoredCollections) {
+		final PictureCollection currentCollection;
+		final PictureCollection movetoCollection;
+		final PictureCollection linktoCollection;
+		if (currentState != null && currentState instanceof PictureSwitchingState) {
+			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
+			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection();
+			linktoCollection = ((PictureSwitchingState) currentState).getLinktoCollection();
+		} else {
+			currentCollection = null;
+			movetoCollection = null;
+			linktoCollection = null;
+		}
 		PictureCollection result = null;
 		boolean found = false;
 
@@ -669,6 +684,9 @@ public class Logic {
 								}
 								if (item == movetoCollection) {
 									textToShow = textToShow + " [currently moving into]";
+								}
+								if (item == linktoCollection) {
+									textToShow = textToShow + " [currently linking into]";
 								}
 								// show the source of this link
 								if (item instanceof LinkedPictureCollection) {

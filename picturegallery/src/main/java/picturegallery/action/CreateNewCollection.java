@@ -1,7 +1,6 @@
 package picturegallery.action;
 
 import gallery.GalleryFactory;
-import gallery.PictureCollection;
 import gallery.RealPictureCollection;
 
 import java.io.IOException;
@@ -10,23 +9,15 @@ import java.nio.file.Paths;
 
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
-import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
 public class CreateNewCollection extends Action {
 
 	@Override
 	public void run(State currentState) {
-		PictureCollection currentCollection = null;
-		PictureCollection movetoCollection = null;
-		if (currentState instanceof PictureSwitchingState) {
-			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
-			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection(); 
-		}
-
 		// get the parent of the new collection
 		RealPictureCollection parentOfNewCollection = (RealPictureCollection) Logic.selectCollection(
-				currentCollection, movetoCollection,
+				currentState,
 				true, true, false);
 		if (parentOfNewCollection == null) {
 			return;

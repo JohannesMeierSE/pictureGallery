@@ -16,7 +16,7 @@ public class SelectAnotherCollectionAction extends Action {
 		SingleCollectionState state = (SingleCollectionState) currentState;
 
 		PictureCollection newCol = Logic.selectCollection(
-				state.getCurrentCollection(), state.getMovetoCollection(),
+				currentState,
 				true, false, true);
 		if (newCol != null) {
 			state.setCurrentCollection(newCol);

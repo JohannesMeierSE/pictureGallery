@@ -18,15 +18,8 @@ public class LinkCollectionsAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		PictureCollection currentCollection = null;
-		PictureCollection movetoCollection = null;
-		if (currentState instanceof PictureSwitchingState) {
-			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
-			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection(); 
-		}
-
 		RealPictureCollection collectionWithNewLinks = (RealPictureCollection) Logic.selectCollection(
-				currentCollection, movetoCollection, true, true, false);
+				currentState, true, true, false);
 		if (collectionWithNewLinks == null) {
 			return;
 		}
@@ -42,7 +35,7 @@ public class LinkCollectionsAction extends Action {
 			collectionsToIgnore.add(Logic.getRealCollection(sub)); // prevents real sub collections and already linked collections!!
 		}
 		PictureCollection target = Logic.selectCollection(
-				currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
+				currentState, true, true, true, collectionsToIgnore);
 		while (target != null) {
 			RealPictureCollection realTarget = Logic.getRealCollection(target);
 			collectionsToIgnore.add(target);
@@ -70,7 +63,7 @@ public class LinkCollectionsAction extends Action {
 
 		    // start next iteration ...
 		    target = Logic.selectCollection(
-					currentCollection, movetoCollection, true, true, true, collectionsToIgnore);
+		    		currentState, true, true, true, collectionsToIgnore);
 		}
 		Logic.sortSubCollections(collectionWithNewLinks, false);
 
