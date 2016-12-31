@@ -627,7 +627,7 @@ public class Logic {
 			List<PictureCollection> ignoredCollections) {
 		PictureCollection result = null;
 		boolean found = false;
-	
+
 		while (!found) {
 			// create the dialog
 			// http://code.makery.ch/blog/javafx-dialogs-official/

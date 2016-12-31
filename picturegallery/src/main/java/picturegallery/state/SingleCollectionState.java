@@ -16,7 +16,6 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	public SingleCollectionState(MainApp app) {
 		super(app);
-		tempState = new TempCollectionState(app);
 	}
 
 	@Override
@@ -59,6 +58,15 @@ public class SingleCollectionState extends PictureSwitchingState {
 		registerAction(new JumpLeftAction());
 		registerAction(new ShowTempCollectionAction());
 		registerAction(new SelectAnotherCollectionAction());
+
+		tempState = new TempCollectionState(app);
+		tempState.onInit();
+	}
+
+	@Override
+	public void onClose() {
+		super.onClose();
+		tempState.onClose();
 	}
 
 	@Override
@@ -66,7 +74,12 @@ public class SingleCollectionState extends PictureSwitchingState {
 		// select the initial collection!
 		while (currentCollection == null) {
 			PictureCollection newCol = Logic.selectCollection(app.getBaseCollection(), currentCollection, movetoCollection, false, false, true);
-			setCurrentCollection(newCol);
+    		if (newCol == null) {
+    			System.err.println("the library does not contain any picture!!");
+    			break;
+    		} else {
+    			setCurrentCollection(newCol);
+    		}
 		}
 
 		super.onEntry(previousState);

@@ -5,7 +5,6 @@ import javafx.stage.Stage;
 import picturegallery.MainApp;
 import picturegallery.state.State;
 
-// TODO: global anmelden!
 public class FullScreenAction extends Action {
 
 	@Override

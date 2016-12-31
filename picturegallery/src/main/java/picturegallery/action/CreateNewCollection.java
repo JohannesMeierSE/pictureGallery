@@ -14,7 +14,6 @@ import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
-//TODO: global anmelden!
 public class CreateNewCollection extends Action {
 
 	@Override

@@ -5,7 +5,6 @@ import javafx.scene.layout.VBox;
 import picturegallery.MainApp;
 import picturegallery.state.State;
 
-// TODO: global anmelden!
 public class HideInformationAction extends Action {
 
 	@Override

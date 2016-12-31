@@ -1,7 +1,6 @@
 package picturegallery;
 
 import gallery.LinkedPicture;
-import gallery.LinkedPictureCollection;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
@@ -13,7 +12,6 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javafx.application.Application;
@@ -25,16 +23,22 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import picturegallery.action.Action;
+import picturegallery.action.CreateNewCollection;
+import picturegallery.action.FullScreenAction;
+import picturegallery.action.HideInformationAction;
+import picturegallery.action.LinkCollectionsAction;
+import picturegallery.action.RenameCollectionAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
+import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
@@ -62,13 +66,11 @@ public class MainApp extends Application {
 	private List<Picture> tempCollection = new ArrayList<>();
 	private boolean jumpedBefore = false;
 
-	private RealPictureCollection movetoCollection;
-	private RealPictureCollection linktoCollection;
-
 	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 	private ObjectCache<RealPicture, Image> imageCache;
 
 	private State currentState;
+	private final List<Action> globalActions = new ArrayList<>();
 
 	private static MainApp instance;
 	public static MainApp get() {
@@ -124,9 +126,6 @@ public class MainApp extends Application {
     	vBox = new VBox();
 
     	labelKeys = new Label("keys");
-    	labelKeys.setText(""
-    			+ "(X) move the current picture into another collection (and closes the temp collection)\n\n"
-    			);
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
 
@@ -149,33 +148,19 @@ public class MainApp extends Application {
     	scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
     		@Override
     		public void handle(KeyEvent event) {
-				// (X) move the current picture into another collection (and closes the temp collection)
-				// (X + Shift) => select another collection!
-				if (event.getCode() == KeyCode.X) {
-					if (event.isShiftDown()) {
-						movetoCollection = null;
-					}
-					if (movetoCollection == null) {
-						movetoCollection = (RealPictureCollection) Logic.selectCollection(baseCollection, currentCollection, movetoCollection,
-								true, true, false, Collections.singletonList(currentCollection));
-						if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
-							// Verschieben innerhalb der eigenen Collection macht keinen Sinn!
-							movetoCollection = null;
-						}
-					}
-					if (movetoCollection == null) {
-						// Benutzer kann diese Aktion also abbrechen, indem er keine Collection auswählt!
-						return;
-					}
-					if (showTempCollection) {
-						// close temp mode
-						showTempCollection = false;
-						tempCollection.clear();
-						updateCollectionLabel();
-					}
-					movePicture(currentPicture, movetoCollection);
-					return;
-				}
+    			int numberListeners = 0;
+    			for (Action action : getAllCurrentActions()) {
+    				if (action.getKey().equals(event.getCode())) {
+    					if (action.requiresShift() == event.isShiftDown()) {
+    						numberListeners++;
+    						System.out.println("run " + action.toString());
+    						action.run(currentState);
+    					}
+    				}
+    			}
+    			if (numberListeners > 1) {
+    				throw new IllegalStateException();
+    			}
     		}
     	});
 
@@ -188,6 +173,7 @@ public class MainApp extends Application {
 			@Override
 			public void handle(WindowEvent event) {
 				stopCache();
+				currentState.onClose();
 			}
 		});
         stage.show();
@@ -202,34 +188,30 @@ public class MainApp extends Application {
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
         	@Override
         	public void handle(WorkerStateEvent event) {
-        		PictureCollection newCol = Logic.findFirstNonEmptyCollection(baseCollection);
-        		if (newCol != null) {
-        			newCol = Logic.selectCollection(baseCollection, currentCollection, movetoCollection, false, false, true);
-        		}
-        		if (newCol == null) {
-        			System.err.println("the library does not contain any picture!!");
-        		} else {
-        			changeCollection(newCol);
-        		}
+        		globalActions.add(new CreateNewCollection());
+        		globalActions.add(new FullScreenAction());
+        		globalActions.add(new HideInformationAction());
+        		globalActions.add(new LinkCollectionsAction());
+        		globalActions.add(new RenameCollectionAction());
+
+        		// start with the first/initial state:
+        		SingleCollectionState newState = new SingleCollectionState(instance);
+        		newState.onInit();
+				switchState(newState);
         	}
         });
         new Thread(task).start();
     }
 
-	private void gotoPicture(int diff, boolean preload) {
-		int size = currentCollection.getPictures().size();
-		int sizeTemp = tempCollection.size();
+    private List<Action> getAllCurrentActions() {
+    	List<Action> newList = new ArrayList<>();
+    	// TODO: theoretisch könnte man hier beim Wechsel noch synchronized usw. nutzen...
+    	newList.addAll(currentState.getActions());
+    	newList.addAll(globalActions);
+    	return newList;
+    }
 
-		int newIndex = -1;
-		if (showTempCollection) {
-			newIndex = ( indexTempCollection + sizeTemp + diff ) % sizeTemp;
-		} else {
-			newIndex = ( indexCurrentCollection + size + diff ) % size;
-		}
-		changeIndex(newIndex, preload);
-	}
-
-	private void handleLabel(Label label) {
+    private void handleLabel(Label label) {
     	// https://assylias.wordpress.com/2013/12/08/383/
 		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
 				+ "-fx-text-fill: white;");
@@ -331,28 +313,6 @@ public class MainApp extends Application {
 				requestWithoutCallback(currentCollection.getPictures().get((indexCurrentCollection - PRE_LOAD + size) % size));
 			}
 		}
-	}
-
-	private void changeCollection(PictureCollection newCollection) {
-		if (newCollection == null || newCollection.getPictures().isEmpty()) {
-			throw new IllegalArgumentException();
-		}
-		if (newCollection == currentCollection) {
-			return;
-		}
-		movetoCollection = null;
-		linktoCollection = null;
-		currentCollection = newCollection;
-		// temp collection
-		tempCollection.clear();
-		showTempCollection = false;
-		// current collection
-		currentPicture = null;
-		updateCollectionLabel();
-        // initially, request some pictures
-        requestNearPictures(0);
-
-        changeIndex(0, true);
 	}
 
 	private void requestNearPictures(int position) { // TODO: funktioniert nur für die currentCollection!!
@@ -596,25 +556,6 @@ public class MainApp extends Application {
 		}
 	}
 
-	private void updateCollectionLabel() {
-		String value = "";
-		if (showTempCollection) {
-			value =  value + "temp collection within ";
-		}
-		value =  value + currentCollection.getRelativePath();
-		if (currentCollection instanceof LinkedPictureCollection) {
-			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getRelativePath();
-		}
-		RealPictureCollection real = Logic.getRealCollection(currentCollection);
-		for (LinkedPictureCollection link : real.getLinkedBy()) {
-			value = value + "\n        <= " + link.getRelativePath();
-			if (link == currentCollection) {
-				value = value + " (this collection)";
-			}
-		}
-		labelCollectionPath.setText(value);
-	}
-
 	public void setLabelIndex(String newText) {
 		labelIndex.setText(newText);
 	}
@@ -666,5 +607,13 @@ public class MainApp extends Application {
 		State previous = currentState;
 		currentState = newState;
 		newState.onEntry(previous);
+
+		// update GUI: keys
+		String newKeys = "";
+		for (Action action : getAllCurrentActions()) {
+			newKeys = newKeys + "(" + action.getKeyDescription() + ") " + action.getDescription() + "\n";
+		}
+		newKeys = newKeys + "\n"; 
+    	labelKeys.setText(newKeys);
 	}
 }
