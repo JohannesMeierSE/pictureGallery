@@ -2,6 +2,7 @@ package picturegallery.state;
 
 import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.RealPictureCollection;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.JumpLeftAction;
@@ -11,6 +12,8 @@ import picturegallery.action.ShowTempCollectionAction;
 
 public class SingleCollectionState extends PictureSwitchingState {
 	protected PictureCollection currentCollection;
+	protected RealPictureCollection movetoCollection;
+	protected RealPictureCollection linktoCollection;
 
 	private TempCollectionState tempState;
 
@@ -87,5 +90,19 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	public TempCollectionState getTempState() {
 		return tempState;
+	}
+
+	public RealPictureCollection getLinktoCollection() {
+		return linktoCollection;
+	}
+	public void setLinktoCollection(RealPictureCollection linktoCollection) {
+		this.linktoCollection = linktoCollection;
+	}
+
+	public RealPictureCollection getMovetoCollection() {
+		return movetoCollection;
+	}
+	public void setMovetoCollection(RealPictureCollection movetoCollection) {
+		this.movetoCollection = movetoCollection;
 	}
 }

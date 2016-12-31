@@ -2,6 +2,7 @@ package picturegallery.state;
 
 import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.RealPictureCollection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,5 +71,25 @@ public class TempCollectionState extends PictureSwitchingState {
 
 	public SingleCollectionState getPreviousState() {
 		return previousState;
+	}
+
+	@Override
+	public RealPictureCollection getMovetoCollection() {
+		return previousState.getMovetoCollection();
+	}
+
+	@Override
+	public void setMovetoCollection(RealPictureCollection movetoCollection) {
+		previousState.setMovetoCollection(movetoCollection);
+	}
+
+	@Override
+	public RealPictureCollection getLinktoCollection() {
+		return previousState.getLinktoCollection();
+	}
+
+	@Override
+	public void setLinktoCollection(RealPictureCollection linktoCollection) {
+		previousState.setLinktoCollection(linktoCollection);
 	}
 }

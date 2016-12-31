@@ -26,8 +26,6 @@ public abstract class PictureSwitchingState extends State {
 	protected int indexCurrentCollection;
 
 	protected boolean jumpedBefore = false;
-	protected RealPictureCollection linktoCollection;
-	protected RealPictureCollection movetoCollection;
 
 	public abstract int getSize();
 	public abstract Picture getPictureAtIndex(int index);
@@ -109,14 +107,6 @@ public abstract class PictureSwitchingState extends State {
 
 	private RealPicture getCurrentRealPicture() {
 		return Logic.getRealPicture(currentPicture);
-	}
-
-	public RealPictureCollection getLinktoCollection() {
-		return linktoCollection;
-	}
-
-	public void setLinktoCollection(RealPictureCollection linktoCollection) {
-		this.linktoCollection = linktoCollection;
 	}
 
 	public void updatePictureLabel() {
@@ -230,10 +220,9 @@ public abstract class PictureSwitchingState extends State {
 		// empty
 	}
 
-	public RealPictureCollection getMovetoCollection() {
-		return movetoCollection;
-	}
-	public void setMovetoCollection(RealPictureCollection movetoCollection) {
-		this.movetoCollection = movetoCollection; // TODO: hier muss eigentlich ein Proxy hin!!(?)
-	}
+	public abstract RealPictureCollection getMovetoCollection();
+	public abstract void setMovetoCollection(RealPictureCollection movetoCollection);
+
+	public abstract RealPictureCollection getLinktoCollection();
+	public abstract void setLinktoCollection(RealPictureCollection linktoCollection);
 }

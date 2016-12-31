@@ -4,6 +4,7 @@ import gallery.Picture;
 import javafx.scene.input.KeyCode;
 import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
+import picturegallery.state.TempCollectionState;
 
 public class AddToRemoveFromTempCollectionAction extends Action {
 	@Override
@@ -17,11 +18,12 @@ public class AddToRemoveFromTempCollectionAction extends Action {
 		if (currentPicture == null) {
 			return;
 		}
+		TempCollectionState tempState = state.getTempState();
 
-		if (state.getTempState().containsPicture(currentPicture)) {
-			state.getTempState().removePicture(currentPicture);
+		if (tempState.containsPicture(currentPicture)) {
+			tempState.removePicture(currentPicture);
 		} else {
-			state.getTempState().addPicture(currentPicture);
+			tempState.addPicture(currentPicture);
 		}
 		state.updatePictureLabel();
 	}
