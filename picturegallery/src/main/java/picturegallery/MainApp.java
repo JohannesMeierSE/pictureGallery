@@ -611,7 +611,11 @@ public class MainApp extends Application {
 		// update GUI: keys
 		String newKeys = "";
 		for (Action action : getAllCurrentActions()) {
-			newKeys = newKeys + "(" + action.getKeyDescription() + ") " + action.getDescription() + "\n";
+			newKeys = newKeys + "(" + action.getKeyDescription();
+			if (action.requiresShift()) {
+				newKeys = newKeys + " + Shift";
+			}
+			newKeys = newKeys + ") " + action.getDescription() + "\n";
 		}
 		newKeys = newKeys + "\n"; 
     	labelKeys.setText(newKeys);
