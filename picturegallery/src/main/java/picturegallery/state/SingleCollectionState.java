@@ -32,6 +32,11 @@ public class SingleCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
+	public int getIndexOfPicture(Picture picture) {
+		return currentCollection.getPictures().indexOf(picture);
+	}
+
+	@Override
 	public boolean containsPicture(Picture pic) {
 		return currentCollection.getPictures().contains(pic);
 	}
@@ -86,6 +91,20 @@ public class SingleCollectionState extends PictureSwitchingState {
 		}
 
 		super.onEntry(previousState);
+	}
+
+	@Override
+	public void onRemovePictureBefore(Picture pictureToRemoveLater) {
+		super.onRemovePictureBefore(pictureToRemoveLater);
+
+		tempState.onRemovePictureBefore(pictureToRemoveLater);
+	}
+
+	@Override
+	public void onRemovePictureAfter(Picture removedPicture, boolean updateGui) {
+		super.onRemovePictureAfter(removedPicture, updateGui);
+
+		tempState.onRemovePictureAfter(removedPicture, updateGui);
 	}
 
 	public TempCollectionState getTempState() {

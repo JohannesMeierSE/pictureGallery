@@ -38,6 +38,7 @@ import picturegallery.action.RenameCollectionAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
+import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
 
@@ -370,7 +371,8 @@ public class MainApp extends Application {
 	}
 
 	public void deletePicture(Picture picture, boolean updateGui) {
-		// TODO: diese Methode bleibt (erstmal (?)) hier, muss aber noch an die States angepasst!!
+		// diese Methode bleibt hier in MainApp!
+
 		// real => alle verlinkten Bilder werden auch gelöscht!!
 		if (picture instanceof RealPicture) {
 			RealPicture realToDelete = (RealPicture) picture;
@@ -380,11 +382,10 @@ public class MainApp extends Application {
 			imageCache.remove(realToDelete);
 		}
 
-		// update the GUI berücksichtigen
-		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
-		int previousIndexTemp = tempCollection.indexOf(picture);
-
-		tempCollection.remove(picture);
+		// update GUI
+		if (currentState instanceof PictureSwitchingState) {
+			((PictureSwitchingState) currentState).onRemovePictureBefore(picture);
+		}
 
 		// delete file in file system
 		try {
@@ -403,7 +404,9 @@ public class MainApp extends Application {
 		}
 
 		// update GUI
-		updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, updateGui);
+		if (currentState instanceof PictureSwitchingState) {
+			((PictureSwitchingState) currentState).onRemovePictureAfter(picture, updateGui);
+		}
 	}
 
 	public void movePicture(Picture picture, RealPictureCollection newCollection) {

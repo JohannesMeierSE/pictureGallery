@@ -25,10 +25,12 @@ public abstract class PictureSwitchingState extends State {
 	protected Picture currentPicture;
 	protected int indexCurrentCollection;
 
+	private int previousIndexCurrent;
 	protected boolean jumpedBefore = false;
 
 	public abstract int getSize();
 	public abstract Picture getPictureAtIndex(int index);
+	public abstract int getIndexOfPicture(Picture picture);
 	public abstract boolean containsPicture(Picture pic);
 	public abstract PictureCollection getCurrentCollection();
 
@@ -218,6 +220,37 @@ public abstract class PictureSwitchingState extends State {
 	@Override
 	public void onExit(State nextState) {
 		// empty
+	}
+
+	public void onRemovePictureBefore(Picture pictureToRemoveLater) {
+		previousIndexCurrent = getIndexOfPicture(pictureToRemoveLater);
+	}
+
+	public void onRemovePictureAfter(Picture removedPicture, boolean updateGui) {
+		if (previousIndexCurrent < 0) {
+			// the picture was not part of the currently shown collection => do nothing
+			return;
+		}
+
+		int newIndexCurrent = indexCurrentCollection;
+		if (previousIndexCurrent < newIndexCurrent) {
+			// Bild vor dem aktuellen Bild wird gelöscht
+			newIndexCurrent--;
+		} else {
+			// wegen Sonderfall, dass das letzte Bild gelöscht wird
+			newIndexCurrent = Math.min(newIndexCurrent, getSize() - 1);
+		}
+
+		if (updateGui) {
+			// update the GUI
+			if (getSize() > 0) {
+				changeIndex(newIndexCurrent, true);
+			} else {
+				// TODO: dafür richtigen Mode einrichten mit schwarzem Hintergrund!!
+			}
+		} else {
+			indexCurrentCollection = newIndexCurrent;
+		}
 	}
 
 	public abstract RealPictureCollection getMovetoCollection();

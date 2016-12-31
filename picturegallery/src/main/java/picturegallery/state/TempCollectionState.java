@@ -32,6 +32,11 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
+	public int getIndexOfPicture(Picture picture) {
+		return tempCollection.indexOf(picture);
+	}
+
+	@Override
 	public boolean containsPicture(Picture pic) {
 		return tempCollection.contains(pic);
 	}
@@ -55,6 +60,13 @@ public class TempCollectionState extends PictureSwitchingState {
 		Logic.sortPictures(tempCollection);
 
 		super.onEntry(previousState);
+	}
+
+	@Override
+	public void onRemovePictureBefore(Picture pictureToRemoveLater) {
+		super.onRemovePictureBefore(pictureToRemoveLater);
+
+		tempCollection.remove(pictureToRemoveLater);
 	}
 
 	public void addPicture(Picture picture) {
