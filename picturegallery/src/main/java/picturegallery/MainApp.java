@@ -125,8 +125,7 @@ public class MainApp extends Application {
 
     	labelKeys = new Label("keys");
     	labelKeys.setText(""
-    			+ "(X) move the current picture into another collection (and closes the temp collection)\n"
-    			+ "(X + Shift) select another collection and move the current picture into this collection\n"
+    			+ "(X) move the current picture into another collection (and closes the temp collection)\n\n"
     			);
     	labelKeys.setWrapText(true);
     	handleLabel(labelKeys);
@@ -447,7 +446,8 @@ public class MainApp extends Application {
 		updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, updateGui);
 	}
 
-	private void movePicture(Picture picture, RealPictureCollection newCollection) {
+	public void movePicture(Picture picture, RealPictureCollection newCollection) {
+		// TODO: muss noch an States angepasst werden!!
 		if (picture == null || newCollection == null) {
 			throw new IllegalArgumentException();
 		}

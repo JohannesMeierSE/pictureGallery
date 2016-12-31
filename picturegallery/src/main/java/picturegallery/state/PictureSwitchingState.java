@@ -11,8 +11,10 @@ import javafx.scene.image.Image;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ClearLinktoCollectionAction;
+import picturegallery.action.ClearMovetoCollectionAction;
 import picturegallery.action.JumpFirstAction;
 import picturegallery.action.LinkPictureAction;
+import picturegallery.action.MovePictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
 import picturegallery.action.SearchIdenticalAction;
@@ -198,6 +200,8 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new ClearLinktoCollectionAction());
 		registerAction(new SearchIdenticalAction());
 		registerAction(new SearchIdenticalAndReplaceAction());
+		registerAction(new MovePictureAction());
+		registerAction(new ClearMovetoCollectionAction());
 	}
 
 	@Override
@@ -225,7 +229,11 @@ public abstract class PictureSwitchingState extends State {
 	public void onExit(State nextState) {
 		// empty
 	}
+
 	public RealPictureCollection getMovetoCollection() {
 		return movetoCollection;
+	}
+	public void setMovetoCollection(RealPictureCollection movetoCollection) {
+		this.movetoCollection = movetoCollection; // TODO: hier muss eigentlich ein Proxy hin!!(?)
 	}
 }
