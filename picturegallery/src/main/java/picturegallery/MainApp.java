@@ -387,7 +387,7 @@ public class MainApp extends Application {
 			((PictureSwitchingState) currentState).onRemovePictureBefore(picture);
 		}
 
-		// delete file in file system
+		// delete file in file system => TODO: do that in new thread??
 		try {
 			Files.delete(Paths.get(picture.getFullPath()));
 		} catch (IOException e) {
@@ -410,6 +410,7 @@ public class MainApp extends Application {
 	}
 
 	public void movePicture(Picture picture, RealPictureCollection newCollection) {
+		// diese Methode bleibt hier in MainApp!
 		// TODO: muss noch an States angepasst werden!!
 		if (picture == null || newCollection == null) {
 			throw new IllegalArgumentException();
@@ -438,8 +439,6 @@ public class MainApp extends Application {
 				}
 			}
 		}
-		int previousIndexCurrent = currentCollection.getPictures().indexOf(picture);
-		int previousIndexTemp = tempCollection.indexOf(picture);
 
 		if (picture instanceof RealPicture && !((RealPicture) picture).getLinkedBy().isEmpty()) {
 			// if this (real) picture is linked by other pictures => ask the user for confirmation before moving!!
@@ -454,14 +453,19 @@ public class MainApp extends Application {
 				return;
 			}
 		}
+
+		// update GUI
+		if (currentState instanceof PictureSwitchingState) {
+			((PictureSwitchingState) currentState).onRemovePictureBefore(picture);
+		}
+
 		Task<Void> task = new Task<Void>() { // do the long-running moving in another thread!
 			@Override
 			protected Void call() throws Exception {
 				// remove the picture from some other variable stores
 				if (picture instanceof RealPicture) {
-					imageCache.remove((RealPicture) picture);
+					imageCache.remove((RealPicture) picture); // TODO: kann raus, wird automatisch rausgeworfen!
 				}
-				tempCollection.remove(picture);
 
 				if (picture instanceof RealPicture) {
 					// move the file in the file system
@@ -486,11 +490,9 @@ public class MainApp extends Application {
 						Logic.createSymlinkPicture(linked);
 					}
 				} else {
-					// verschieben funktioniert bei relativen Links nicht!!
+					// Verschieben funktioniert bei relativen Links nicht!!
 					LinkedPicture pictureToMove = (LinkedPicture) picture;
 					Logic.deleteSymlinkPicture(pictureToMove); // ... erst löschen
-
-					// könnte dazu führen, dass Linked und Real im selben Ordner gelandet sind, ist aber erstmal egal!
 
 					// update the EMF model
 					picture.getCollection().getPictures().remove(picture);
@@ -507,7 +509,10 @@ public class MainApp extends Application {
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
-				updateIndexAfterGonePicture(previousIndexCurrent, previousIndexTemp, true);
+				// update GUI
+				if (currentState instanceof PictureSwitchingState) {
+					((PictureSwitchingState) currentState).onRemovePictureAfter(picture, true);
+				}
 			}
 		});
 		new Thread(task).start();
