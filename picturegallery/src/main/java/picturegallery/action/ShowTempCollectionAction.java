@@ -13,7 +13,9 @@ public class ShowTempCollectionAction extends Action {
 		}
 		SingleCollectionState state = (SingleCollectionState) currentState;
 
-		MainApp.get().switchState(state.getTempState());
+		if (state.getTempState().getSize() > 0) {
+			MainApp.get().switchState(state.getTempState());
+		}
 	}
 
 	@Override

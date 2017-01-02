@@ -67,8 +67,9 @@ public abstract class PictureSwitchingState extends State {
 				requestNearPictures(indexCurrentCollection);
 				jumpedBefore = false;
 			}
-			requestWithoutCallback(getPictureAtIndex((indexCurrentCollection + MainApp.PRE_LOAD + size) % size));
-			requestWithoutCallback(getPictureAtIndex((indexCurrentCollection - MainApp.PRE_LOAD + size) % size));
+			int preLoadSize = MainApp.PRE_LOAD;
+			requestWithoutCallback(getPictureAtIndex((indexCurrentCollection + preLoadSize + size * preLoadSize) % size));
+			requestWithoutCallback(getPictureAtIndex((indexCurrentCollection - preLoadSize + size * preLoadSize) % size));
 		}
 	}
 

@@ -5,6 +5,7 @@ import gallery.PictureCollection;
 import gallery.RealPictureCollection;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.AddToRemoveFromTempCollectionAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.SelectAnotherCollectionAction;
@@ -64,6 +65,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 		super.onInit();
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
+		registerAction(new AddToRemoveFromTempCollectionAction());
 		registerAction(new ShowTempCollectionAction());
 		registerAction(new SelectAnotherCollectionAction());
 
