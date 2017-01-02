@@ -2,17 +2,17 @@ package picturegallery.action;
 
 import gallery.Picture;
 import javafx.scene.input.KeyCode;
-import picturegallery.state.SingleCollectionState;
+import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.state.TempCollectionState;
 
 public class AddToRemoveFromTempCollectionAction extends Action {
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof SingleCollectionState)) {
+		if (!(currentState instanceof PictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		SingleCollectionState state = (SingleCollectionState) currentState;
+		PictureSwitchingState state = (PictureSwitchingState) currentState;
 
 		Picture currentPicture = state.getCurrentPicture();
 		if (currentPicture == null) {
@@ -35,6 +35,6 @@ public class AddToRemoveFromTempCollectionAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "add to / remove from temp collection";
+		return "add to / remove from next temp collection";
 	}
 }

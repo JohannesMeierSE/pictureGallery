@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.scene.image.Image;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.AddToRemoveFromTempCollectionAction;
 import picturegallery.action.ClearLinktoCollectionAction;
 import picturegallery.action.ClearMovetoCollectionAction;
 import picturegallery.action.JumpFirstAction;
@@ -19,6 +20,7 @@ import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
 import picturegallery.action.SearchIdenticalAction;
 import picturegallery.action.SearchIdenticalAndReplaceAction;
+import picturegallery.action.ShowTempCollectionAction;
 import picturegallery.persistency.ObjectCache.CallBack;
 
 public abstract class PictureSwitchingState extends State {
@@ -33,6 +35,8 @@ public abstract class PictureSwitchingState extends State {
 	public abstract int getIndexOfPicture(Picture picture);
 	public abstract boolean containsPicture(Picture pic);
 	public abstract PictureCollection getCurrentCollection();
+
+	public abstract TempCollectionState getTempState();
 
 	protected final MainApp app;
 
@@ -189,6 +193,8 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new NextPictureAction());
 		registerAction(new PreviousPictureAction());
 		registerAction(new JumpFirstAction());
+		registerAction(new AddToRemoveFromTempCollectionAction());
+		registerAction(new ShowTempCollectionAction());
 		registerAction(new LinkPictureAction());
 		registerAction(new ClearLinktoCollectionAction());
 		registerAction(new SearchIdenticalAction());

@@ -21,11 +21,11 @@ public class ExitTempCollectionAction extends Action {
 
 	@Override
 	public KeyCode getKey() {
-		return KeyCode.S;
+		return KeyCode.Q;
 	}
 
 	@Override
 	public String getDescription() {
-		return "exit and clear temp collection";
+		return "exit and clear the current temp collection";
 	}
 }

@@ -5,11 +5,9 @@ import gallery.PictureCollection;
 import gallery.RealPictureCollection;
 import picturegallery.Logic;
 import picturegallery.MainApp;
-import picturegallery.action.AddToRemoveFromTempCollectionAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.SelectAnotherCollectionAction;
-import picturegallery.action.ShowTempCollectionAction;
 
 public class SingleCollectionState extends PictureSwitchingState {
 	protected PictureCollection currentCollection;
@@ -65,8 +63,6 @@ public class SingleCollectionState extends PictureSwitchingState {
 		super.onInit();
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
-		registerAction(new AddToRemoveFromTempCollectionAction());
-		registerAction(new ShowTempCollectionAction());
 		registerAction(new SelectAnotherCollectionAction());
 
 		tempState = new TempCollectionState(app);
@@ -109,6 +105,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 		tempState.onRemovePictureAfter(removedPicture, updateGui);
 	}
 
+	@Override
 	public TempCollectionState getTempState() {
 		return tempState;
 	}

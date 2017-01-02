@@ -14,7 +14,8 @@ import picturegallery.action.ExitTempCollectionAction;
 public class TempCollectionState extends PictureSwitchingState {
 	protected final List<Picture> tempCollection;
 
-	private SingleCollectionState previousState;
+	private PictureSwitchingState previousState;
+	private TempCollectionState tempState;
 
 	public TempCollectionState(MainApp app) {
 		super(app);
@@ -47,14 +48,36 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
+	public TempCollectionState getTempState() {
+		if (tempState == null) {
+			// Lazy initialization prevents infinite loops
+			tempState = new TempCollectionState(app);
+			tempState.onInit();
+		}
+		return tempState;
+	}
+
+	@Override
 	public void onInit() {
 		super.onInit();
 		registerAction(new ExitTempCollectionAction());
 	}
 
 	@Override
+	public void onClose() {
+		super.onClose();
+		if (tempState != null) {
+			tempState.onClose();
+		}
+	}
+
+	@Override
 	public void onEntry(State previousState) {
-		this.previousState = (SingleCollectionState) previousState;
+		if (this.previousState == null) {
+			// previousState have to point always on the SingleCollectionState state!
+			// not on the previous temp state (temp state 2 --close--> temp state 1)!
+			this.previousState = (PictureSwitchingState) previousState;
+		}
 
 		// in-place sorting
 		Logic.sortPictures(tempCollection);
@@ -67,6 +90,18 @@ public class TempCollectionState extends PictureSwitchingState {
 		super.onRemovePictureBefore(pictureToRemoveLater);
 
 		tempCollection.remove(pictureToRemoveLater);
+		if (tempState != null) {
+			tempState.onRemovePictureBefore(pictureToRemoveLater);
+		}
+	}
+
+	@Override
+	public void onRemovePictureAfter(Picture removedPicture, boolean updateGui) {
+		super.onRemovePictureAfter(removedPicture, updateGui);
+
+		if (tempState != null) {
+			tempState.onRemovePictureAfter(removedPicture, updateGui);
+		}
 	}
 
 	public void addPicture(Picture picture) {
@@ -81,7 +116,7 @@ public class TempCollectionState extends PictureSwitchingState {
 		tempCollection.clear();
 	}
 
-	public SingleCollectionState getPreviousState() {
+	public PictureSwitchingState getPreviousState() {
 		return previousState;
 	}
 

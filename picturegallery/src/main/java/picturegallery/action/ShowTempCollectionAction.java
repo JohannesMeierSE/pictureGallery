@@ -2,16 +2,16 @@ package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
-import picturegallery.state.SingleCollectionState;
+import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
 public class ShowTempCollectionAction extends Action {
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof SingleCollectionState)) {
+		if (!(currentState instanceof PictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		SingleCollectionState state = (SingleCollectionState) currentState;
+		PictureSwitchingState state = (PictureSwitchingState) currentState;
 
 		if (state.getTempState().getSize() > 0) {
 			MainApp.get().switchState(state.getTempState());
@@ -25,6 +25,6 @@ public class ShowTempCollectionAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "show temp collection";
+		return "show next temp collection";
 	}
 }
