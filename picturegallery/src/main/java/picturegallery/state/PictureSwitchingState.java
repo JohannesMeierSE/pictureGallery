@@ -20,7 +20,7 @@ import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
 import picturegallery.action.SearchIdenticalAction;
 import picturegallery.action.SearchIdenticalAndReplaceAction;
-import picturegallery.action.ShowTempCollectionAction;
+import picturegallery.action.ShowOrExitTempCollectionAction;
 import picturegallery.persistency.ObjectCache.CallBack;
 
 public abstract class PictureSwitchingState extends State {
@@ -194,7 +194,7 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new PreviousPictureAction());
 		registerAction(new JumpFirstAction());
 		registerAction(new AddToRemoveFromTempCollectionAction());
-		registerAction(new ShowTempCollectionAction());
+		registerAction(new ShowOrExitTempCollectionAction());
 		registerAction(new LinkPictureAction());
 		registerAction(new ClearLinktoCollectionAction());
 		registerAction(new SearchIdenticalAction());

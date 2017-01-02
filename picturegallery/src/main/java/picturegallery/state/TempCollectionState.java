@@ -9,7 +9,6 @@ import java.util.List;
 
 import picturegallery.Logic;
 import picturegallery.MainApp;
-import picturegallery.action.ExitTempCollectionAction;
 
 public class TempCollectionState extends PictureSwitchingState {
 	protected final List<Picture> tempCollection;
@@ -55,12 +54,6 @@ public class TempCollectionState extends PictureSwitchingState {
 			tempState.onInit();
 		}
 		return tempState;
-	}
-
-	@Override
-	public void onInit() {
-		super.onInit();
-		registerAction(new ExitTempCollectionAction());
 	}
 
 	@Override

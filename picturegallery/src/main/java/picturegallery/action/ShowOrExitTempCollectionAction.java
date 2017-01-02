@@ -4,8 +4,9 @@ import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
+import picturegallery.state.TempCollectionState;
 
-public class ShowTempCollectionAction extends Action {
+public class ShowOrExitTempCollectionAction extends Action {
 	@Override
 	public void run(State currentState) {
 		if (!(currentState instanceof PictureSwitchingState)) {
@@ -14,7 +15,18 @@ public class ShowTempCollectionAction extends Action {
 		PictureSwitchingState state = (PictureSwitchingState) currentState;
 
 		if (state.getTempState().getSize() > 0) {
+
+			// show next temp collection (if pictures are marked)
 			MainApp.get().switchState(state.getTempState());
+
+		} else if (state instanceof TempCollectionState) {
+
+			// exit and clear TEMP collection
+			((TempCollectionState) state).clearPictures();
+			MainApp.get().switchState(((TempCollectionState) state).getPreviousState());
+
+		} else {
+			// do nothing
 		}
 	}
 
@@ -25,6 +37,6 @@ public class ShowTempCollectionAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "show next temp collection";
+		return "show next temp collection (if pictures are marked) XOR exit and clear the current temp collection";
 	}
 }
