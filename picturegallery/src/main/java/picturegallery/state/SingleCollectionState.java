@@ -45,6 +45,11 @@ public class SingleCollectionState extends PictureSwitchingState {
 		return currentCollection;
 	}
 
+	@Override
+	protected String getCollectionDescription() {
+		return currentCollection.getRelativePath();
+	}
+
 	public void setCurrentCollection(PictureCollection currentCollection) {
 		if (currentCollection == null) {
 			throw new IllegalArgumentException();

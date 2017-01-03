@@ -57,6 +57,11 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
+	protected String getCollectionDescription() {
+		return "temp collection within (" + previousState.getCollectionDescription() + ")";
+	}
+
+	@Override
 	public void onClose() {
 		super.onClose();
 		if (tempState != null) {
