@@ -129,10 +129,11 @@ public abstract class PictureSwitchingState extends State {
 		// update the text description of the picture
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
 
-//		// inform, weather the current picture is in the temp collection
-//		if (!showTempCollection && tempCollection.contains(currentPicture)) {
-//			pictureText = pictureText + "  (in temp collection)";
-//		}
+		// inform, weather the current picture is in the temp collection
+		if (getTempState().containsPicture(currentPicture)) {
+			pictureText = pictureText + "  (in next temp collection)";
+		}
+
 		if (currentPicture instanceof LinkedPicture) {
 			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getRelativePath();
 		}
