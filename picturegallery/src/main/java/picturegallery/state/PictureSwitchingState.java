@@ -139,11 +139,20 @@ public abstract class PictureSwitchingState extends State {
 
 	public void updateCollectionLabel() {
 		String value = "";
-//		if (showTempCollection) {
-//			value =  value + "temp collection within ";
-//		}
+
 		PictureCollection currentCollection = getCurrentCollection();
 		value =  value + currentCollection.getRelativePath();
+
+		// print additional information for temp states => parent class know its child classes => TODO that is a dirty
+		if (this instanceof TempCollectionState) {
+			PictureSwitchingState previous = ((TempCollectionState) this).getPreviousState();
+			value = "temp collection within (" + value + ")";
+			while (previous instanceof TempCollectionState) {
+				previous = ((TempCollectionState) previous).getPreviousState();
+				value = "temp collection within (" + value + ")";
+			}
+		}
+
 		if (currentCollection instanceof LinkedPictureCollection) {
 			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getRelativePath();
 		}
