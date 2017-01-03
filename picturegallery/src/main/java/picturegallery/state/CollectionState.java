@@ -1,6 +1,15 @@
 package picturegallery.state;
 
+import javafx.scene.layout.Region;
+
 public class CollectionState extends State {
+	// TODO: die Library sollte hier als Member stehen, nicht in der MainApp! (oder??)
+
+	@Override
+	public Region getRootNode() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public void onInit() {

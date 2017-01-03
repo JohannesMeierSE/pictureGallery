@@ -1,16 +1,28 @@
 package picturegallery.action;
 
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import picturegallery.MainApp;
+import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
 public class HideInformationAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		VBox vBox = MainApp.get().getVBox();
-		vBox.setVisible( ! vBox.isVisible());
+		Label label = MainApp.get().getLabelKeys();
+		hideShow(label);
+
+		if (currentState instanceof PictureSwitchingState) {
+			VBox box = ((PictureSwitchingState) currentState).getLabels();
+			hideShow(box);
+		}
+	}
+
+	private void hideShow(Node node) {
+		node.setVisible( ! node.isVisible());
 	}
 
 	@Override

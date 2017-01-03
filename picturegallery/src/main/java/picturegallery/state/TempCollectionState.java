@@ -7,6 +7,9 @@ import gallery.RealPictureCollection;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 
@@ -59,6 +62,41 @@ public class TempCollectionState extends PictureSwitchingState {
 	@Override
 	protected String getCollectionDescription() {
 		return "temp collection within (" + previousState.getCollectionDescription() + ")";
+	}
+
+	@Override
+	protected void setLabelIndex(String newText) {
+		previousState.setLabelIndex(newText);
+	}
+
+	@Override
+	protected void setLabelMeta(String newText) {
+		previousState.setLabelMeta(newText);
+	}
+
+	@Override
+	protected void setLabelPictureName(String newText) {
+		previousState.setLabelPictureName(newText);
+	}
+
+	@Override
+	protected void setLabelCollectionPath(String newText) {
+		previousState.setLabelCollectionPath(newText);
+	}
+
+	@Override
+	protected ImageView getImage() {
+		return previousState.getImage();
+	}
+
+	@Override
+	public VBox getLabels() {
+		return previousState.getLabels();
+	}
+
+	@Override
+	public Region getRootNode() {
+		return previousState.getRootNode();
 	}
 
 	@Override

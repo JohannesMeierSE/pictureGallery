@@ -3,6 +3,11 @@ package picturegallery.state;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.JumpLeftAction;
@@ -16,8 +21,56 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	private TempCollectionState tempState;
 
+	private final ImageView iv;
+	private final StackPane root;
+	private final VBox vBox;
+	private final Label labelCollectionPath;
+	private final Label labelIndex;
+	private final Label labelPictureName;
+	private final Label labelMeta;
+
 	public SingleCollectionState(MainApp app) {
 		super(app);
+
+		// Stack Pane
+		root = new StackPane();
+		root.setStyle("-fx-background-color: #000000;");
+
+		// image
+		iv = new ImageView();
+		iv.setPreserveRatio(true);
+		iv.setSmooth(true);
+		// https://stackoverflow.com/questions/15003897/is-there-any-way-to-force-javafx-to-release-video-memory
+		iv.setCache(false);
+		// https://stackoverflow.com/questions/12630296/resizing-images-to-fit-the-parent-node
+		iv.fitWidthProperty().bind(root.widthProperty());
+		iv.fitHeightProperty().bind(root.heightProperty());
+		root.getChildren().add(iv);
+
+    	vBox = new VBox();
+
+    	labelCollectionPath = new Label("Collection name");
+    	handleLabel(labelCollectionPath);
+    	labelIndex = new Label("index");
+    	handleLabel(labelIndex);
+    	labelPictureName = new Label("picture name");
+    	handleLabel(labelPictureName);
+    	labelMeta= new Label("meta data");
+    	handleLabel(labelMeta);
+
+    	root.getChildren().add(vBox);
+	}
+
+    private void handleLabel(Label label) {
+    	// https://assylias.wordpress.com/2013/12/08/383/
+		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
+				+ "-fx-text-fill: white;");
+    	vBox.getChildren().add(label);
+	}
+
+	@Override
+	public Region getRootNode() {
+    	return root;
 	}
 
 	@Override
@@ -48,6 +101,36 @@ public class SingleCollectionState extends PictureSwitchingState {
 	@Override
 	protected String getCollectionDescription() {
 		return currentCollection.getRelativePath();
+	}
+
+	@Override
+	protected void setLabelIndex(String newText) {
+		labelIndex.setText(newText);
+	}
+
+	@Override
+	protected void setLabelMeta(String newText) {
+		labelMeta.setText(newText);
+	}
+
+	@Override
+	protected void setLabelPictureName(String newText) {
+		labelPictureName.setText(newText);
+	}
+
+	@Override
+	protected void setLabelCollectionPath(String newText) {
+		labelCollectionPath.setText(newText);
+	}
+
+	@Override
+	protected ImageView getImage() {
+		return iv;
+	}
+
+	@Override
+	public VBox getLabels() {
+		return vBox;
 	}
 
 	public void setCurrentCollection(PictureCollection currentCollection) {

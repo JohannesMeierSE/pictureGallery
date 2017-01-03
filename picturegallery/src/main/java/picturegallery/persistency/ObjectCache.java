@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @param <K> type of the key
  * @param <V> type of the value
  */
+// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	public interface CallBack<K, V> {
 		public void loaded(K key, V value);

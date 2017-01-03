@@ -3,6 +3,7 @@ package picturegallery.state;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.scene.layout.Region;
 import picturegallery.action.Action;
 
 public abstract class State {
@@ -24,4 +25,6 @@ public abstract class State {
 	public final void registerAction(Action newAction) {
 		registeredActions.add(newAction);
 	}
+
+	public abstract Region getRootNode();
 }

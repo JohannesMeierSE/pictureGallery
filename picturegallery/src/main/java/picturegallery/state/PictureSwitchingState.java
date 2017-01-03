@@ -8,6 +8,8 @@ import gallery.RealPicture;
 import gallery.RealPictureCollection;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.AddToRemoveFromTempCollectionAction;
@@ -38,6 +40,12 @@ public abstract class PictureSwitchingState extends State {
 
 	public abstract TempCollectionState getTempState();
 	protected abstract String getCollectionDescription();
+	protected abstract void setLabelIndex(String newText);
+	protected abstract void setLabelMeta(String newText);
+	protected abstract void setLabelPictureName(String newText);
+	protected abstract void setLabelCollectionPath(String newText);
+	protected abstract ImageView getImage();
+	public abstract VBox getLabels();
 
 	protected final MainApp app;
 
@@ -63,7 +71,7 @@ public abstract class PictureSwitchingState extends State {
 			throw new IllegalArgumentException();
 		}
 		indexCurrentCollection = newIndex;
-		app.setLabelIndex((indexCurrentCollection + 1) + " / " + size);
+		setLabelIndex((indexCurrentCollection + 1) + " / " + size);
 		showPicture(getPictureAtIndex(indexCurrentCollection));
 
 		// pre-load next pictures
@@ -87,7 +95,7 @@ public abstract class PictureSwitchingState extends State {
 
 		// print metadata
 		String text = Logic.printMetadata(currentPicture.getMetadata());
-		app.setLabelMeta(text);
+		setLabelMeta(text);
 
 		RealPicture realCurrentPicture = getCurrentRealPicture();
 		app.getImageCache().request(realCurrentPicture, new CallBack<RealPicture, Image>() {
@@ -96,13 +104,13 @@ public abstract class PictureSwitchingState extends State {
 				// https://stackoverflow.com/questions/26554814/javafx-updating-gui
 				// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
 				if (Platform.isFxApplicationThread()) {
-					app.getImage().setImage(value);
+					getImage().setImage(value);
 				} else {
 					Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
 							if (key.equals(getCurrentRealPicture())) {
-								app.getImage().setImage(value);
+								getImage().setImage(value);
 							} else {
 								// ignore the result, because another picture should be shown
 							}
@@ -135,7 +143,7 @@ public abstract class PictureSwitchingState extends State {
 				pictureText = pictureText + " (this picture)";
 			}
 		}
-		app.setLabelPictureName(pictureText);
+		setLabelPictureName(pictureText);
 	}
 
 	public void updateCollectionLabel() {
@@ -156,7 +164,7 @@ public abstract class PictureSwitchingState extends State {
 				value = value + " (this collection)";
 			}
 		}
-		app.setLabelCollectionPath(value);
+		setLabelCollectionPath(value);
 	}
 
 	private void requestWithoutCallback(Picture picture) {

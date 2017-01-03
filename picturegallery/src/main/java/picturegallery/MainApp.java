@@ -20,10 +20,9 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -46,23 +45,18 @@ public class MainApp extends Application {
 	public final static int JUMP_SIZE = 10;
 
 	private Stage stage;
-	private ImageView iv;
-	private VBox vBox;
-	private Label labelCollectionPath;
-	private Label labelIndex;
-	private Label labelPictureName;
 	private Label labelKeys;
-	private Label labelMeta;
+	private StackPane root;
 
 	private RealPictureCollection baseCollection;
 
-	// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
-	private ObjectCache<RealPicture, Image> imageCache;
+	private ObjectCache<RealPicture, Image> imageCache; // sollte eher zentral bleiben!!
 
 	private State currentState;
 	private final List<Action> globalActions = new ArrayList<>();
 
 	private static MainApp instance;
+
 	public static MainApp get() {
 		return instance;
 	}
@@ -89,18 +83,8 @@ public class MainApp extends Application {
     	instance = this; // hack to simplify/decrease dependencies
     	this.stage = stage;
 
-    	StackPane root = new StackPane();
+    	root = new StackPane();
     	root.setStyle("-fx-background-color: #000000;");
-
-    	iv = new ImageView();
-    	iv.setPreserveRatio(true);
-    	iv.setSmooth(true);
-    	// https://stackoverflow.com/questions/15003897/is-there-any-way-to-force-javafx-to-release-video-memory
-    	iv.setCache(false);
-    	// https://stackoverflow.com/questions/12630296/resizing-images-to-fit-the-parent-node
-    	iv.fitWidthProperty().bind(root.widthProperty());
-    	iv.fitHeightProperty().bind(root.heightProperty());
-    	root.getChildren().add(iv);
 
     	// https://docs.oracle.com/javafx/2/ui_controls/file-chooser.htm
 		DirectoryChooser dialog = new DirectoryChooser();
@@ -113,25 +97,18 @@ public class MainApp extends Application {
     	}
     	baseCollection = Logic.createEmptyLibrary(baseDir);
 
-    	vBox = new VBox();
-
     	labelKeys = new Label("keys");
     	labelKeys.setWrapText(true);
-    	handleLabel(labelKeys);
-
-    	labelCollectionPath = new Label("Collection name");
-    	handleLabel(labelCollectionPath);
-    	labelIndex = new Label("index");
-    	handleLabel(labelIndex);
-    	labelPictureName = new Label("picture name");
-    	handleLabel(labelPictureName);
-    	labelMeta= new Label("meta data");
-    	handleLabel(labelMeta);
-
-    	root.getChildren().add(vBox);
+    	// https://assylias.wordpress.com/2013/12/08/383/
+		labelKeys.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
+				+ "-fx-text-fill: white;");
+    	root.getChildren().add(labelKeys);
 
     	Scene scene = new Scene(root, 800, 600);
     	scene.getStylesheets().add("/styles/styles.css");
+
+    	root.minHeightProperty().bind(scene.heightProperty());
+    	root.minWidthProperty().bind(scene.widthProperty());
 
     	// https://stackoverflow.com/questions/23163189/keylistener-javafx
     	// https://stackoverflow.com/questions/16834997/cannot-listen-to-keyevent-in-javafx
@@ -200,13 +177,6 @@ public class MainApp extends Application {
     	newList.addAll(globalActions);
     	return newList;
     }
-
-    private void handleLabel(Label label) {
-    	// https://assylias.wordpress.com/2013/12/08/383/
-		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
-				+ "-fx-text-fill: white;");
-    	vBox.getChildren().add(label);
-	}
 
 	private void stopCache() {
 		if (imageCache != null) {
@@ -389,36 +359,16 @@ public class MainApp extends Application {
 		new Thread(task).start();
 	}
 
-	public void setLabelIndex(String newText) {
-		labelIndex.setText(newText);
-	}
-
-	public void setLabelPictureName(String newText) {
-		labelPictureName.setText(newText);
-	}
-
-	public void setLabelMeta(String newText) {
-		labelMeta.setText(newText);
-	}
-
-	public void setLabelCollectionPath(String newText) {
-		labelCollectionPath.setText(newText);
-	}
-
-	public ImageView getImage() {
-		return iv;
-	}
-
 	public ObjectCache<RealPicture, Image> getImageCache() {
 		return imageCache;
 	}
 
-	public VBox getVBox() {
-		return vBox;
-	}
-
 	public Stage getStage() {
 		return stage;
+	}
+
+	public Label getLabelKeys() {
+		return labelKeys;
 	}
 
 	public RealPictureCollection getBaseCollection() {
@@ -436,6 +386,11 @@ public class MainApp extends Application {
 		// switch state
 		if (currentState != null) {
 			currentState.onExit(newState);
+			Region oldNode = currentState.getRootNode();
+			root.getChildren().remove(oldNode);
+
+			oldNode.minHeightProperty().unbind();
+			oldNode.minWidthProperty().unbind();
 		}
 		State previous = currentState;
 		currentState = newState;
@@ -450,7 +405,13 @@ public class MainApp extends Application {
 			}
 			newKeys = newKeys + ") " + action.getDescription() + "\n";
 		}
-		newKeys = newKeys + "\n"; 
     	labelKeys.setText(newKeys);
+
+    	// update GUI: use root node of the new state
+    	Region newNode = currentState.getRootNode();
+    	root.getChildren().add(0, newNode);
+
+    	newNode.minHeightProperty().bind(root.minHeightProperty());
+    	newNode.minWidthProperty().bind(root.minWidthProperty());
 	}
 }
