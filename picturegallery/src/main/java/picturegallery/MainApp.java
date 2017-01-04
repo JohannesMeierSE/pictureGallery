@@ -34,6 +34,7 @@ import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.RenameCollectionAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.Settings;
+import picturegallery.state.CollectionState;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
@@ -162,7 +163,8 @@ public class MainApp extends Application {
         		globalActions.add(new RenameCollectionAction());
 
         		// start with the first/initial state:
-        		SingleCollectionState newState = new SingleCollectionState(instance);
+//        		SingleCollectionState newState = new SingleCollectionState(instance);
+        		CollectionState newState = new CollectionState();
         		newState.onInit();
 				switchState(newState);
         	}

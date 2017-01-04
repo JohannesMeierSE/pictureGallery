@@ -779,7 +779,7 @@ public class Logic {
 		return result;
 	}
 
-	private static void handleTreeItem(TreeItem<PictureCollection> item, boolean showLinkedCollections) {
+	public static void handleTreeItem(TreeItem<PictureCollection> item, boolean showLinkedCollections) {
 		for (PictureCollection subCol : item.getValue().getSubCollections()) {
 			if (subCol instanceof LinkedPictureCollection && !showLinkedCollections) {
 				continue;
