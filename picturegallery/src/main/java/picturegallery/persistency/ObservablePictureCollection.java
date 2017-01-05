@@ -79,6 +79,11 @@ public class ObservablePictureCollection extends AdapterImpl
 		 * http://download.eclipse.org/modeling/emf/emf/javadoc/2.8.0/org/eclipse/emf/common/notify/Notification.html
 		 */
 		/*
+		 * Tree-Update
+		 * https://myjavafx.blogspot.de/2012/03/treeview-with-data-source.html
+		 * http://www.lestard.eu/2015/treetable_datamodel/
+		 */
+		/*
 		 * was anderes:
 		 * - https://wiki.eclipse.org/EMF/Recipes#Recipe:_Generating_Your_Own_Ecore_Model_using_a_stand-alone_Java_App
 		 * - https://nirmalsasidharan.wordpress.com/2011/05/25/10-common-emf-mistakes/
@@ -86,8 +91,12 @@ public class ObservablePictureCollection extends AdapterImpl
 		 */
 		// TODO: prüfen
 		if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
+			// http://download.eclipse.org/modeling/emf/emf/javadoc/2.4.3/org/eclipse/emf/common/notify/Notification.html
 			return;
 		}
-		update();
+		if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
+			// TODO: warum wird dies beim Rename 8x aufgerufen??
+			update();
+		}
 	}
 }

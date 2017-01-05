@@ -1,6 +1,9 @@
 package picturegallery.state;
 
+import gallery.LinkedPicture;
+import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.RealPicture;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
@@ -47,26 +50,59 @@ public class CollectionState extends State {
 		});
 		table.getColumns().add(nameCol);
 
-		TreeTableColumn<PictureCollection, PictureCollection> sizeCol = new TreeTableColumn<>("Pictures");
-		nameCol.setEditable(false);
-		sizeCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
+		TreeTableColumn<PictureCollection, PictureCollection> sizeRealPicturesCol = new TreeTableColumn<>("Real Pictures");
+		sizeRealPicturesCol.setEditable(false);
+		sizeRealPicturesCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
 				return new ObservablePictureCollection(param.getValue().getValue());
 			}
 		});
-		sizeCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
+		sizeRealPicturesCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
 			@Override
 			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
 				return new PictureCollectionTreeTableCell() {
 					@Override
 					protected String toText(PictureCollection item) {
-						return item.getPictures().size() + " pictures";
+						int count = 0;
+						for (Picture pic : item.getPictures()) {
+							if (pic instanceof RealPicture) {
+								count++;
+							}
+						}
+						return count + "";
 					}
 				};
 			}
 		});
-		table.getColumns().add(sizeCol);
+		table.getColumns().add(sizeRealPicturesCol);
+
+		TreeTableColumn<PictureCollection, PictureCollection> sizeLinkedPicturesCol = new TreeTableColumn<>("Linked Pictures");
+		sizeLinkedPicturesCol.setEditable(false);
+		sizeLinkedPicturesCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
+			@Override
+			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
+				return new ObservablePictureCollection(param.getValue().getValue());
+			}
+		});
+		sizeLinkedPicturesCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
+			@Override
+			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
+				return new PictureCollectionTreeTableCell() {
+					@Override
+					protected String toText(PictureCollection item) {
+						int count = 0;
+						for (Picture pic : item.getPictures()) {
+							if (pic instanceof LinkedPicture) {
+								count++;
+							}
+						}
+						return count + "";
+					}
+				};
+			}
+		});
+		table.getColumns().add(sizeLinkedPicturesCol);
 
 		TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
 		rootItem.setExpanded(true);
