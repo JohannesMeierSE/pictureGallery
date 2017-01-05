@@ -15,12 +15,14 @@ import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.CreateNewCollection;
 import picturegallery.action.RenameCollectionAction;
 import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
+import picturegallery.persistency.SubCollectionCallback;
+import picturegallery.ui.RecursiveTreeItem;
 
 public class CollectionState extends State {
-	// TODO: die Library sollte hier als Member stehen, nicht in der MainApp! (oder??)
 	protected final TreeTableView<PictureCollection> table;
 
 	public CollectionState() {
@@ -104,7 +106,9 @@ public class CollectionState extends State {
 		});
 		table.getColumns().add(sizeLinkedPicturesCol);
 
-		TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
+		TreeItem<PictureCollection> rootItem =
+				new RecursiveTreeItem<PictureCollection>(MainApp.get().getBaseCollection(), new SubCollectionCallback());
+//				new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
 		rootItem.setExpanded(true);
 		Logic.handleTreeItem(rootItem, true);
 		table.setShowRoot(true);
@@ -119,6 +123,7 @@ public class CollectionState extends State {
 	@Override
 	public void onInit() {
 		registerAction(new RenameCollectionAction());
+		registerAction(new CreateNewCollection());
 	}
 
 	@Override

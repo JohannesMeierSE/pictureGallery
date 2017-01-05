@@ -4,6 +4,7 @@ import gallery.LinkedPicture;
 import gallery.Picture;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
+import gallery.util.GalleryAdapterFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,17 +27,24 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import org.eclipse.emf.common.command.BasicCommandStack;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
+import org.eclipse.emf.edit.domain.EditingDomain;
+
 import picturegallery.action.Action;
-import picturegallery.action.CreateNewCollection;
 import picturegallery.action.FullScreenAction;
 import picturegallery.action.HideInformationAction;
 import picturegallery.action.LinkCollectionsAction;
-import picturegallery.action.RenameCollectionAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.Settings;
 import picturegallery.state.CollectionState;
 import picturegallery.state.PictureSwitchingState;
-import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
@@ -50,13 +58,16 @@ public class MainApp extends Application {
 	private StackPane root;
 
 	private RealPictureCollection baseCollection;
+	private EditingDomain modelDomain;
+	private Resource modelResource;
 
-	private ObjectCache<RealPicture, Image> imageCache; // sollte eher zentral bleiben!!
+	private ObjectCache<RealPicture, Image> imageCache;
 
 	private State currentState;
 	private final List<Action> globalActions = new ArrayList<>();
 
 	private static MainApp instance;
+
 
 	public static MainApp get() {
 		return instance;
@@ -96,6 +107,8 @@ public class MainApp extends Application {
     	if (choosenLibrary != null) {
     		baseDir = choosenLibrary.getAbsolutePath();
     	}
+
+    	// initialize the EMF model
     	baseCollection = Logic.createEmptyLibrary(baseDir);
 
     	labelKeys = new Label("keys");
@@ -141,7 +154,16 @@ public class MainApp extends Application {
 			@Override
 			public void handle(WindowEvent event) {
 				stopCache();
-				currentState.onClose();
+				if (currentState != null) {
+					currentState.onClose();
+				}
+
+				// save model afterwards => for debugging purpose
+				try {
+					modelResource.save(null); // falls vorhanden, wird es überschrieben!
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		});
         stage.show();
@@ -150,16 +172,24 @@ public class MainApp extends Application {
         	@Override
         	protected Void call() throws Exception {
         		Logic.loadDirectory(baseCollection.getLibrary(), true);
+
+        		// http://www.vogella.com/tutorials/EclipseEMFPersistence/article.html
+        		ResourceSet rset = new ResourceSetImpl();
+        		rset.getResourceFactoryRegistry().getExtensionToFactoryMap().putIfAbsent("xmi", new XMIResourceFactoryImpl());
+        		URI uri = URI.createFileURI(baseCollection.getFullPath() + "/model.xmi");
+        		modelResource = rset.createResource(uri);
+        		modelResource.getContents().add(baseCollection);
+        		modelDomain = new AdapterFactoryEditingDomain(new GalleryAdapterFactory(), new BasicCommandStack(), rset);
+
         		return null;
         	}
         };
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
         	@Override
         	public void handle(WorkerStateEvent event) {
-        		globalActions.add(new CreateNewCollection());
         		globalActions.add(new FullScreenAction());
         		globalActions.add(new HideInformationAction());
-        		globalActions.add(new LinkCollectionsAction());
+        		globalActions.add(new LinkCollectionsAction()); // TODO: umstrukturieren!
 
         		// start with the first/initial state:
 //        		SingleCollectionState newState = new SingleCollectionState(instance);
@@ -174,7 +204,9 @@ public class MainApp extends Application {
     private List<Action> getAllCurrentActions() {
     	List<Action> newList = new ArrayList<>();
     	// TODO: theoretisch könnte man hier beim Wechsel noch synchronized usw. nutzen...
-    	newList.addAll(currentState.getActions());
+    	if (currentState != null) {
+    		newList.addAll(currentState.getActions());
+    	}
     	newList.addAll(globalActions);
     	return newList;
     }
@@ -374,6 +406,10 @@ public class MainApp extends Application {
 
 	public RealPictureCollection getBaseCollection() {
 		return baseCollection;
+	}
+
+	public EditingDomain getModelDomain() {
+		return modelDomain;
 	}
 
 	public void switchState(State newState) {

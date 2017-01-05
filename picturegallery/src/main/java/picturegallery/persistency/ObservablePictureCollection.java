@@ -16,7 +16,7 @@ import org.eclipse.emf.common.notify.impl.AdapterImpl;
  * TODO: alles im Detail über prüfen
  * - ein (schlechtes?) Beispiel: StringPropertyBase
  */
-public class ObservablePictureCollection extends AdapterImpl
+public class ObservablePictureCollection extends AdapterImpl // TODO: besser anderes/neues Objekt erstellen statt Vererbung!!
 		implements ObservableValue<PictureCollection> {
 	private final PictureCollection collection;
 	private final List<ChangeListener<? super PictureCollection>> listenerChange;

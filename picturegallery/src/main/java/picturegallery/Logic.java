@@ -318,6 +318,7 @@ public class Logic {
 	}
 
 	public static void sortSubCollections(PictureCollection base, boolean recursive) {
+		// TODO: auf EMF-Commands umstellen bzw. anders lösen!
 		ECollections.sort(base.getSubCollections(), new Comparator<PictureCollection>() {
 			@Override
 			public int compare(PictureCollection o1, PictureCollection o2) {
