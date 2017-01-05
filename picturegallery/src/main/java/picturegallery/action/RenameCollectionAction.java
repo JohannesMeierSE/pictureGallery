@@ -122,7 +122,6 @@ public class RenameCollectionAction extends Action {
 		EditingDomain domain = new AdapterFactoryEditingDomain(new GalleryAdapterFactory(), new BasicCommandStack(), rset);
 		Command set = SetCommand.create(domain, collectionToRename, GalleryPackage.eINSTANCE.getPathElement_Name(), newName);
 		domain.getCommandStack().execute(set);
-		// funktioniert anscheinend nicht!
 
 		try {
 			res.save(null); // wird überschrieben

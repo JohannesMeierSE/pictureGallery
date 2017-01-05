@@ -19,7 +19,8 @@ import org.eclipse.emf.common.notify.impl.AdapterImpl;
 public class ObservablePictureCollection extends AdapterImpl
 		implements ObservableValue<PictureCollection> {
 	private final PictureCollection collection;
-	private final List<ChangeListener<? super PictureCollection>> listenerList;
+	private final List<ChangeListener<? super PictureCollection>> listenerChange;
+	private final List<InvalidationListener> listenerInvalide;
 
 	public ObservablePictureCollection(PictureCollection collection) {
 		super();
@@ -28,27 +29,29 @@ public class ObservablePictureCollection extends AdapterImpl
 		}
 		this.collection = collection;
 		this.collection.eAdapters().add(this); // TODO: wann geschieht das Abmelden??
-		this.listenerList = new ArrayList<>();
+		this.listenerChange = new ArrayList<>();
+		this.listenerInvalide = new ArrayList<>();
 	}
 
 	@Override
 	public void addListener(InvalidationListener listener) {
-		// ??
+		listenerInvalide.add(listener);
 	}
 
 	@Override
 	public void removeListener(InvalidationListener listener) {
-		// ??
+		listenerInvalide.remove(listener);
 	}
 
 	@Override
 	public void addListener(ChangeListener<? super PictureCollection> listener) {
-		listenerList.add(listener);
+		listenerChange.add(listener);
+		System.out.println("added listener!");
 	}
 
 	@Override
 	public void removeListener(ChangeListener<? super PictureCollection> listener) {
-		listenerList.remove(listener);
+		listenerChange.remove(listener);
 	}
 
 	@Override
@@ -57,15 +60,17 @@ public class ObservablePictureCollection extends AdapterImpl
 	}
 
 	public void update() {
-		for (ChangeListener<? super PictureCollection> l : listenerList) {
+		for (ChangeListener<? super PictureCollection> l : listenerChange) {
 			l.changed(this, getValue(), getValue());
+		}
+		// https://blog.netopyr.com/2012/02/08/when-to-use-a-changelistener-or-an-invalidationlistener/
+		for (InvalidationListener l : listenerInvalide) {
+			l.invalidated(this);
 		}
 	}
 
 	@Override
 	public void notifyChanged(Notification msg) {
-		super.notifyChanged(msg);
-
 		// JavaDoc in Eclipse with Maven!!: https://stackoverflow.com/questions/310720/get-source-jar-files-attached-to-eclipse-for-maven-managed-dependencies
 		/*
 		 * http://help.eclipse.org/mars/index.jsp?topic=%2Forg.eclipse.emf.doc%2Freferences%2Foverview%2FEMF.Edit.html
@@ -80,6 +85,9 @@ public class ObservablePictureCollection extends AdapterImpl
 		 * - https://javahacks.net/2014/08/15/119/
 		 */
 		// TODO: prüfen
+		if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
+			return;
+		}
 		update();
 	}
 }
