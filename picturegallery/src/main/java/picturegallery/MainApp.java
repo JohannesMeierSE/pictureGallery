@@ -160,7 +160,6 @@ public class MainApp extends Application {
         		globalActions.add(new FullScreenAction());
         		globalActions.add(new HideInformationAction());
         		globalActions.add(new LinkCollectionsAction());
-        		globalActions.add(new RenameCollectionAction());
 
         		// start with the first/initial state:
 //        		SingleCollectionState newState = new SingleCollectionState(instance);

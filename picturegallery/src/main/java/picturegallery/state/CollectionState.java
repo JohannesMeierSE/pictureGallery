@@ -1,10 +1,10 @@
 package picturegallery.state;
 
 import gallery.PictureCollection;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
@@ -12,6 +12,9 @@ import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.RenameCollectionAction;
+import picturegallery.persistency.ObservablePictureCollection;
+import picturegallery.persistency.PictureCollectionTreeTableCell;
 
 public class CollectionState extends State {
 	// TODO: die Library sollte hier als Member stehen, nicht in der MainApp! (oder??)
@@ -20,32 +23,55 @@ public class CollectionState extends State {
 	public CollectionState() {
 		super();
 		table = new TreeTableView<>();
+		table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-		TreeTableColumn<PictureCollection, String> nameCol = new TreeTableColumn<>("Collection name");
+		TreeTableColumn<PictureCollection, PictureCollection> nameCol = new TreeTableColumn<>("Collection name");
 		nameCol.setEditable(false);
 		nameCol.setPrefWidth(250.0);
-		nameCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection,String>, ObservableValue<String>>() {
+		nameCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
-			public ObservableValue<String> call(CellDataFeatures<PictureCollection, String> param) {
-				return new ReadOnlyStringWrapper(param.getValue().getValue().getName());
+			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
+				return new ObservablePictureCollection(param.getValue().getValue());
 			}
 		});
+		nameCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
+			@Override
+			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
+				return new PictureCollectionTreeTableCell() {
+					@Override
+					protected String toText(PictureCollection item) {
+						return item.getName();
+					}
+				};
+			}
+		});
+		table.getColumns().add(nameCol);
 
-		TreeTableColumn<PictureCollection, Integer> sizeCol = new TreeTableColumn<>("Pictures");
+		TreeTableColumn<PictureCollection, PictureCollection> sizeCol = new TreeTableColumn<>("Pictures");
 		nameCol.setEditable(false);
-		sizeCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection,Integer>, ObservableValue<Integer>>() {
+		sizeCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
-			public ObservableValue<Integer> call(CellDataFeatures<PictureCollection, Integer> param) {
-				return new ReadOnlyObjectWrapper<Integer>(param.getValue().getValue().getPictures().size());
+			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
+				return new ObservablePictureCollection(param.getValue().getValue());
 			}
 		});
-
-		table.getColumns().addAll(nameCol, sizeCol);
-		table.setShowRoot(true);
+		sizeCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
+			@Override
+			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
+				return new PictureCollectionTreeTableCell() {
+					@Override
+					protected String toText(PictureCollection item) {
+						return item.getPictures().size() + " pictures";
+					}
+				};
+			}
+		});
+		table.getColumns().add(sizeCol);
 
 		TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
 		rootItem.setExpanded(true);
 		Logic.handleTreeItem(rootItem, true);
+		table.setShowRoot(true);
 		table.setRoot(rootItem);
 	}
 
@@ -56,7 +82,7 @@ public class CollectionState extends State {
 
 	@Override
 	public void onInit() {
-		// TODO: later, register actions
+		registerAction(new RenameCollectionAction());
 	}
 
 	@Override
@@ -72,5 +98,17 @@ public class CollectionState extends State {
 	@Override
 	public void onExit(State nextState) {
 		// empty
+	}
+
+	/**
+	 * Returns the currently selected picture collection (or null).
+	 * @return
+	 */
+	public PictureCollection getSelection() {
+		TreeItem<PictureCollection> selectedItem = table.getSelectionModel().getSelectedItem();
+		if (selectedItem == null) {
+			return null;
+		}
+		return selectedItem.getValue();
 	}
 }
