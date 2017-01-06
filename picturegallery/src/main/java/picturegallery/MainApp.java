@@ -178,7 +178,7 @@ public class MainApp extends Application {
         		rset.getResourceFactoryRegistry().getExtensionToFactoryMap().putIfAbsent("xmi", new XMIResourceFactoryImpl());
         		URI uri = URI.createFileURI(baseCollection.getFullPath() + "/model.xmi");
         		modelResource = rset.createResource(uri);
-        		modelResource.getContents().add(baseCollection);
+        		modelResource.getContents().add(baseCollection.getLibrary());
         		modelDomain = new AdapterFactoryEditingDomain(new GalleryAdapterFactory(), new BasicCommandStack(), rset);
 
         		return null;
