@@ -46,7 +46,6 @@ public class ObservablePictureCollection extends AdapterImpl // TODO: besser and
 	@Override
 	public void addListener(ChangeListener<? super PictureCollection> listener) {
 		listenerChange.add(listener);
-		System.out.println("added listener!");
 	}
 
 	@Override
@@ -89,7 +88,6 @@ public class ObservablePictureCollection extends AdapterImpl // TODO: besser and
 		 * - https://nirmalsasidharan.wordpress.com/2011/05/25/10-common-emf-mistakes/
 		 * - https://javahacks.net/2014/08/15/119/
 		 */
-		// TODO: prüfen
 		if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
 			// http://download.eclipse.org/modeling/emf/emf/javadoc/2.4.3/org/eclipse/emf/common/notify/Notification.html
 			return;

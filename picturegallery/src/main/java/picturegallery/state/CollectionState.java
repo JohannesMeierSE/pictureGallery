@@ -13,7 +13,6 @@ import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
-import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.CreateNewCollection;
 import picturegallery.action.RenameCollectionAction;
@@ -108,9 +107,7 @@ public class CollectionState extends State {
 
 		TreeItem<PictureCollection> rootItem =
 				new RecursiveTreeItem<PictureCollection>(MainApp.get().getBaseCollection(), new SubCollectionCallback());
-//				new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
 		rootItem.setExpanded(true);
-		Logic.handleTreeItem(rootItem, true);
 		table.setShowRoot(true);
 		table.setRoot(rootItem);
 	}

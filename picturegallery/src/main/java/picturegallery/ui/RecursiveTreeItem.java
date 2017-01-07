@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright 2016 Manuel Mauky
+
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +18,11 @@
 // information: http://www.lestard.eu/2015/treetable_datamodel/
 // another implementation: https://github.com/jfoenixadmin/JFoenix/blob/master/src/com/jfoenix/controls/RecursiveTreeItem.java
 // something slightly different: https://myjavafx.blogspot.de/2012/03/treeview-with-data-source.html
+
+/*
+ * With some changes/fixes by Johannes Meier.
+ * 2016
+ */
 package picturegallery.ui;
 
 import java.util.List;
@@ -42,25 +48,35 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 	public RecursiveTreeItem(final T value, Node graphic, Callback<T, ObservableList<T>> func) {
 		super(value, graphic);
 
-		System.out.println("new constructor");
+		System.out.println("new item for " + value);
 		this.childrenFactory = func;
 
+		// required for new children of the current value
 		if (value != null) {
 			addChildrenListener(value);
 		}
 
+		// for future changes of this value (?) re-use?
 		valueProperty().addListener((obs, oldValue, newValue) -> {
 			if (newValue != null) {
 				addChildrenListener(newValue);
+			}
+			if (oldValue != null) {
+				removeChildrenListener(oldValue);
 			}
 		});
 
 		this.setExpanded(true);
 	}
 
+	private void removeChildrenListener(T value) {
+		// TODO
+	}
+
 	private void addChildrenListener(T value) {
 		final ObservableList<T> children = childrenFactory.call(value);
 
+		// initialization of the currently available children
 		children.forEach(child -> RecursiveTreeItem.this.getChildren().add(
 				new RecursiveTreeItem<>(child, getGraphic(), childrenFactory)));
 
@@ -77,22 +93,33 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 
 				if (change.wasAdded()) {
 					change.getAddedSubList().forEach(
-							t -> RecursiveTreeItem.this.getChildren().add(
-									new RecursiveTreeItem<>(t, getGraphic(), childrenFactory)));
+							t -> {
+								final List<TreeItem<T>> itemsAlreadyAvailable = RecursiveTreeItem.this
+										.getChildren()
+										.stream()
+										.filter(treeItem -> treeItem.getValue().equals(t))
+										.collect(Collectors.toList());
+
+								if (itemsAlreadyAvailable.isEmpty()) {
+									RecursiveTreeItem.this.getChildren().add(
+											new RecursiveTreeItem<>(t, getGraphic(), childrenFactory));
+								}
+							});
 				}
 
 				if (change.wasRemoved()) {
-					change.getRemoved()
-							.forEach(
-									t -> {
-										final List<TreeItem<T>> itemsToRemove = RecursiveTreeItem.this
-												.getChildren()
-												.stream()
-												.filter(treeItem -> treeItem.getValue().equals(t))
-												.collect(Collectors.toList());
+					change.getRemoved().forEach(
+							t -> {
+								final List<TreeItem<T>> itemsToRemove = RecursiveTreeItem.this
+										.getChildren()
+										.stream()
+										.filter(treeItem -> treeItem.getValue().equals(t))
+										.collect(Collectors.toList());
 
-										RecursiveTreeItem.this.getChildren().removeAll(itemsToRemove);
-									});
+								RecursiveTreeItem.this.getChildren().removeAll(itemsToRemove);
+
+								removeChildrenListener(t);
+							});
 				}
 
 			}

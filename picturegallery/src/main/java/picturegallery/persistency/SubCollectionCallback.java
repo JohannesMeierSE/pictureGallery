@@ -38,6 +38,7 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 					throw new NotSupportedException();
 				} else if (msg.getEventType() == Notification.MOVE) {
 					// TODO: prüfen
+					System.out.println("movement ?!");
 					result.remove(msg.getNewValue());
 					result.add(msg.getPosition(), (PictureCollection) msg.getNewValue());
 				}
