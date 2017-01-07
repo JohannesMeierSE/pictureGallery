@@ -70,7 +70,8 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 	}
 
 	private void removeChildrenListener(T value) {
-		// TODO
+		final ObservableList<T> children = childrenFactory.call(value);
+		// TODO remove the listener of the children => the factory/callback has to cache the returned ObservableList!
 	}
 
 	private void addChildrenListener(T value) {
@@ -93,33 +94,33 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 
 				if (change.wasAdded()) {
 					change.getAddedSubList().forEach(
-							t -> {
-								final List<TreeItem<T>> itemsAlreadyAvailable = RecursiveTreeItem.this
-										.getChildren()
-										.stream()
-										.filter(treeItem -> treeItem.getValue().equals(t))
-										.collect(Collectors.toList());
+						t -> {
+							final List<TreeItem<T>> itemsAlreadyAvailable = RecursiveTreeItem.this
+									.getChildren()
+									.stream()
+									.filter(treeItem -> treeItem.getValue().equals(t))
+									.collect(Collectors.toList());
 
-								if (itemsAlreadyAvailable.isEmpty()) {
-									RecursiveTreeItem.this.getChildren().add(
-											new RecursiveTreeItem<>(t, getGraphic(), childrenFactory));
-								}
-							});
+							if (itemsAlreadyAvailable.isEmpty()) {
+								RecursiveTreeItem.this.getChildren().add(
+										new RecursiveTreeItem<>(t, getGraphic(), childrenFactory));
+							}
+						});
 				}
 
 				if (change.wasRemoved()) {
 					change.getRemoved().forEach(
-							t -> {
-								final List<TreeItem<T>> itemsToRemove = RecursiveTreeItem.this
-										.getChildren()
-										.stream()
-										.filter(treeItem -> treeItem.getValue().equals(t))
-										.collect(Collectors.toList());
+						t -> {
+							final List<TreeItem<T>> itemsToRemove = RecursiveTreeItem.this
+									.getChildren()
+									.stream()
+									.filter(treeItem -> treeItem.getValue().equals(t))
+									.collect(Collectors.toList());
 
-								RecursiveTreeItem.this.getChildren().removeAll(itemsToRemove);
+							RecursiveTreeItem.this.getChildren().removeAll(itemsToRemove);
 
-								removeChildrenListener(t);
-							});
+							removeChildrenListener(t);
+						});
 				}
 
 			}

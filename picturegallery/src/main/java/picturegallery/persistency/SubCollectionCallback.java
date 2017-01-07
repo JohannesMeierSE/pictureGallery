@@ -3,6 +3,10 @@ package picturegallery.persistency;
 import gallery.LinkedPictureCollection;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Callback;
@@ -14,13 +18,24 @@ import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
 public class SubCollectionCallback implements Callback<PictureCollection, ObservableList<PictureCollection>> {
+	/**
+	 * Caches the called/returned lists within one instance of this {@link SubCollectionCallback}:
+	 * => saves memory
+	 */
+	private final Map<PictureCollection, ObservableList<PictureCollection>> cache = new HashMap<>();
 
 	@Override
 	public ObservableList<PictureCollection> call(PictureCollection param) {
+		if (cache.containsKey(param)) {
+			return cache.get(param);
+		}
 		if (param instanceof LinkedPictureCollection) {
-			return FXCollections.emptyObservableList();
+			final ObservableList<PictureCollection> result = FXCollections.emptyObservableList();
+			cache.put(param, result);
+			return result;
 		}
 		final ObservableList<PictureCollection> result = FXCollections.observableArrayList();
+		cache.put(param, result);
 
 		// add the initial values
 		result.addAll(((RealPictureCollection) param).getSubCollections());

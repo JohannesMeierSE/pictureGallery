@@ -35,6 +35,7 @@ public class CollectionState extends State {
 		nameCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
+				// TODO: Performanz-Optimierung möglich: nicht bei jeder sondern nur bei den relevanten Änderungen benachrichtigen lassen!
 				return new ObservablePictureCollection(param.getValue().getValue());
 			}
 		});

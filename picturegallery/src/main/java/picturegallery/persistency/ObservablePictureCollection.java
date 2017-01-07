@@ -58,7 +58,7 @@ public class ObservablePictureCollection extends AdapterImpl // TODO: besser and
 		return collection;
 	}
 
-	public void update() {
+	private void update() {
 		for (ChangeListener<? super PictureCollection> l : listenerChange) {
 			l.changed(this, getValue(), getValue());
 		}
