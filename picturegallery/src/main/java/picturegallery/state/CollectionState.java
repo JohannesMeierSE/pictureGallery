@@ -1,9 +1,11 @@
 package picturegallery.state;
 
 import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
+import gallery.RealPictureCollection;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
@@ -72,6 +74,9 @@ public class CollectionState extends State {
 								count++;
 							}
 						}
+						if (count == 0) {
+							return "";
+						}
 						return count + "";
 					}
 				};
@@ -99,12 +104,45 @@ public class CollectionState extends State {
 								count++;
 							}
 						}
+						if (count == 0) {
+							return "";
+						}
 						return count + "";
 					}
 				};
 			}
 		});
 		table.getColumns().add(sizeLinkedPicturesCol);
+
+		TreeTableColumn<PictureCollection, PictureCollection> linkCol = new TreeTableColumn<>("Links");
+		linkCol.setEditable(false);
+		linkCol.setPrefWidth(300.0);
+		linkCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
+			@Override
+			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
+				return new ObservablePictureCollection(param.getValue().getValue());
+			}
+		});
+		linkCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
+			@Override
+			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
+				return new PictureCollectionTreeTableCell() {
+					@Override
+					protected String toText(PictureCollection item) {
+						if (item instanceof LinkedPictureCollection) {
+							return "=> " + ((LinkedPictureCollection) item).getRealCollection().getRelativePath();
+						} else {
+							String message = "";
+							for (LinkedPictureCollection link : ((RealPictureCollection) item).getLinkedBy()) {
+								message = message + "<= " + link.getRelativePath() + "\n";
+							}
+							return message.trim();
+						}
+					}
+				};
+			}
+		});
+		table.getColumns().add(linkCol);
 
 		TreeItem<PictureCollection> rootItem =
 				new RecursiveTreeItem<PictureCollection>(MainApp.get().getBaseCollection(), new SubCollectionCallback());
