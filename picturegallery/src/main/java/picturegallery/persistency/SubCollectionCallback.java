@@ -1,5 +1,6 @@
 package picturegallery.persistency;
 
+import gallery.GalleryPackage;
 import gallery.LinkedPictureCollection;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
@@ -43,6 +44,10 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 		Adapter adapter = new AdapterImpl() {
 			@Override
 			public void notifyChanged(Notification msg) {
+				if (msg.getFeature() != GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections()) {
+					return;
+				}
+				// only sub/super collections are relevant:
 				if (msg.getEventType() == Notification.ADD) {
 					result.add(msg.getPosition(), (PictureCollection) msg.getNewValue());
 				} else if (msg.getEventType() == Notification.ADD_MANY) {
