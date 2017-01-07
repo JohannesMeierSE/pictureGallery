@@ -17,6 +17,7 @@ import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import picturegallery.MainApp;
 import picturegallery.action.CreateNewCollection;
+import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.RenameCollectionAction;
 import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
@@ -25,6 +26,7 @@ import picturegallery.ui.RecursiveTreeItem;
 
 public class CollectionState extends State {
 	protected final TreeTableView<PictureCollection> table;
+	private RealPictureCollection collectionWithNewLinks;
 
 	public CollectionState() {
 		super();
@@ -47,7 +49,20 @@ public class CollectionState extends State {
 				return new PictureCollectionTreeTableCell() {
 					@Override
 					protected String toText(PictureCollection item) {
-						return item.getName();
+						String textToShow = item.getName();
+//						if (item == currentCollection) { TODO
+//							textToShow = textToShow + " [currently shown]";
+//						}
+//						if (item == movetoCollection) {
+//							textToShow = textToShow + " [currently moving into]";
+//						}
+//						if (item == linktoCollection) {
+//							textToShow = textToShow + " [currently linking into]";
+//						}
+						if (collectionWithNewLinks == item) { // TODO: muss auch noch passend aktualisiert werden!!
+							textToShow = textToShow + " [target of linking-collections-action]";
+						}
+						return textToShow;
 					}
 				};
 			}
@@ -160,6 +175,7 @@ public class CollectionState extends State {
 	public void onInit() {
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());
+		registerAction(new LinkCollectionsAction());
 	}
 
 	@Override
@@ -187,5 +203,13 @@ public class CollectionState extends State {
 			return null;
 		}
 		return selectedItem.getValue();
+	}
+
+	public RealPictureCollection getCollectionWithNewLinks() {
+		return collectionWithNewLinks;
+	}
+
+	public void setCollectionWithNewLinks(RealPictureCollection collectionWithNewLinks) {
+		this.collectionWithNewLinks = collectionWithNewLinks;
 	}
 }

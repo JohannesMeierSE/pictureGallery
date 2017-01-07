@@ -189,7 +189,6 @@ public class MainApp extends Application {
         	public void handle(WorkerStateEvent event) {
         		globalActions.add(new FullScreenAction());
         		globalActions.add(new HideInformationAction());
-        		globalActions.add(new LinkCollectionsAction()); // TODO: umstrukturieren!
 
         		// start with the first/initial state:
 //        		SingleCollectionState newState = new SingleCollectionState(instance);
