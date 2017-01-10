@@ -3,6 +3,7 @@ package picturegallery.persistency;
 import gallery.PictureCollection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javafx.beans.InvalidationListener;
@@ -21,9 +22,18 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 	private final PictureCollection collection;
 	private final List<ChangeListener<? super PictureCollection>> listenerChange;
 	private final List<InvalidationListener> listenerInvalide;
+
 	private final Adapter adapter;
+	private final List<ObservableValue<? extends PictureCollection>> otherValues;
+	private final ChangeListener<PictureCollection> otherValuesListener;
 
 	public ObservablePictureCollection(PictureCollection collection) {
+		this(collection, Collections.emptyList());
+	}
+	public ObservablePictureCollection(PictureCollection collection, ObservableValue<? extends PictureCollection> otherValue) {
+		this(collection, Collections.singletonList(otherValue));
+	}
+	public ObservablePictureCollection(PictureCollection collection, List<ObservableValue<? extends PictureCollection>> otherValues) {
 		super();
 		if (collection == null) {
 			throw new IllegalArgumentException();
@@ -61,8 +71,25 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 			}
 		};
 		this.collection.eAdapters().add(this.adapter); // TODO: wann geschieht das Abmelden??
+
 		this.listenerChange = new ArrayList<>();
 		this.listenerInvalide = new ArrayList<>();
+
+		// will be updated if other properties gets this collection as new value OR removed as value
+		this.otherValues = new ArrayList<>(otherValues);
+		this.otherValuesListener = new ChangeListener<PictureCollection>() {
+			@Override
+			public void changed(ObservableValue<? extends PictureCollection> observable,
+					PictureCollection oldValue, PictureCollection newValue) {
+				if (oldValue != null && oldValue == collection) {
+					update();
+				}
+				if (newValue != null && newValue == collection) {
+					update();
+				}
+			}
+		};
+		this.otherValues.forEach(c -> c.addListener(this.otherValuesListener));
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
@@ -16,6 +17,7 @@ import javafx.scene.control.TreeTableView;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import picturegallery.MainApp;
+import picturegallery.action.ClearLinkCollectionsAction;
 import picturegallery.action.CreateNewCollection;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.RenameCollectionAction;
@@ -26,7 +28,7 @@ import picturegallery.ui.RecursiveTreeItem;
 
 public class CollectionState extends State {
 	protected final TreeTableView<PictureCollection> table;
-	private RealPictureCollection collectionWithNewLinks;
+	private SimpleObjectProperty<RealPictureCollection> collectionWithNewLinks = new SimpleObjectProperty<>();
 
 	public CollectionState() {
 		super();
@@ -40,7 +42,7 @@ public class CollectionState extends State {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
 				// TODO: Performanz-Optimierung möglich: nicht bei jeder sondern nur bei den relevanten Änderungen benachrichtigen lassen!
-				return new ObservablePictureCollection(param.getValue().getValue());
+				return new ObservablePictureCollection(param.getValue().getValue(), collectionWithNewLinks);
 			}
 		});
 		nameCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
@@ -59,7 +61,7 @@ public class CollectionState extends State {
 //						if (item == linktoCollection) {
 //							textToShow = textToShow + " [currently linking into]";
 //						}
-						if (collectionWithNewLinks == item) { // TODO: muss auch noch passend aktualisiert werden!!
+						if (collectionWithNewLinks.get() == item) {
 							textToShow = textToShow + " [target of linking-collections-action]";
 						}
 						return textToShow;
@@ -176,6 +178,7 @@ public class CollectionState extends State {
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());
 		registerAction(new LinkCollectionsAction());
+		registerAction(new ClearLinkCollectionsAction());
 	}
 
 	@Override
@@ -206,10 +209,10 @@ public class CollectionState extends State {
 	}
 
 	public RealPictureCollection getCollectionWithNewLinks() {
-		return collectionWithNewLinks;
+		return collectionWithNewLinks.get();
 	}
 
 	public void setCollectionWithNewLinks(RealPictureCollection collectionWithNewLinks) {
-		this.collectionWithNewLinks = collectionWithNewLinks;
+		this.collectionWithNewLinks.set(collectionWithNewLinks);
 	}
 }
