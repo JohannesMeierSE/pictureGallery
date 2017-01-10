@@ -190,7 +190,6 @@ public class MainApp extends Application {
         		globalActions.add(new HideInformationAction());
 
         		// start with the first/initial state:
-//        		SingleCollectionState newState = new SingleCollectionState(instance);
         		CollectionState newState = new CollectionState();
         		newState.onInit();
 				switchState(newState);

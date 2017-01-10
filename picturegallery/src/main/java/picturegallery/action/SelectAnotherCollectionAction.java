@@ -1,12 +1,11 @@
 package picturegallery.action;
 
-import gallery.PictureCollection;
 import javafx.scene.input.KeyCode;
-import picturegallery.Logic;
+import picturegallery.MainApp;
 import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
 
-public class SelectAnotherCollectionAction extends Action {
+public class SelectAnotherCollectionAction extends Action { // TODO: rename it??
 
 	@Override
 	public void run(State currentState) {
@@ -15,21 +14,16 @@ public class SelectAnotherCollectionAction extends Action {
 		}
 		SingleCollectionState state = (SingleCollectionState) currentState;
 
-		PictureCollection newCol = Logic.selectCollection(
-				currentState,
-				true, false, true);
-		if (newCol != null) {
-			state.setCurrentCollection(newCol);
-		}
+		MainApp.get().switchState(state.getPreviousState());
 	}
 
 	@Override
 	public KeyCode getKey() {
-		return KeyCode.C;
+		return KeyCode.Q;
 	}
 
 	@Override
 	public String getDescription() {
-		return "select another collection";
+		return "select another collection (go back to the collection overview)";
 	}
 }

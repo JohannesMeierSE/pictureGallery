@@ -20,6 +20,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 	protected RealPictureCollection linktoCollection;
 
 	private TempCollectionState tempState;
+	private CollectionState previousState;
 
 	private final ImageView iv;
 	private final StackPane root;
@@ -165,6 +166,11 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	@Override
 	public void onEntry(State previousState) {
+		if (!(previousState instanceof CollectionState)) {
+			throw new IllegalStateException();
+		}
+		this.previousState = (CollectionState) previousState;
+
 		// select the initial collection!
 		while (currentCollection == null) {
 			PictureCollection newCol = Logic.selectCollection(this, false, false, true);
@@ -196,6 +202,10 @@ public class SingleCollectionState extends PictureSwitchingState {
 	@Override
 	public TempCollectionState getTempState() {
 		return tempState;
+	}
+
+	public CollectionState getPreviousState() {
+		return previousState;
 	}
 
 	public RealPictureCollection getLinktoCollection() {
