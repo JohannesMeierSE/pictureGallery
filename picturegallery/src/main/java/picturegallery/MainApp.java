@@ -40,7 +40,6 @@ import org.eclipse.emf.edit.domain.EditingDomain;
 import picturegallery.action.Action;
 import picturegallery.action.FullScreenAction;
 import picturegallery.action.HideInformationAction;
-import picturegallery.action.LinkCollectionsAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.Settings;
 import picturegallery.state.CollectionState;

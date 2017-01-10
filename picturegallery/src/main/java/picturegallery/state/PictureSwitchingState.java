@@ -130,7 +130,7 @@ public abstract class PictureSwitchingState extends State {
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
 
 		// inform, weather the current picture is in the temp collection
-		if (getTempState().containsPicture(currentPicture)) {
+		if (getTempState() != null && getTempState().containsPicture(currentPicture)) {
 			pictureText = pictureText + "  (in next temp collection)";
 		}
 

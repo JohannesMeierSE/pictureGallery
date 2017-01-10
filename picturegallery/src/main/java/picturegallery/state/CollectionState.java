@@ -21,6 +21,7 @@ import picturegallery.action.ClearLinkCollectionsAction;
 import picturegallery.action.CreateNewCollection;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.RenameCollectionAction;
+import picturegallery.action.ShowSingleCollectionAction;
 import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
 import picturegallery.persistency.SubCollectionCallback;
@@ -175,6 +176,7 @@ public class CollectionState extends State {
 
 	@Override
 	public void onInit() {
+		registerAction(new ShowSingleCollectionAction());
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());
 		registerAction(new LinkCollectionsAction());
