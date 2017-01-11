@@ -3,6 +3,7 @@ package picturegallery.state;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
@@ -15,11 +16,11 @@ import picturegallery.action.JumpRightAction;
 import picturegallery.action.SelectAnotherCollectionAction;
 
 public class SingleCollectionState extends PictureSwitchingState {
-	protected PictureCollection currentCollection;
-	protected RealPictureCollection movetoCollection;
-	protected RealPictureCollection linktoCollection;
+	protected SimpleObjectProperty<PictureCollection> currentCollection = new SimpleObjectProperty<>();
+	protected SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
+	protected SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
-	private TempCollectionState tempState;
+	private final TempCollectionState tempState;
 	private CollectionState previousState;
 
 	private final ImageView iv;
@@ -32,6 +33,9 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	public SingleCollectionState(MainApp app) {
 		super(app);
+
+		tempState = new TempCollectionState(app);
+		tempState.onInit();
 
 		// Stack Pane
 		root = new StackPane();
@@ -76,32 +80,32 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	@Override
 	public int getSize() {
-		return currentCollection.getPictures().size();
+		return currentCollection.get().getPictures().size();
 	}
 
 	@Override
 	public Picture getPictureAtIndex(int index) {
-		return currentCollection.getPictures().get(index);
+		return currentCollection.get().getPictures().get(index);
 	}
 
 	@Override
 	public int getIndexOfPicture(Picture picture) {
-		return currentCollection.getPictures().indexOf(picture);
+		return currentCollection.get().getPictures().indexOf(picture);
 	}
 
 	@Override
 	public boolean containsPicture(Picture pic) {
-		return currentCollection.getPictures().contains(pic);
+		return currentCollection.get().getPictures().contains(pic);
 	}
 
 	@Override
 	public PictureCollection getCurrentCollection() {
-		return currentCollection;
+		return currentCollection.get();
 	}
 
 	@Override
 	protected String getCollectionDescription() {
-		return currentCollection.getRelativePath();
+		return currentCollection.get().getRelativePath();
 	}
 
 	@Override
@@ -139,9 +143,9 @@ public class SingleCollectionState extends PictureSwitchingState {
 			throw new IllegalArgumentException();
 		}
 
-		this.currentCollection = currentCollection;
-		movetoCollection = null;
-		linktoCollection = null;
+		this.currentCollection.set(currentCollection);
+		setMovetoCollection(null);
+		setLinktoCollection(null);
 		indexCurrentCollection = -1;
 
 		showInitialPicture();
@@ -153,9 +157,6 @@ public class SingleCollectionState extends PictureSwitchingState {
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
 		registerAction(new SelectAnotherCollectionAction());
-
-		tempState = new TempCollectionState(app);
-		tempState.onInit();
 	}
 
 	@Override
@@ -166,10 +167,9 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	@Override
 	public void onEntry(State previousState) {
-		if (!(previousState instanceof CollectionState)) {
-			throw new IllegalStateException();
+		if (previousState instanceof CollectionState) {
+			this.previousState = (CollectionState) previousState;
 		}
-		this.previousState = (CollectionState) previousState;
 
 		// select the initial collection!
 		while (currentCollection == null) {
@@ -209,16 +209,16 @@ public class SingleCollectionState extends PictureSwitchingState {
 	}
 
 	public RealPictureCollection getLinktoCollection() {
-		return linktoCollection;
+		return linktoCollection.get();
 	}
 	public void setLinktoCollection(RealPictureCollection linktoCollection) {
-		this.linktoCollection = linktoCollection;
+		this.linktoCollection.set(linktoCollection);
 	}
 
 	public RealPictureCollection getMovetoCollection() {
-		return movetoCollection;
+		return movetoCollection.get();
 	}
 	public void setMovetoCollection(RealPictureCollection movetoCollection) {
-		this.movetoCollection = movetoCollection;
+		this.movetoCollection.set(movetoCollection);
 	}
 }
