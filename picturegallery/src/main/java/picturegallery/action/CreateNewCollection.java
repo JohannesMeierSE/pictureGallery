@@ -51,12 +51,12 @@ public class CreateNewCollection extends Action {
 
 		EditingDomain domain = MainApp.get().getModelDomain();
 		Command command = AddCommand.create(domain, parentOfNewCollection,
-				GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), newCollection);
+				GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(),
+				newCollection, Logic.getIndexForCollectionInsertion(parentOfNewCollection.getSubCollections(), newCollection));
 		domain.getCommandStack().execute(command);
 		// previous version
 	    // parentOfNewCollection.getSubCollections().add(newCollection);
-
-	    Logic.sortSubCollections(parentOfNewCollection, false);
+	    // Logic.sortSubCollections(parentOfNewCollection, false);
 
 	    // create folder in file system
 	    try {

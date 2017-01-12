@@ -82,18 +82,19 @@ public class LinkCollectionsAction extends Action {
 	    	// EMF commands
 //			target.getLinkedBy().add(newLink);
 			Command command = AddCommand.create(domain, target,
-					GalleryPackage.eINSTANCE.getRealPictureCollection_LinkedBy(), newLink);
+					GalleryPackage.eINSTANCE.getRealPictureCollection_LinkedBy(),
+					newLink, Logic.getIndexForCollectionInsertion(target.getLinkedBy(), newLink));
 
 //			collectionWithNewLinks.getSubCollections().add(newLink);
+//			Logic.sortSubCollections(collectionWithNewLinks, false);
 			Command command2 = AddCommand.create(domain, collectionWithNewLinks,
-					GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), newLink);
+					GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(),
+					newLink, Logic.getIndexForCollectionInsertion(collectionWithNewLinks.getSubCollections(), newLink));
 
 			CompoundCommand allCommands = new CompoundCommand();
 			allCommands.append(command);
 			allCommands.append(command2);
 			domain.getCommandStack().execute(allCommands);
-
-	    	Logic.sortSubCollections(collectionWithNewLinks, false);
 
 	    	// create link in file system
 	    	Logic.createSymlinkCollection(newLink);

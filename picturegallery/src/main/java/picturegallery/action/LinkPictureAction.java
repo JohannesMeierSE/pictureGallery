@@ -1,6 +1,7 @@
 package picturegallery.action;
 
 import gallery.GalleryFactory;
+import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
@@ -9,6 +10,10 @@ import gallery.RealPictureCollection;
 import java.util.Collections;
 
 import javafx.scene.input.KeyCode;
+
+import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.domain.EditingDomain;
+
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
@@ -50,18 +55,29 @@ public class LinkPictureAction extends Action {
 				break;
 			}
 		}
-		if (existingLink == null) { // => create new link
-			// update the EMF model
+		if (existingLink == null) {
+			// => create new link:
+			// 1. update the EMF model
+	    	EditingDomain domain = MainApp.get().getModelDomain();
 			LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
 			newLink.setName(new String(linkedPicture.getName()));
 			newLink.setFileExtension(new String(linkedPicture.getFileExtension()));
 			newLink.setCollection(linktoCollection);
 			newLink.setRealPicture(linkedPicture);
-			linkedPicture.getLinkedBy().add(newLink);
-			linktoCollection.getPictures().add(newLink);
-			Logic.sortPicturesInCollection(linktoCollection);
 
-			// add link in file system
+			int index = Logic.getIndexForPictureInsertion(linktoCollection.getPictures(), newLink);
+			System.out.println("index: " + index); // TODO: index ist richtig, aber das Einfügen passiert trotzdem am Ende!!!
+			domain.getCommandStack().execute(AddCommand.create(domain,
+					linktoCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), newLink,
+					index));
+//			linktoCollection.getPictures().add(newLink);
+//			Logic.sortPicturesInCollection(linktoCollection);
+			domain.getCommandStack().execute(AddCommand.create(domain,
+					linkedPicture, GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), newLink,
+					Logic.getIndexForPictureInsertion(linkedPicture.getLinkedBy(), newLink)));
+//			linkedPicture.getLinkedBy().add(newLink);
+
+			// 2. add link in file system
 			Logic.createSymlinkPicture(newLink);
 		} else {
 			// => remove existing link

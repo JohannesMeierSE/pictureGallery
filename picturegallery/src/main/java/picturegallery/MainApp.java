@@ -391,7 +391,7 @@ public class MainApp extends Application {
 
 				domain.getCommandStack().execute(AddCommand.create(domain,
 						newCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), picture,
-						Logic.getIndexForPictureInsertion(newCollection, picture)));
+						Logic.getIndexForPictureInsertion(newCollection.getPictures(), picture)));
 //		    	newCollection.getPictures().add(picture);
 
 				domain.getCommandStack().execute(SetCommand.create(domain,

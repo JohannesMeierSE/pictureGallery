@@ -116,7 +116,7 @@ public class TempCollectionState extends PictureSwitchingState {
 		}
 
 		// in-place sorting
-		Logic.sortPictures(tempCollection);
+		//Logic.sortPictures(tempCollection);
 
 		super.onEntry(previousState);
 	}
@@ -141,7 +141,7 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	public void addPicture(Picture picture) {
-		tempCollection.add(picture);
+		tempCollection.add(Logic.getIndexForPictureInsertion(tempCollection, picture), picture);
 	}
 
 	public void removePicture(Picture picture) {

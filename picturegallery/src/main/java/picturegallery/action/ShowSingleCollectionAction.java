@@ -20,7 +20,7 @@ public class ShowSingleCollectionAction extends Action {
 			return;
 		}
 
-		SingleCollectionState newState = new SingleCollectionState(MainApp.get());
+		SingleCollectionState newState = new SingleCollectionState(MainApp.get()); // TODO: nicht immer einen neuen erstellen, oder??
 		newState.setCurrentCollection(collection);
 		newState.onInit();
 		MainApp.get().switchState(newState);

@@ -1077,7 +1077,7 @@ public class Logic {
 	}
 
 	public static void replaceIdenticalPicturesInSubcollectionsByLink(PictureCollection currentCollection) {
-		// linked collections => do nothing!
+		// linked collections => do nothing! TODO: alles mit EMF commands ausstatten!
 		if (currentCollection instanceof LinkedPictureCollection) {
 			return;
 		}
@@ -1107,16 +1107,32 @@ public class Logic {
 	}
 
 	/**
-	 * Computes the index at which the given picture should be inserted into the given collection.
+	 * Computes the index at which the given picture should be inserted into the given list of pictures.
 	 * Does not have side-effects (read-only, no changes)!
-	 * @param collection
+	 * @param pictureList
 	 * @param picture
 	 * @return
 	 */
-	public static int getIndexForPictureInsertion(PictureCollection collection, Picture picture) {
+	public static int getIndexForPictureInsertion(List<? extends Picture> pictureList, Picture picture) {
 		int result = 0;
-		while (result < collection.getPictures().size()
-				&& collection.getPictures().get(result).getName().compareTo(picture.getName()) < 0) {
+		while (result < pictureList.size()
+				&& pictureList.get(result).getName().compareTo(picture.getName()) < 0) {
+			result++;
+		}
+		return result;
+	}
+
+	/**
+	 * Computes the index at which the given collection should be inserted into the given list of collections.
+	 * Does not have side-effects (read-only, no changes)!
+	 * @param collectionList
+	 * @param picture
+	 * @return
+	 */
+	public static int getIndexForCollectionInsertion(List<? extends PictureCollection> collectionList, PictureCollection picture) {
+		int result = 0;
+		while (result < collectionList.size()
+				&& collectionList.get(result).getName().compareTo(picture.getName()) < 0) {
 			result++;
 		}
 		return result;

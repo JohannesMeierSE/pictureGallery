@@ -91,7 +91,7 @@ public class RenameCollectionAction extends Action {
 		}
 
 		// sort the collections within the parent collection
-		Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
+		Logic.sortSubCollections(collectionToRename.getSuperCollection(), false); // TODO: ersetzen durch MoveCommand!
 
 		if (currentState instanceof PictureSwitchingState) {
 			((PictureSwitchingState) currentState).updateCollectionLabel();
