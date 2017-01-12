@@ -39,6 +39,7 @@ public class LinkPictureAction extends Action {
 		if (linktoCollection == null) {
 			return;
 		}
+
 		// determine the real picture with the new link
 		RealPicture linkedPicture = Logic.getRealPicture(state.getCurrentPicture());
 		// search for an existing link
@@ -59,6 +60,7 @@ public class LinkPictureAction extends Action {
 			linkedPicture.getLinkedBy().add(newLink);
 			linktoCollection.getPictures().add(newLink);
 			Logic.sortPicturesInCollection(linktoCollection);
+
 			// add link in file system
 			Logic.createSymlinkPicture(newLink);
 		} else {

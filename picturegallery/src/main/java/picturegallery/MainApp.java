@@ -1,5 +1,6 @@
 package picturegallery;
 
+import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.Picture;
 import gallery.RealPicture;
@@ -34,6 +35,9 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.command.RemoveCommand;
+import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
 
@@ -265,7 +269,7 @@ public class MainApp extends Application {
 			e.printStackTrace();
 		}
 
-		// update the EMF model
+		// update the EMF model TODO: do this with commands!
 		picture.getCollection().getPictures().remove(picture);
 		picture.setCollection(null);
 		if (picture instanceof LinkedPicture) {
@@ -283,6 +287,8 @@ public class MainApp extends Application {
 	public void movePicture(Picture picture, RealPictureCollection newCollection) {
 		// diese Methode bleibt hier in MainApp!
 		// TODO: muss noch an States angepasst werden!!
+
+		// check input
 		if (picture == null || newCollection == null) {
 			throw new IllegalArgumentException();
 		}
@@ -333,11 +339,6 @@ public class MainApp extends Application {
 		Task<Void> task = new Task<Void>() { // do the long-running moving in another thread!
 			@Override
 			protected Void call() throws Exception {
-				// remove the picture from some other variable stores
-				if (picture instanceof RealPicture) {
-					imageCache.remove((RealPicture) picture); // TODO: kann raus, wird automatisch rausgeworfen!
-				}
-
 				if (picture instanceof RealPicture) {
 					// move the file in the file system
 					Logic.moveFileIntoDirectory(picture.getFullPath(), newCollection.getFullPath());
@@ -351,30 +352,44 @@ public class MainApp extends Application {
 					}
 
 					// update the EMF model
-					picture.getCollection().getPictures().remove(picture);
-					newCollection.getPictures().add(picture);
-					picture.setCollection(newCollection);
-					Logic.sortPicturesInCollection(newCollection);
+					movePictureInModel(picture, newCollection);
 					
 					// ... and create them all again with changed target
 					for (LinkedPicture linked : pictureToMove.getLinkedBy()) {
 						Logic.createSymlinkPicture(linked);
 					}
 				} else {
-					// Verschieben funktioniert bei relativen Links nicht!!
+					// Verschieben funktioniert bei relativen Links nicht! Deshalb ...
 					LinkedPicture pictureToMove = (LinkedPicture) picture;
-					Logic.deleteSymlinkPicture(pictureToMove); // ... erst löschen
+					Logic.deleteSymlinkPicture(pictureToMove); // ... erst löschen ...
 
 					// update the EMF model
-					picture.getCollection().getPictures().remove(picture);
-					newCollection.getPictures().add(picture);
-					picture.setCollection(newCollection);
-					Logic.sortPicturesInCollection(newCollection);
+					movePictureInModel(picture, newCollection);
 
 					Logic.createSymlinkPicture(pictureToMove); // ... und dann neu erstellen
 				}
-
 				return null;
+			}
+
+			private void movePictureInModel(Picture picture, RealPictureCollection newCollection) {
+		    	EditingDomain domain = MainApp.get().getModelDomain();
+
+				RealPictureCollection oldCollection = picture.getCollection();
+
+				domain.getCommandStack().execute(RemoveCommand.create(domain,
+						oldCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), picture));
+//		    	oldCollection.getPictures().remove(picture);
+
+				domain.getCommandStack().execute(AddCommand.create(domain,
+						newCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), picture,
+						Logic.getIndexForPictureInsertion(newCollection, picture)));
+//		    	newCollection.getPictures().add(picture);
+
+				domain.getCommandStack().execute(SetCommand.create(domain,
+						picture, GalleryPackage.eINSTANCE.getPicture_Collection(), newCollection));
+//		    	picture.setCollection(newCollection);
+
+//				Logic.sortPicturesInCollection(newCollection);
 			}
 		};
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {

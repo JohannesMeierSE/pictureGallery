@@ -1105,4 +1105,20 @@ public class Logic {
 			}
 		}
 	}
+
+	/**
+	 * Computes the index at which the given picture should be inserted into the given collection.
+	 * Does not have side-effects (read-only, no changes)!
+	 * @param collection
+	 * @param picture
+	 * @return
+	 */
+	public static int getIndexForPictureInsertion(PictureCollection collection, Picture picture) {
+		int result = 0;
+		while (result < collection.getPictures().size()
+				&& collection.getPictures().get(result).getName().compareTo(picture.getName()) < 0) {
+			result++;
+		}
+		return result;
+	}
 }
