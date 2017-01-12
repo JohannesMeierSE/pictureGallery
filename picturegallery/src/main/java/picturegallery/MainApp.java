@@ -246,15 +246,12 @@ public class MainApp extends Application {
 	}
 
 	public void deletePicture(Picture picture, boolean updateGui) {
-		// diese Methode bleibt hier in MainApp!
-
-		// real => alle verlinkten Bilder werden auch gelöscht!!
+		// real picture => remove all linked pictures, too!
 		if (picture instanceof RealPicture) {
 			RealPicture realToDelete = (RealPicture) picture;
 			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
 				deletePicture(linked, false);
 			}
-			imageCache.remove(realToDelete);
 		}
 
 		// update GUI
@@ -269,13 +266,28 @@ public class MainApp extends Application {
 			e.printStackTrace();
 		}
 
-		// update the EMF model TODO: do this with commands!
-		picture.getCollection().getPictures().remove(picture);
-		picture.setCollection(null);
+		// update the EMF model
+		EditingDomain domain = MainApp.get().getModelDomain();
+		RealPictureCollection parentCollection = picture.getCollection();
+
+		domain.getCommandStack().execute(SetCommand.create(domain,
+				picture, GalleryPackage.eINSTANCE.getPicture_Collection(), null));
+//		picture.setCollection(null);
+
+		domain.getCommandStack().execute(RemoveCommand.create(domain,
+				parentCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), picture));
+//		parentCollection.getPictures().remove(picture);
+
 		if (picture instanceof LinkedPicture) {
 			LinkedPicture lp = (LinkedPicture) picture;
-			lp.getRealPicture().getLinkedBy().remove(lp);
-			lp.setRealPicture(null);
+
+			domain.getCommandStack().execute(SetCommand.create(domain,
+					lp, GalleryPackage.eINSTANCE.getLinkedPicture_RealPicture(), null));
+//			lp.setRealPicture(null);
+
+			domain.getCommandStack().execute(RemoveCommand.create(domain,
+					lp.getRealPicture(), GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), lp));
+//			lp.getRealPicture().getLinkedBy().remove(lp);
 		}
 
 		// update GUI
@@ -285,9 +297,6 @@ public class MainApp extends Application {
 	}
 
 	public void movePicture(Picture picture, RealPictureCollection newCollection) {
-		// diese Methode bleibt hier in MainApp!
-		// TODO: muss noch an States angepasst werden!!
-
 		// check input
 		if (picture == null || newCollection == null) {
 			throw new IllegalArgumentException();
