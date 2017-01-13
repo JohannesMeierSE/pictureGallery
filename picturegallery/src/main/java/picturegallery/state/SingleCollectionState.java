@@ -11,14 +11,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
-import picturegallery.action.ExitSingleCollectionStateAction;
 
 public class SingleCollectionState extends PictureSwitchingState {
-	protected SimpleObjectProperty<PictureCollection> currentCollection = new SimpleObjectProperty<>();
-	protected SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
-	protected SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
+	public final SimpleObjectProperty<PictureCollection> currentCollection = new SimpleObjectProperty<>();
+	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
+	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
 	private final TempCollectionState tempState;
 	private CollectionState previousState;

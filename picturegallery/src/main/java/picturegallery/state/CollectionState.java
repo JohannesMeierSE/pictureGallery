@@ -6,6 +6,10 @@ import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.SelectionMode;
@@ -47,7 +51,12 @@ public class CollectionState extends State {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
 				// TODO: Performanz-Optimierung möglich: nicht bei jeder sondern nur bei den relevanten Änderungen benachrichtigen lassen!
-				return new ObservablePictureCollection(param.getValue().getValue(), collectionWithNewLinks);
+				List<ObservableValue<? extends PictureCollection>> otherValues = new ArrayList<>();
+				otherValues.add(collectionWithNewLinks);
+				otherValues.add(singleState.currentCollection);
+				otherValues.add(singleState.movetoCollection);
+				otherValues.add(singleState.linktoCollection);
+				return new ObservablePictureCollection(param.getValue().getValue(), otherValues);
 			}
 		});
 		nameCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
@@ -57,15 +66,15 @@ public class CollectionState extends State {
 					@Override
 					protected String toText(PictureCollection item) {
 						String textToShow = item.getName();
-//						if (item == currentCollection) { TODO
-//							textToShow = textToShow + " [currently shown]";
-//						}
-//						if (item == movetoCollection) {
-//							textToShow = textToShow + " [currently moving into]";
-//						}
-//						if (item == linktoCollection) {
-//							textToShow = textToShow + " [currently linking into]";
-//						}
+						if (item == singleState.currentCollection.get()) {
+							textToShow = textToShow + " [currently shown]";
+						}
+						if (item == singleState.movetoCollection.get()) {
+							textToShow = textToShow + " [currently moving into]";
+						}
+						if (item == singleState.linktoCollection.get()) {
+							textToShow = textToShow + " [currently linking into]";
+						}
 						if (collectionWithNewLinks.get() == item) {
 							textToShow = textToShow + " [target of linking-collections-action]";
 						}
