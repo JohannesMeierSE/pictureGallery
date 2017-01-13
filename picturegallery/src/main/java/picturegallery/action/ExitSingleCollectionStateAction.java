@@ -5,7 +5,7 @@ import picturegallery.MainApp;
 import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
 
-public class SelectAnotherCollectionAction extends Action { // TODO: rename it??
+public class ExitSingleCollectionStateAction extends Action {
 
 	@Override
 	public void run(State currentState) {

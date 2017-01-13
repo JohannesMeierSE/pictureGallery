@@ -13,7 +13,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
-import picturegallery.action.SelectAnotherCollectionAction;
+import picturegallery.action.ExitSingleCollectionStateAction;
 
 public class SingleCollectionState extends PictureSwitchingState {
 	protected SimpleObjectProperty<PictureCollection> currentCollection = new SimpleObjectProperty<>();
@@ -156,7 +156,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 		super.onInit();
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
-		registerAction(new SelectAnotherCollectionAction());
+		registerAction(new ExitSingleCollectionStateAction());
 	}
 
 	@Override
