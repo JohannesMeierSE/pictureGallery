@@ -30,9 +30,13 @@ import picturegallery.ui.RecursiveTreeItem;
 public class CollectionState extends State {
 	protected final TreeTableView<PictureCollection> table;
 	private SimpleObjectProperty<RealPictureCollection> collectionWithNewLinks = new SimpleObjectProperty<>();
+	private final SingleCollectionState singleState;
 
 	public CollectionState() {
 		super();
+		singleState = new SingleCollectionState(MainApp.get());
+		singleState.onInit();
+
 		table = new TreeTableView<>();
 		table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
@@ -216,5 +220,9 @@ public class CollectionState extends State {
 
 	public void setCollectionWithNewLinks(RealPictureCollection collectionWithNewLinks) {
 		this.collectionWithNewLinks.set(collectionWithNewLinks);
+	}
+
+	public SingleCollectionState getSingleState() {
+		return singleState;
 	}
 }
