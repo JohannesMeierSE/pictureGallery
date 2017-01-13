@@ -36,7 +36,7 @@ public class LinkCollectionsAction extends Action {
 
 		RealPictureCollection collectionWithNewLinks = state.getCollectionWithNewLinks();
 		if (collectionWithNewLinks == null && state.getSelection() instanceof RealPictureCollection) {
-			// set the target collection of this action once (1.)
+			// 1. set the target collection of this action once ...
 			collectionWithNewLinks = (RealPictureCollection) state.getSelection();
 			state.setCollectionWithNewLinks(collectionWithNewLinks);
 			return;
@@ -79,7 +79,6 @@ public class LinkCollectionsAction extends Action {
 	    	newLink.setRealCollection(target);
 	    	newLink.setSuperCollection(collectionWithNewLinks);
 
-	    	// EMF commands
 //			target.getLinkedBy().add(newLink);
 			Command command = AddCommand.create(domain, target,
 					GalleryPackage.eINSTANCE.getRealPictureCollection_LinkedBy(),

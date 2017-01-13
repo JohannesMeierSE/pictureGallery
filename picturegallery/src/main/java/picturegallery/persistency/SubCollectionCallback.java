@@ -48,8 +48,9 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 					return;
 				}
 				// only sub/super collections are relevant:
+				Object newValue = msg.getNewValue();
 				if (msg.getEventType() == Notification.ADD) {
-					result.add(msg.getPosition(), (PictureCollection) msg.getNewValue());
+					result.add(msg.getPosition(), (PictureCollection) newValue);
 				} else if (msg.getEventType() == Notification.ADD_MANY) {
 					throw new NotSupportedException();
 				} else if (msg.getEventType() == Notification.REMOVE) {
@@ -57,10 +58,12 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 				} else if (msg.getEventType() == Notification.REMOVE_MANY) {
 					throw new NotSupportedException();
 				} else if (msg.getEventType() == Notification.MOVE) {
-					// TODO: prüfen
-					System.out.println("movement ?!");
-					result.remove(msg.getNewValue());
-					result.add(msg.getPosition(), (PictureCollection) msg.getNewValue());
+					// TODO: Benachrichtigung kommt an und liefert richtige Werte, aber das Verschieben funktioniert nicht!!
+					// TODO: JavaFX sortiert die Werte auch weiterhin falsch, nämlich nach dem alten Wert entsprechend!
+					System.out.println("movement: " + newValue.toString() + ", old position: "
+							+ result.indexOf(newValue) + ", new position: " + msg.getPosition());
+					result.remove(newValue);
+					result.add(msg.getPosition(), (PictureCollection) newValue);
 				}
 			}
 		};

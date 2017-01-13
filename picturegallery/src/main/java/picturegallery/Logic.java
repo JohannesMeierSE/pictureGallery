@@ -1,6 +1,7 @@
 package picturegallery;
 
 import gallery.GalleryFactory;
+import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.LinkedPictureCollection;
 import gallery.Picture;
@@ -57,6 +58,11 @@ import org.apache.tika.parser.image.ImageParser;
 import org.apache.tika.parser.jpeg.JpegParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.emf.common.util.ECollections;
+import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.command.MoveCommand;
+import org.eclipse.emf.edit.command.RemoveCommand;
+import org.eclipse.emf.edit.command.SetCommand;
+import org.eclipse.emf.edit.domain.EditingDomain;
 import org.xml.sax.SAXException;
 
 import picturegallery.state.PictureSwitchingState;
@@ -367,19 +373,11 @@ public class Logic {
 
 	public static void extractMetadata(PictureCollection currentCollection)
 			throws FileNotFoundException, IOException, SAXException, TikaException {
-		List<RealPicture> currentPictures = new ArrayList<>(currentCollection.getPictures().size());
 		for (Picture pic : currentCollection.getPictures()) {
 			if (pic.getMetadata() != null) {
 				continue;
 			}
-			if (pic instanceof RealPicture) {
-				currentPictures.add((RealPicture) pic);
-			} else {
-				currentPictures.add(((LinkedPicture) pic).getRealPicture());
-			}
-		}
-		for (RealPicture pic : currentPictures) {
-			extractMetadata(pic);
+			extractMetadata(Logic.getRealPicture(pic));
 		}
 	}
 
@@ -413,7 +411,6 @@ public class Logic {
 		System.out.println(picture.getFullPath());
 
 		gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
-		picture.setMetadata(md);
 
 		// helper variables
 		String model = "";
@@ -522,6 +519,11 @@ public class Logic {
 		 * Orientation: right side, top (rotate 90 cw) tiff:Orientation: 6
 		 * File Size: 2795458 bytes
 		 */
+
+    	EditingDomain domain = MainApp.get().getModelDomain();
+    	domain.getCommandStack().execute(SetCommand.create(domain,
+    			picture, GalleryPackage.eINSTANCE.getRealPicture_Metadata(), md));
+//		picture.setMetadata(md);
 	}
 
 	public static String printMetadata(gallery.Metadata md) {
@@ -873,38 +875,56 @@ public class Logic {
 		if (oldReal == null || newRef == null) {
 			throw new IllegalArgumentException();
 		}
+    	EditingDomain domain = MainApp.get().getModelDomain();
 
 		// fix the symlinks onto the old real picture
 		List<LinkedPicture> links = new ArrayList<>(oldReal.getLinkedBy());
 		for (LinkedPicture link : links) {
 			deleteSymlinkPicture(link);
 
-			oldReal.getLinkedBy().remove(link);
-			newRef.getLinkedBy().add(link);
-			link.setRealPicture(newRef);
+			domain.getCommandStack().execute(RemoveCommand.create(domain,
+					oldReal, GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), link));
+//			oldReal.getLinkedBy().remove(link);
+			domain.getCommandStack().execute(SetCommand.create(domain,
+					link, GalleryPackage.eINSTANCE.getLinkedPicture_RealPicture(), newRef));
+//			link.setRealPicture(newRef);
+			domain.getCommandStack().execute(AddCommand.create(domain,
+					newRef, GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), link,
+					Logic.getIndexForPictureInsertion(newRef.getLinkedBy(), link)));
+//			newRef.getLinkedBy().add(link);
 
 			createSymlinkPicture(link);
 		}
 
+		RealPictureCollection oldParent = oldReal.getCollection();
 		// create new link
 		LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
-		newLink.setName(oldReal.getName());
-		newLink.setFileExtension(oldReal.getFileExtension());
-		newRef.getLinkedBy().add(newLink);
+		newLink.setName(new String(oldReal.getName()));
+		newLink.setFileExtension(new String(oldReal.getFileExtension()));
 		newLink.setRealPicture(newRef);
+		newLink.setCollection(oldParent);
 
-		oldReal.getCollection().getPictures().add(newLink);
-		newLink.setCollection(oldReal.getCollection());
+		domain.getCommandStack().execute(AddCommand.create(domain,
+				oldParent, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), newLink,
+				Logic.getIndexForPictureInsertion(oldParent.getPictures(), newLink)));
+//		oldParent.getPictures().add(newLink);
+		domain.getCommandStack().execute(AddCommand.create(domain, newRef, GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), newLink,
+				Logic.getIndexForPictureInsertion(newRef.getLinkedBy(), newLink)));
+//		newRef.getLinkedBy().add(newLink);
 
 		// remove old picture
 		deleteRealPicture(oldReal);
-		oldReal.getCollection().getPictures().remove(oldReal);
-		oldReal.setCollection(null);
+		domain.getCommandStack().execute(SetCommand.create(domain,
+				oldReal, GalleryPackage.eINSTANCE.getPicture_Collection(), null));
+//		oldReal.setCollection(null);
+		domain.getCommandStack().execute(RemoveCommand.create(domain,
+				oldParent, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), oldReal));
+//		oldParent.getPictures().remove(oldReal);
 
 		// old real and new linked picture have the same name => 1. remove old real, 2. create new link
 		createSymlinkPicture(newLink);
 
-		sortPicturesInCollection(newLink.getCollection());
+//		sortPicturesInCollection(newLink.getCollection());
 	}
 
 	public static RealPictureCollection getRealCollection(PictureCollection collection) {
@@ -947,6 +967,7 @@ public class Logic {
 
 		RealPicture real = getRealPicture(picture);
 		System.out.println("load next");
+		// TODO: hier die Domain + EMF Commands einsetzen??
 		try {
 			if (!fast) {
 				// https://github.com/pragone/jphash
@@ -1077,7 +1098,7 @@ public class Logic {
 	}
 
 	public static void replaceIdenticalPicturesInSubcollectionsByLink(PictureCollection currentCollection) {
-		// linked collections => do nothing! TODO: alles mit EMF commands ausstatten!
+		// linked collections => do nothing!
 		if (currentCollection instanceof LinkedPictureCollection) {
 			return;
 		}
@@ -1134,6 +1155,30 @@ public class Logic {
 		while (result < collectionList.size()
 				&& collectionList.get(result).getName().compareTo(picture.getName()) < 0) {
 			result++;
+		}
+		return result;
+	}
+
+	/**
+	 * 
+	 * @param collectionList list which is sorted (exception: the given picture is inserted an any (wrong) position)
+	 * @param picture
+	 * @return the target index after moving the given picture to the correction position (see {@link MoveCommand})
+	 */
+	public static int getIndexForCollectionAtWrongPositionMove(List<? extends PictureCollection> collectionList, PictureCollection picture) {
+		int result = collectionList.indexOf(picture);
+		if (result < 0) {
+			throw new IllegalArgumentException();
+		}
+		// move to the right?
+		while (result < (collectionList.size() - 1)
+				&& collectionList.get(result + 1).getName().compareTo(picture.getName()) < 0) {
+			result++;
+		}
+		// move to the left?
+		while (result > 0
+				&& collectionList.get(result - 1).getName().compareTo(picture.getName()) > 0) {
+			result--;
 		}
 		return result;
 	}

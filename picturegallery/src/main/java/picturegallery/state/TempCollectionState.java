@@ -14,7 +14,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 
 public class TempCollectionState extends PictureSwitchingState {
-	protected final List<Picture> tempCollection;
+	protected final List<Picture> tempCollection; // TODO: replace it by ObservableList ??
 
 	private PictureSwitchingState previousState;
 	private TempCollectionState tempState;

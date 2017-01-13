@@ -36,7 +36,7 @@ public class LinkPictureAction extends Action {
 					currentState,
 					true, true, false, Collections.singletonList(currentCollection));
 			if (linktoCollection == currentCollection) {
-				// sollte eigentlich gar nicht möglich sein (macht inhaltlich auch keinen Sinn)
+				// this case should not be possible (and does not make any sense)
 				linktoCollection = null;
 			}
 			state.setLinktoCollection(linktoCollection);

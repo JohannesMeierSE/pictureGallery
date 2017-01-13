@@ -125,7 +125,7 @@ public abstract class PictureSwitchingState extends State {
 		return Logic.getRealPicture(currentPicture);
 	}
 
-	public void updatePictureLabel() {
+	public void updatePictureLabel() { // TODO: use Properties instead
 		// update the text description of the picture
 		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
 
@@ -147,7 +147,7 @@ public abstract class PictureSwitchingState extends State {
 		setLabelPictureName(pictureText);
 	}
 
-	public void updateCollectionLabel() {
+	public void updateCollectionLabel() { // TODO: auf Properties umstellen??
 		String value = "";
 
 		PictureCollection currentCollection = getCurrentCollection();

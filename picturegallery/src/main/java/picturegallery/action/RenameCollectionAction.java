@@ -12,6 +12,7 @@ import java.util.List;
 import javafx.scene.input.KeyCode;
 
 import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.edit.command.MoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 
@@ -37,7 +38,7 @@ public class RenameCollectionAction extends Action {
 			return;
 		}
 		if (collectionToRename == baseCollection) {
-			// sollte eigentlich gar nicht möglich sein!
+			// it is not allowed to rename the base collection! (TODO: why?)
 			return;
 		}
 		String newName = Logic.askForString("Rename collection",
@@ -90,9 +91,6 @@ public class RenameCollectionAction extends Action {
 			renameModel(collectionToRename, newName);
 		}
 
-		// sort the collections within the parent collection
-		Logic.sortSubCollections(collectionToRename.getSuperCollection(), false); // TODO: ersetzen durch MoveCommand!
-
 		if (currentState instanceof PictureSwitchingState) {
 			((PictureSwitchingState) currentState).updateCollectionLabel();
 		}
@@ -105,6 +103,13 @@ public class RenameCollectionAction extends Action {
 		EditingDomain domain = MainApp.get().getModelDomain();
 		Command set = SetCommand.create(domain, collectionToRename, GalleryPackage.eINSTANCE.getPathElement_Name(), newName);
 		domain.getCommandStack().execute(set);
+
+		// sort the collections within the parent collection => by moving the wrong element to the correct position
+//		Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
+		domain.getCommandStack().execute(MoveCommand.create(domain,
+				collectionToRename.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(),
+				collectionToRename, Logic.getIndexForCollectionAtWrongPositionMove(
+						collectionToRename.getSuperCollection().getSubCollections(), collectionToRename)));
 	}
 
 	@Override

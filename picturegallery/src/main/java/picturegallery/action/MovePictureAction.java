@@ -30,20 +30,20 @@ public class MovePictureAction extends Action {
 			movetoCollection = (RealPictureCollection) Logic.selectCollection(
 					currentState,
 					true, true, false, Collections.singletonList(currentCollection));
-			if (movetoCollection == currentCollection) { // sollte eigentlich gar nicht möglich sein!
-				// Verschieben innerhalb der eigenen Collection macht keinen Sinn!
+			if (movetoCollection == currentCollection) {
+				// this case should not be possible (and does not make any sense)
 				movetoCollection = null;
 			}
 			state.setMovetoCollection(movetoCollection);
 		}
 		if (movetoCollection == null) {
-			// Benutzer kann diese Aktion also abbrechen, indem er keine Collection auswählt!
+			// the user is able to break this action by selection no/null collection!
 			return;
 		}
 
 		// close temp mode (only one level)
 		if (state instanceof TempCollectionState) {
-			// exit and clear TEMP collection => see ShowOrExitTempCollectionAction
+			// exit and clear TEMP collection => see ShowOrExitTempCollectionAction TODO: ist irgendwie unschön!
 			((TempCollectionState) state).clearPictures();
 			MainApp.get().switchState(((TempCollectionState) state).getPreviousState());
 		}
