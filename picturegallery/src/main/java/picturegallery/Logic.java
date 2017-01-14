@@ -936,6 +936,9 @@ public class Logic {
 	}
 
 	public static RealPicture getRealPicture(Picture picture) {
+		if (picture == null) {
+			return null;
+		}
 		if (picture instanceof RealPicture) {
 			return (RealPicture) picture;
 		} else {

@@ -7,6 +7,9 @@ import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
@@ -26,7 +29,7 @@ import picturegallery.action.ShowOrExitTempCollectionAction;
 import picturegallery.persistency.ObjectCache.CallBack;
 
 public abstract class PictureSwitchingState extends State {
-	protected Picture currentPicture;
+	protected final SimpleObjectProperty<Picture> currentPicture;
 	protected int indexCurrentCollection;
 
 	private int previousIndexCurrent;
@@ -53,6 +56,40 @@ public abstract class PictureSwitchingState extends State {
 		super();
 		this.app = app;
 		indexCurrentCollection = -1;
+
+		currentPicture = new SimpleObjectProperty<>();
+		currentPicture.addListener(new ChangeListener<Picture>() {
+			@Override
+			public void changed(ObservableValue<? extends Picture> observable, Picture oldValue, Picture newValue) {
+				// picture changed => show this picture in ImageView
+				RealPicture realCurrentPicture = getCurrentRealPicture();
+				app.getImageCache().request(realCurrentPicture, new CallBack<RealPicture, Image>() {
+					@Override
+					public void loaded(RealPicture key, Image value) {
+						// https://stackoverflow.com/questions/26554814/javafx-updating-gui
+						// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
+						if (Platform.isFxApplicationThread()) {
+							getImage().setImage(value);
+						} else {
+							Platform.runLater(new Runnable() {
+								@Override
+								public void run() {
+									if (key.equals(getCurrentRealPicture())) {
+										getImage().setImage(value);
+									} else {
+										// ignore the result, because another picture should be shown
+									}
+								}
+							});
+						}
+					}
+				});
+
+				// update the labels for the new picture
+				updatePictureLabel();
+				updateMetadataLabel();
+			}
+		});
 	}
 
 	public void gotoPicture(int diff, boolean preload) {
@@ -72,7 +109,8 @@ public abstract class PictureSwitchingState extends State {
 		}
 		indexCurrentCollection = newIndex;
 		setLabelIndex((indexCurrentCollection + 1) + " / " + size);
-		showPicture(getPictureAtIndex(indexCurrentCollection));
+		Picture newPicture = getPictureAtIndex(indexCurrentCollection);
+		currentPicture.set(newPicture); // => requests the image and updates the labels by listeners!
 
 		// pre-load next pictures
 		if (preload) {
@@ -86,61 +124,40 @@ public abstract class PictureSwitchingState extends State {
 		}
 	}
 
-	private void showPicture(Picture newPicture) {
-		if (newPicture == null) {
-			throw new IllegalArgumentException();
-		}
-		currentPicture = newPicture;
-		updatePictureLabel();
-
-		// print metadata
-		String text = Logic.printMetadata(currentPicture.getMetadata());
+	private void updateMetadataLabel() {
+		// TODO muss auch noch aufgerufen werden, wenn sich die Metadata ändern (z.B. fertig nachgeladen wurden!)
+		String text = Logic.printMetadata(currentPicture.get().getMetadata());
 		setLabelMeta(text);
-
-		RealPicture realCurrentPicture = getCurrentRealPicture();
-		app.getImageCache().request(realCurrentPicture, new CallBack<RealPicture, Image>() {
-			@Override
-			public void loaded(RealPicture key, Image value) {
-				// https://stackoverflow.com/questions/26554814/javafx-updating-gui
-				// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
-				if (Platform.isFxApplicationThread()) {
-					getImage().setImage(value);
-				} else {
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							if (key.equals(getCurrentRealPicture())) {
-								getImage().setImage(value);
-							} else {
-								// ignore the result, because another picture should be shown
-							}
-						}
-					});
-				}
-			}
-		});
 	}
 
 	private RealPicture getCurrentRealPicture() {
-		return Logic.getRealPicture(currentPicture);
+		return Logic.getRealPicture(currentPicture.get());
 	}
 
 	public void updatePictureLabel() { // TODO: use Properties instead
+		/*
+		 * Änderungen bei
+		 * O- anderem currentPicture
+		 * - currentPicture wird umbenannt usw.
+		 * - currentPicture wird temp picture
+		 * - currentPicture ist linked: wenn sich das real picture in sich/intern ändert (z.B. umbenannt wird)
+		 * - wenn sich die links auf das betreffende real picture ändern!
+		 */
 		// update the text description of the picture
-		String pictureText = currentPicture.getName() + "." + currentPicture.getFileExtension().toLowerCase();
+		String pictureText = currentPicture.get().getName() + "." + currentPicture.get().getFileExtension().toLowerCase();
 
 		// inform, weather the current picture is in the temp collection
-		if (getTempState() != null && getTempState().containsPicture(currentPicture)) {
+		if (getTempState() != null && getTempState().containsPicture(currentPicture.get())) {
 			pictureText = pictureText + "  (in next temp collection)";
 		}
 
-		if (currentPicture instanceof LinkedPicture) {
-			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture).getRealPicture().getRelativePath();
+		if (currentPicture.get() instanceof LinkedPicture) {
+			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture.get()).getRealPicture().getRelativePath();
 		}
-		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture);
+		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture.get());
 		for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
 			pictureText = pictureText + "\n        <=  " + link.getRelativePath();
-			if (link == currentPicture) {
+			if (link == currentPicture.get()) {
 				pictureText = pictureText + " (this picture)";
 			}
 		}
@@ -196,7 +213,7 @@ public abstract class PictureSwitchingState extends State {
 	}
 
 	public Picture getCurrentPicture() {
-		return currentPicture;
+		return currentPicture.get();
 	}
 
 	@Override
@@ -216,7 +233,7 @@ public abstract class PictureSwitchingState extends State {
 
 	@Override
 	public void onClose() {
-		currentPicture = null;
+		currentPicture.set(null);
 	}
 
 	@Override
