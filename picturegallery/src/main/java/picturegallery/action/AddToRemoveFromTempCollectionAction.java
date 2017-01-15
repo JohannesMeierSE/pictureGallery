@@ -25,7 +25,6 @@ public class AddToRemoveFromTempCollectionAction extends Action {
 		} else {
 			tempState.addPicture(currentPicture);
 		}
-		state.updatePictureLabel();
 	}
 
 	@Override

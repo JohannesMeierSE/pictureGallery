@@ -126,8 +126,11 @@ public abstract class PictureSwitchingState extends State {
 
 	private void updateMetadataLabel() {
 		// TODO muss auch noch aufgerufen werden, wenn sich die Metadata ändern (z.B. fertig nachgeladen wurden!)
-		String text = Logic.printMetadata(currentPicture.get().getMetadata());
-		setLabelMeta(text);
+		if (currentPicture.get() == null) {
+			setLabelMeta("no metadata of 'null' available");
+		} else {
+			setLabelMeta(Logic.printMetadata(currentPicture.get().getMetadata()));
+		}
 	}
 
 	private RealPicture getCurrentRealPicture() {
@@ -139,12 +142,15 @@ public abstract class PictureSwitchingState extends State {
 		 * Änderungen bei
 		 * O- anderem currentPicture
 		 * - currentPicture wird umbenannt usw.
-		 * - currentPicture wird temp picture
+		 * O- currentPicture wird temp picture
 		 * - currentPicture ist linked: wenn sich das real picture in sich/intern ändert (z.B. umbenannt wird)
 		 * - wenn sich die links auf das betreffende real picture ändern!
 		 */
 		// update the text description of the picture
-		String pictureText = currentPicture.get().getName() + "." + currentPicture.get().getFileExtension().toLowerCase();
+		String pictureText = "null";
+		if (currentPicture.get() != null) {
+			pictureText = currentPicture.get().getName() + "." + currentPicture.get().getFileExtension().toLowerCase();
+		}
 
 		// inform, weather the current picture is in the temp collection
 		if (getTempState() != null && getTempState().containsPicture(currentPicture.get())) {
@@ -154,11 +160,13 @@ public abstract class PictureSwitchingState extends State {
 		if (currentPicture.get() instanceof LinkedPicture) {
 			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture.get()).getRealPicture().getRelativePath();
 		}
-		RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture.get());
-		for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
-			pictureText = pictureText + "\n        <=  " + link.getRelativePath();
-			if (link == currentPicture.get()) {
-				pictureText = pictureText + " (this picture)";
+		if (currentPicture.get() != null) {
+			RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture.get());
+			for (LinkedPicture link : realCurrentPicture.getLinkedBy()) {
+				pictureText = pictureText + "\n        <=  " + link.getRelativePath();
+				if (link == currentPicture.get()) {
+					pictureText = pictureText + " (this picture)";
+				}
 			}
 		}
 		setLabelPictureName(pictureText);

@@ -21,7 +21,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
 	private final TempCollectionState tempState;
-	private CollectionState previousState;
+	private final CollectionState previousState;
 
 	private final ImageView iv;
 	private final StackPane root;
@@ -31,10 +31,11 @@ public class SingleCollectionState extends PictureSwitchingState {
 	private final Label labelPictureName;
 	private final Label labelMeta;
 
-	public SingleCollectionState(MainApp app) {
+	public SingleCollectionState(MainApp app, CollectionState collectionState) {
 		super(app);
+		this.previousState = collectionState;
 
-		tempState = new TempCollectionState(app);
+		tempState = new TempCollectionState(app, this);
 		tempState.onInit();
 
 		// Stack Pane
@@ -167,10 +168,6 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 	@Override
 	public void onEntry(State previousState) {
-		if (previousState instanceof CollectionState) {
-			this.previousState = (CollectionState) previousState;
-		}
-
 		// select the initial collection!
 		while (currentCollection == null) {
 			PictureCollection newCol = Logic.selectCollection(this, false, false, true);

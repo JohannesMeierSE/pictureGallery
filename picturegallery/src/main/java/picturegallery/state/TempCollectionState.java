@@ -3,10 +3,9 @@ package picturegallery.state;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -14,14 +13,52 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 
 public class TempCollectionState extends PictureSwitchingState {
-	protected final List<Picture> tempCollection; // TODO: replace it by ObservableList ??
+	public final ObservableList<Picture> tempCollection;
 
-	private PictureSwitchingState previousState;
+	private final PictureSwitchingState previousState;
 	private TempCollectionState tempState;
 
-	public TempCollectionState(MainApp app) {
+	public TempCollectionState(MainApp app, PictureSwitchingState previousState) {
 		super(app);
-		tempCollection = new ArrayList<>();
+		this.previousState = previousState;
+
+		tempCollection = FXCollections.observableArrayList();
+		tempCollection.addListener(new ListChangeListener<Picture>() {
+			@Override
+			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
+				boolean update = false;
+				// update the picture label, if the currently shown picture will be added to or removed from the temp collection(s)
+				while (c.next()) {
+					if (c.wasPermutated()) {
+						for (int i = c.getFrom(); i < c.getTo(); ++i) {
+							// TODO permutate
+						}
+					} else if (c.wasUpdated()) {
+						// TODO update item
+					} else {
+						Picture currentPictureShown = previousState.getCurrentPicture();
+						if (currentPictureShown == null) {
+							return;
+						}
+						for (Picture remitem : c.getRemoved()) {
+							if (remitem == currentPictureShown) {
+								update = true;
+								break;
+							}
+						}
+						for (Picture additem : c.getAddedSubList()) {
+							if (additem == currentPictureShown) {
+								update = true;
+								break;
+							}
+						}
+					}
+				}
+				if (update) {
+					previousState.updatePictureLabel();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -53,7 +90,7 @@ public class TempCollectionState extends PictureSwitchingState {
 	public TempCollectionState getTempState() {
 		if (tempState == null) {
 			// Lazy initialization prevents infinite loops
-			tempState = new TempCollectionState(app);
+			tempState = new TempCollectionState(app, this);
 			tempState.onInit();
 		}
 		return tempState;
@@ -109,12 +146,6 @@ public class TempCollectionState extends PictureSwitchingState {
 
 	@Override
 	public void onEntry(State previousState) {
-		if (this.previousState == null) {
-			// previousState have to point always on the SingleCollectionState state!
-			// not on the previous temp state (temp state 2 --close--> temp state 1)!
-			this.previousState = (PictureSwitchingState) previousState;
-		}
-
 		// in-place sorting
 		//Logic.sortPictures(tempCollection);
 
