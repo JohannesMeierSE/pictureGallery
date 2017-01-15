@@ -14,23 +14,29 @@ import org.controlsfx.control.GridView;
 
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.ExitSingleCollectionStateAction;
 
-public class MultiPictureState extends State {
+public class MultiPictureState extends State implements StatePrevious {
 	public static final double WIDTH = 200.0;
 	public static final double HEIGHT = 100.0;
+	private static final double SPACING = 8.0;
 
+	private final State previousState;
 	public final ObservableList<Picture> pictures;
+	// http://controlsfx.bitbucket.org/org/controlsfx/control/GridView.html
 	private final GridView<Picture> grid;
 
-	public MultiPictureState() {
+	public MultiPictureState(State previousState) {
 		super();
+		this.previousState = previousState;
+
 		pictures = FXCollections.observableArrayList();
 
 		grid = new GridView<>(pictures);
 		grid.cellHeightProperty().set(HEIGHT);
 		grid.cellWidthProperty().set(WIDTH);
-		grid.horizontalCellSpacingProperty().set(10);
-		grid.verticalCellSpacingProperty().set(10);
+		grid.horizontalCellSpacingProperty().set(SPACING);
+		grid.verticalCellSpacingProperty().set(SPACING);
 		grid.setCellFactory(new Callback<GridView<Picture>, GridCell<Picture>>() {
 			@Override
 			public GridCell<Picture> call(GridView<Picture> param) {
@@ -70,7 +76,7 @@ public class MultiPictureState extends State {
 
 	@Override
 	public void onInit() {
-		// empty
+		registerAction(new ExitSingleCollectionStateAction());
 	}
 
 	@Override
@@ -91,5 +97,10 @@ public class MultiPictureState extends State {
 	@Override
 	public Region getRootNode() {
 		return grid;
+	}
+
+	@Override
+	public State getPreviousState() {
+		return previousState;
 	}
 }

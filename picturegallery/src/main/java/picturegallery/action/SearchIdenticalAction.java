@@ -41,7 +41,7 @@ public class SearchIdenticalAction extends Action {
 				if (result.isEmpty()) {
 					return;
 				}
-				MultiPictureState nextState = new MultiPictureState();
+				MultiPictureState nextState = new MultiPictureState(state);
 				nextState.onInit();
 				nextState.pictures.addAll(result);
 				MainApp.get().switchState(nextState);

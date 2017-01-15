@@ -15,7 +15,7 @@ import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
 
-public class SingleCollectionState extends PictureSwitchingState {
+public class SingleCollectionState extends PictureSwitchingState implements StatePrevious {
 	public final SimpleObjectProperty<PictureCollection> currentCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
@@ -201,7 +201,8 @@ public class SingleCollectionState extends PictureSwitchingState {
 		return tempState;
 	}
 
-	public CollectionState getPreviousState() {
+	@Override
+	public State getPreviousState() {
 		return previousState;
 	}
 
