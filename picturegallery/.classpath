@@ -10,6 +10,7 @@
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
   <classpathentry kind="var" path="M2_REPO/com/miglayout/miglayout-javafx/5.0/miglayout-javafx-5.0.jar" sourcepath="M2_REPO/com/miglayout/miglayout-javafx/5.0/miglayout-javafx-5.0-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/com/miglayout/miglayout-core/5.0/miglayout-core-5.0.jar" sourcepath="M2_REPO/com/miglayout/miglayout-core/5.0/miglayout-core-5.0-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/controlsfx/controlsfx/8.40.12/controlsfx-8.40.12.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.6/commons-lang-2.6.jar" sourcepath="M2_REPO/commons-lang/commons-lang/2.6/commons-lang-2.6-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-io/commons-io/2.5/commons-io-2.5.jar" sourcepath="M2_REPO/commons-io/commons-io/2.5/commons-io-2.5-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-collections4/4.1/commons-collections4-4.1.jar" sourcepath="M2_REPO/org/apache/commons/commons-collections4/4.1/commons-collections4-4.1-sources.jar"/>

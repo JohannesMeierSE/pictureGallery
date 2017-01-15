@@ -45,6 +45,8 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.util.Callback;
@@ -65,6 +67,7 @@ import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.xml.sax.SAXException;
 
+import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
@@ -1034,22 +1037,31 @@ public class Logic {
 		}
 	}
 
-	public static void findIdenticalInOneCollection(PictureCollection collection) {
+	public static List<Picture> findIdenticalInOneCollection(PictureCollection collection) {
 		int size = collection.getPictures().size();
 		System.out.println("beginning!");
+		List<Picture> result = new ArrayList<>();
 		for (int i = 0; i < size - 1; i++) {
 			for (int j = i + 1; j < size; j++) {
 				if (i == 0) {
 					System.out.println("next: " + j);
 				}
 				Picture p1 = collection.getPictures().get(i);
+				if (result.contains(p1)) {
+					continue;
+				}
 				Picture p2 = collection.getPictures().get(j);
 				if (Logic.arePicturesIdentical(p1, p2)) {
 					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
+					if (!result.contains(p1)) {
+						result.add(p1);
+					}
+					result.add(p2);
 				}
 			}
 		}
 		System.out.println("ready!");
+		return result;
 	}
 
 	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection) {
@@ -1184,5 +1196,60 @@ public class Logic {
 			result--;
 		}
 		return result;
+	}
+
+	public interface PictureProvider {
+		public RealPicture get();
+	}
+	public static void renderPicture(RealPicture pictureToRender, ImageView image) {
+		renderPicture(new PictureProvider() {
+			@Override
+			public RealPicture get() {
+				return pictureToRender;
+			}
+		}, image);
+	}
+	/**
+	 * 
+	 * @param provider for the feature, that this request is out-dated after loading the picture!
+	 * @param image
+	 */
+	public static void renderPicture(PictureProvider provider, ImageView image) {
+		RealPicture realCurrentPicture = provider.get();
+		if (realCurrentPicture == null) {
+			// show no picture (TODO: überprüfen!)
+			if (Platform.isFxApplicationThread()) {
+				image.setImage(null);
+			} else {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						image.setImage(null);
+					}
+				});
+			}
+		} else {
+			MainApp.get().getImageCache().request(realCurrentPicture, new CallBack<RealPicture, Image>() {
+				@Override
+				public void loaded(RealPicture key, Image value) {
+					// https://stackoverflow.com/questions/26554814/javafx-updating-gui
+					// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
+					if (Platform.isFxApplicationThread()) {
+						image.setImage(value);
+					} else {
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								if (key.equals(provider.get())) {
+									image.setImage(value);
+								} else {
+									// ignore the result, because another picture should be shown
+								}
+							}
+						});
+					}
+				}
+			});
+		}
 	}
 }

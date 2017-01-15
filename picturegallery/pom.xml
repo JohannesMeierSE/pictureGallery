@@ -72,12 +72,17 @@
 
 	<dependencies>
 
-		<!-- MigLayout -->
+		<!-- JavaFX -->
 
 		<dependency>
 			<groupId>com.miglayout</groupId>
 			<artifactId>miglayout-javafx</artifactId>
 			<version>5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.controlsfx</groupId>
+			<artifactId>controlsfx</artifactId>
+			<version>8.40.12</version>
 		</dependency>
 
 		<!-- Apache Commons -->
