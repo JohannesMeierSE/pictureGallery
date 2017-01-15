@@ -63,27 +63,41 @@ public abstract class PictureSwitchingState extends State {
 			public void changed(ObservableValue<? extends Picture> observable, Picture oldValue, Picture newValue) {
 				// picture changed => show this picture in ImageView
 				RealPicture realCurrentPicture = getCurrentRealPicture();
-				app.getImageCache().request(realCurrentPicture, new CallBack<RealPicture, Image>() {
-					@Override
-					public void loaded(RealPicture key, Image value) {
-						// https://stackoverflow.com/questions/26554814/javafx-updating-gui
-						// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
-						if (Platform.isFxApplicationThread()) {
-							getImage().setImage(value);
-						} else {
-							Platform.runLater(new Runnable() {
-								@Override
-								public void run() {
-									if (key.equals(getCurrentRealPicture())) {
-										getImage().setImage(value);
-									} else {
-										// ignore the result, because another picture should be shown
-									}
-								}
-							});
-						}
+				if (realCurrentPicture == null) {
+					// show no picture (TODO: überprüfen!)
+					if (Platform.isFxApplicationThread()) {
+						getImage().setImage(null);
+					} else {
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								getImage().setImage(null);
+							}
+						});
 					}
-				});
+				} else {
+					app.getImageCache().request(realCurrentPicture, new CallBack<RealPicture, Image>() {
+						@Override
+						public void loaded(RealPicture key, Image value) {
+							// https://stackoverflow.com/questions/26554814/javafx-updating-gui
+							// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
+							if (Platform.isFxApplicationThread()) {
+								getImage().setImage(value);
+							} else {
+								Platform.runLater(new Runnable() {
+									@Override
+									public void run() {
+										if (key.equals(getCurrentRealPicture())) {
+											getImage().setImage(value);
+										} else {
+											// ignore the result, because another picture should be shown
+										}
+									}
+								});
+							}
+						}
+					});
+				}
 
 				// update the labels for the new picture
 				updatePictureLabel();
@@ -139,7 +153,7 @@ public abstract class PictureSwitchingState extends State {
 
 	public void updatePictureLabel() { // TODO: use Properties instead
 		/*
-		 * Änderungen bei
+		 * Änderungen bei ... (alles Informationen, die angezeigt werden!)
 		 * O- anderem currentPicture
 		 * - currentPicture wird umbenannt usw.
 		 * O- currentPicture wird temp picture
