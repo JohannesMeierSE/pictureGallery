@@ -3,8 +3,10 @@ package picturegallery.state;
 import gallery.Picture;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 
 import org.controlsfx.control.GridCell;
@@ -46,7 +48,19 @@ public class MultiPictureState extends State {
 							imageView.setFitHeight(HEIGHT);
 							imageView.setFitWidth(WIDTH); 
 							Logic.renderPicture(Logic.getRealPicture(item), imageView, MainApp.get().getImageCacheSmall());
-							setGraphic(imageView);
+
+							String text = item.getName() + "\n";
+							if (item.getMetadata() != null) {
+								text = text + item.getMetadata().getWidth() + " x " + item.getMetadata().getHeight() + "\n";
+								text = text + Logic.formatBytes(item.getMetadata().getSize()) + "\n";
+							}
+							Label label = new Label(text.trim());
+							label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
+									+ "-fx-text-fill: white;");
+							label.setWrapText(true);
+
+							StackPane stack = new StackPane(imageView, label);
+							setGraphic(stack);
 						}
 					}
 				};
