@@ -47,6 +47,7 @@ import picturegallery.action.HideInformationAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.Settings;
 import picturegallery.state.CollectionState;
+import picturegallery.state.MultiPictureState;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
@@ -65,6 +66,7 @@ public class MainApp extends Application {
 	private Resource modelResource;
 
 	private ObjectCache<RealPicture, Image> imageCache;
+	private ObjectCache<RealPicture, Image> imageCacheSmall;
 
 	private State currentState;
 	private final List<Action> globalActions = new ArrayList<>();
@@ -227,6 +229,31 @@ public class MainApp extends Application {
 				try {
 					// TODO: Optimierung: Bilder nur so groß wie benötigt laden!! https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
 					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
+
+					// load meta data directly with the image => improves the initial loading time!
+					try {
+						Logic.extractMetadata(key);
+					} catch (Throwable e) {
+						// ignore
+					}
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (OutOfMemoryError e) {
+					// TODO
+					e.printStackTrace();
+				}
+				return loaded;
+			}
+		};
+		imageCacheSmall = new ObjectCache<RealPicture, Image>(SPACE) {
+			@Override
+			protected Image load(RealPicture key) {
+				// löst anscheinend selbstständig SymLinks auf !!
+				Image loaded = null;
+				try {
+					// https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
+					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString(),
+							MultiPictureState.WIDTH, MultiPictureState.HEIGHT, true, true);
 
 					// load meta data directly with the image => improves the initial loading time!
 					try {
@@ -415,6 +442,10 @@ public class MainApp extends Application {
 
 	public ObjectCache<RealPicture, Image> getImageCache() {
 		return imageCache;
+	}
+
+	public ObjectCache<RealPicture, Image> getImageCacheSmall() {
+		return imageCacheSmall;
 	}
 
 	public Stage getStage() {

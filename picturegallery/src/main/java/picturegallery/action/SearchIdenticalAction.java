@@ -38,7 +38,6 @@ public class SearchIdenticalAction extends Action {
 			@Override
 			public void handle(WorkerStateEvent event) {
 				List<Picture> result = task.getValue();
-				System.out.println("found " + result.size() + " identical pictures!");
 				if (result.isEmpty()) {
 					return;
 				}

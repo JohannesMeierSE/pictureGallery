@@ -65,12 +65,20 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	protected final List<Tripel> loading; // order is not relevant
 	protected final List<Tripel> requested; // first element will be loaded next
 	protected final int maxSize;
+	protected final boolean freezeSize;
 
 	private Thread thread;
 	private final AtomicBoolean stopped;
 
+	public ObjectCache() {
+		this(20, false);
+	}
 	public ObjectCache(int size) {
+		this(size, true);
+	}
+	private ObjectCache(int size, boolean freezeSize) {
 		super();
+		this.freezeSize = freezeSize;
 		maxSize = size;
 		content = new HashMap<>(maxSize * 2);
 		contentSorted = new LinkedList<>();
@@ -105,7 +113,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 					} else {
 						synchronized (sync) {
 							// Grenze berücksichtigen!! und Elemente wieder rauslöschen!
-							while (content.size() >= maxSize) {
+							while (freezeSize && content.size() >= maxSize) {
 								K keyToRemove = contentSorted.remove();
 								content.remove(keyToRemove);
 							}

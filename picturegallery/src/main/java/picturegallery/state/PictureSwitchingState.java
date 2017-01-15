@@ -64,7 +64,7 @@ public abstract class PictureSwitchingState extends State {
 					public RealPicture get() {
 						return getCurrentRealPicture();
 					}
-				}, getImage());
+				}, getImage(), MainApp.get().getImageCache());
 
 				// update the labels for the new picture
 				updatePictureLabel();

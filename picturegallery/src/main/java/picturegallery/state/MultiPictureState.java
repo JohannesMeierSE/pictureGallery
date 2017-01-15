@@ -11,10 +11,12 @@ import org.controlsfx.control.GridCell;
 import org.controlsfx.control.GridView;
 
 import picturegallery.Logic;
+import picturegallery.MainApp;
 
 public class MultiPictureState extends State {
-	private static final double WIDTH = 200.0;
-	private static final double HEIGHT = 100.0;
+	public static final double WIDTH = 200.0;
+	public static final double HEIGHT = 100.0;
+
 	public final ObservableList<Picture> pictures;
 	private final GridView<Picture> grid;
 
@@ -43,7 +45,7 @@ public class MultiPictureState extends State {
 							imageView.setCache(false);
 							imageView.setFitHeight(HEIGHT);
 							imageView.setFitWidth(WIDTH); 
-							Logic.renderPicture(Logic.getRealPicture(item), imageView);
+							Logic.renderPicture(Logic.getRealPicture(item), imageView, MainApp.get().getImageCacheSmall());
 							setGraphic(imageView);
 						}
 					}

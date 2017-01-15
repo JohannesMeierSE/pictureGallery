@@ -67,6 +67,7 @@ import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.xml.sax.SAXException;
 
+import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
@@ -1060,7 +1061,7 @@ public class Logic {
 				}
 			}
 		}
-		System.out.println("ready!");
+		System.out.println("ready! found " + result.size() + " identical items");
 		return result;
 	}
 
@@ -1201,20 +1202,20 @@ public class Logic {
 	public interface PictureProvider {
 		public RealPicture get();
 	}
-	public static void renderPicture(RealPicture pictureToRender, ImageView image) {
+	public static void renderPicture(RealPicture pictureToRender, ImageView image, ObjectCache<RealPicture, Image> cache) {
 		renderPicture(new PictureProvider() {
 			@Override
 			public RealPicture get() {
 				return pictureToRender;
 			}
-		}, image);
+		}, image, cache);
 	}
 	/**
 	 * 
 	 * @param provider for the feature, that this request is out-dated after loading the picture!
 	 * @param image
 	 */
-	public static void renderPicture(PictureProvider provider, ImageView image) {
+	public static void renderPicture(PictureProvider provider, ImageView image, ObjectCache<RealPicture, Image> cache) {
 		RealPicture realCurrentPicture = provider.get();
 		if (realCurrentPicture == null) {
 			// show no picture (TODO: überprüfen!)
@@ -1229,7 +1230,7 @@ public class Logic {
 				});
 			}
 		} else {
-			MainApp.get().getImageCache().request(realCurrentPicture, new CallBack<RealPicture, Image>() {
+			cache.request(realCurrentPicture, new CallBack<RealPicture, Image>() {
 				@Override
 				public void loaded(RealPicture key, Image value) {
 					// https://stackoverflow.com/questions/26554814/javafx-updating-gui
