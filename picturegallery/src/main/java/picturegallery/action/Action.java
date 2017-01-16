@@ -4,6 +4,14 @@ import javafx.scene.input.KeyCode;
 import picturegallery.state.State;
 
 public abstract class Action {
+	public interface ActionRunnable {
+		/**
+		 * Will be called on the JavaFX-UI-Thread.
+		 * @param currentState
+		 */
+		public abstract void run(State currentState);
+	}
+
 	public Action() {
 		super();
 	}
@@ -25,4 +33,23 @@ public abstract class Action {
 	}
 
 	public abstract String getDescription();
+
+	public static Action createTempAction(KeyCode keycode, String description, ActionRunnable action) {
+		return new Action() {
+			@Override
+			public void run(State currentState) {
+				action.run(currentState);
+			}
+
+			@Override
+			public KeyCode getKey() {
+				return keycode;
+			}
+
+			@Override
+			public String getDescription() {
+				return description;
+			}
+		};
+	};
 }

@@ -3,7 +3,10 @@ package picturegallery.action;
 import gallery.Picture;
 import gallery.PictureCollection;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -28,22 +31,37 @@ public class SearchIdenticalAction extends Action {
 			return;
 		}
 
-        Task<List<Picture>> task = new Task<List<Picture>>() {
+        Task<Map<Picture, List<Picture>>> task = new Task<Map<Picture, List<Picture>>>() {
         	@Override
-        	protected List<Picture> call() throws Exception {
+        	protected Map<Picture, List<Picture>> call() throws Exception {
     			return Logic.findIdenticalInOneCollection(selection);
         	}
         };
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
-				List<Picture> result = task.getValue();
+				Map<Picture, List<Picture>> result = task.getValue();
 				if (result.isEmpty()) {
 					return;
 				}
 				MultiPictureState nextState = new MultiPictureState(state);
 				nextState.onInit();
-				nextState.pictures.addAll(result);
+				nextState.registerAction(Action.createTempAction(KeyCode.D, "delete duplicated identical pictures", new ActionRunnable() {
+					@Override
+					public void run(State currentState) {
+						for (Entry<Picture, List<Picture>> e : result.entrySet()) {
+							for (Picture picToDelete : e.getValue()) {
+								MainApp.get().deletePicture(picToDelete, false);
+							}
+						}
+					}
+				}));
+				List<Picture> picturesToShow = new ArrayList<>();
+				for (Entry<Picture, List<Picture>> e : result.entrySet()) {
+					picturesToShow.add(e.getKey());
+					picturesToShow.addAll(e.getValue());
+				}
+				nextState.pictures.addAll(picturesToShow);
 				MainApp.get().switchState(nextState);
 			}
 		});

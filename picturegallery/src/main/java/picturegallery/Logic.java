@@ -1038,30 +1038,32 @@ public class Logic {
 		}
 	}
 
-	public static List<Picture> findIdenticalInOneCollection(PictureCollection collection) {
-		int size = collection.getPictures().size();
+	public static Map<Picture, List<Picture>> findIdenticalInOneCollection(PictureCollection collection) {
+		List<Picture> list = new ArrayList<>(collection.getPictures());
 		System.out.println("beginning!");
-		List<Picture> result = new ArrayList<>();
-		for (int i = 0; i < size - 1; i++) {
-			for (int j = i + 1; j < size; j++) {
+		Map<Picture, List<Picture>> result = new HashMap<>();
+		for (int i = 0; i < list.size() - 1; i++) {
+			List<Picture> items = new ArrayList<>();
+			Picture p1 = list.get(i);
+			int j = i + 1;
+			while (j < list.size()) {
 				if (i == 0) {
-					System.out.println("next: " + j);
+					System.out.println("load next: " + j);
 				}
-				Picture p1 = collection.getPictures().get(i);
-				if (result.contains(p1)) {
-					continue;
-				}
-				Picture p2 = collection.getPictures().get(j);
+				Picture p2 = list.get(j);
 				if (Logic.arePicturesIdentical(p1, p2)) {
 					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
-					if (!result.contains(p1)) {
-						result.add(p1);
-					}
-					result.add(p2);
+					items.add(p2);
+					list.remove(j); // => do not use it for other purpose!
+				} else {
+					j++;
 				}
 			}
+			if (!items.isEmpty()) {
+				result.put(p1, items);
+			}
 		}
-		System.out.println("ready! found " + result.size() + " identical items");
+		System.out.println("ready! found " + result.size() + " pictures with duplicates");
 		return result;
 	}
 
