@@ -26,6 +26,7 @@ import picturegallery.action.CreateNewCollection;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.RenameCollectionAction;
 import picturegallery.action.SearchIdenticalAction;
+import picturegallery.action.SearchIdenticalAndReplaceAction;
 import picturegallery.action.ShowSingleCollectionAction;
 import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
@@ -196,6 +197,7 @@ public class CollectionState extends State {
 		registerAction(new LinkCollectionsAction());
 		registerAction(new ClearLinkCollectionsAction());
 		registerAction(new SearchIdenticalAction());
+		registerAction(new SearchIdenticalAndReplaceAction());
 	}
 
 	@Override

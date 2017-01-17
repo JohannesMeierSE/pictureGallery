@@ -1,24 +1,30 @@
 package picturegallery.action;
 
+import gallery.LinkedPictureCollection;
+import gallery.PictureCollection;
 import javafx.concurrent.Task;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.CollectionState;
 import picturegallery.state.State;
 
 public class SearchIdenticalAndReplaceAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof CollectionState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		CollectionState state = (CollectionState) currentState;
+		PictureCollection selection = state.getSelection();
+		if (selection == null || selection instanceof LinkedPictureCollection) {
+			return;
+		}
 
         Task<Void> task = new Task<Void>() {
         	@Override
         	protected Void call() throws Exception {
-    			Logic.replaceIdenticalPicturesInSubcollectionsByLink(state.getCurrentCollection());
+    			Logic.replaceIdenticalPicturesInSubcollectionsByLink(selection);
 				return null;
         	}
         };

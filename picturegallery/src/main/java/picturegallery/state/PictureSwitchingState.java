@@ -22,7 +22,6 @@ import picturegallery.action.LinkPictureAction;
 import picturegallery.action.MovePictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
-import picturegallery.action.SearchIdenticalAndReplaceAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
 
 public abstract class PictureSwitchingState extends State {
@@ -215,7 +214,6 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new ShowOrExitTempCollectionAction());
 		registerAction(new LinkPictureAction());
 		registerAction(new ClearLinktoCollectionAction());
-		registerAction(new SearchIdenticalAndReplaceAction());
 		registerAction(new MovePictureAction());
 		registerAction(new ClearMovetoCollectionAction());
 	}
