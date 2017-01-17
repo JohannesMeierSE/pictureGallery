@@ -10,7 +10,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
 import picturegallery.Logic;
 import picturegallery.Logic.PictureProvider;
 import picturegallery.MainApp;
@@ -44,7 +43,6 @@ public abstract class PictureSwitchingState extends State {
 	protected abstract void setLabelPictureName(String newText);
 	protected abstract void setLabelCollectionPath(String newText);
 	protected abstract ImageView getImage();
-	public abstract VBox getLabels();
 
 	protected final MainApp app;
 

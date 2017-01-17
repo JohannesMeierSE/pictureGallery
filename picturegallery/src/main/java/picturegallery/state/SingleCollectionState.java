@@ -54,6 +54,7 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 		root.getChildren().add(iv);
 
     	vBox = new VBox();
+    	vBox.visibleProperty().bind(MainApp.get().labelsVisible);
 
     	labelCollectionPath = new Label("Collection name");
     	handleLabel(labelCollectionPath);
@@ -132,11 +133,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	@Override
 	protected ImageView getImage() {
 		return iv;
-	}
-
-	@Override
-	public VBox getLabels() {
-		return vBox;
 	}
 
 	public void setCurrentCollection(PictureCollection currentCollection) {

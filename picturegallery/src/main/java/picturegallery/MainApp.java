@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -70,6 +71,7 @@ public class MainApp extends Application {
 
 	private State currentState;
 	private final List<Action> globalActions = new ArrayList<>();
+	public SimpleBooleanProperty labelsVisible = new SimpleBooleanProperty(true);
 
 	private static MainApp instance;
 
@@ -117,6 +119,7 @@ public class MainApp extends Application {
     	baseCollection = Logic.createEmptyLibrary(baseDir);
 
     	labelKeys = new Label("keys");
+    	labelKeys.visibleProperty().bind(labelsVisible);
     	labelKeys.setWrapText(true);
     	// https://assylias.wordpress.com/2013/12/08/383/
 		labelKeys.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
@@ -450,10 +453,6 @@ public class MainApp extends Application {
 
 	public Stage getStage() {
 		return stage;
-	}
-
-	public Label getLabelKeys() {
-		return labelKeys;
 	}
 
 	public RealPictureCollection getBaseCollection() {

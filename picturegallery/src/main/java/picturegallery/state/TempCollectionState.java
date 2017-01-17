@@ -8,7 +8,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 
@@ -124,11 +123,6 @@ public class TempCollectionState extends PictureSwitchingState {
 	@Override
 	protected ImageView getImage() {
 		return previousState.getImage();
-	}
-
-	@Override
-	public VBox getLabels() {
-		return previousState.getLabels();
 	}
 
 	@Override

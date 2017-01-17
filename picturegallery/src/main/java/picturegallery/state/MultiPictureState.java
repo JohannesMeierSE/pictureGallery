@@ -61,6 +61,7 @@ public class MultiPictureState extends State implements StatePrevious {
 								text = text + Logic.formatBytes(item.getMetadata().getSize()) + "\n";
 							}
 							Label label = new Label(text.trim());
+							label.visibleProperty().bind(MainApp.get().labelsVisible);
 							label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
 									+ "-fx-text-fill: white;");
 							label.setWrapText(true);
