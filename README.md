@@ -17,6 +17,7 @@ An individual picture viewer written in Java.
 ## Used Technology
 * Java 8
 * JavaFX 8 as GUI framework
+* some more JavaFX widgets created by the ControlsFX project: http://fxexperience.com/controlsfx/
 * EMF for data representation
   * EMF files: `picturegallery/src/main/resources/model`
   * image of the ECore model: `picturegallery/src/main/resources/model/classdiagram.jpg`
