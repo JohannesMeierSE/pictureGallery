@@ -13,6 +13,7 @@ import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
+import picturegallery.action.RenamePictureAction;
 
 public class SingleCollectionState extends PictureSwitchingState implements StatePrevious {
 	public final SimpleObjectProperty<PictureCollection> currentCollection = new SimpleObjectProperty<>();
@@ -153,6 +154,7 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
 		registerAction(new ExitSingleCollectionStateAction());
+		registerAction(new RenamePictureAction());
 	}
 
 	@Override

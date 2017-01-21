@@ -19,6 +19,12 @@ import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
+/**
+ * Renames the currently selected picture.
+ * If the renaming influences the order of pictures which are currently shown,
+ * than the index remains unchanged => another picture will be shown instead!
+ * @author Johannes Meier
+ */
 public class RenamePictureAction extends Action {
 
 	@Override

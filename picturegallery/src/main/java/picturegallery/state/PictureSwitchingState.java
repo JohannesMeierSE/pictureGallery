@@ -27,7 +27,6 @@ import picturegallery.action.LinkPictureAction;
 import picturegallery.action.MovePictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
-import picturegallery.action.RenamePictureAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
 
 public abstract class PictureSwitchingState extends State {
@@ -248,7 +247,6 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new ClearLinktoCollectionAction());
 		registerAction(new MovePictureAction());
 		registerAction(new ClearMovetoCollectionAction());
-		registerAction(new RenamePictureAction());
 	}
 
 	@Override

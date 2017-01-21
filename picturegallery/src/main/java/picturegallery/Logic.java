@@ -1167,7 +1167,7 @@ public class Logic {
 	public static int getIndexForPictureInsertion(List<? extends Picture> pictureList, Picture picture) {
 		int result = 0;
 		while (result < pictureList.size()
-				&& getComparable(pictureList.get(result)).compareTo(getComparable(picture)) < 0) {
+				&& getComparable(picture).compareTo(getComparable(pictureList.get(result))) > 0) {
 			result++;
 		}
 		return result;

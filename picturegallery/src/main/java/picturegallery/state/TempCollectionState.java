@@ -28,9 +28,9 @@ public class TempCollectionState extends PictureSwitchingState {
 				// update the picture label, if the currently shown picture will be added to or removed from the temp collection(s)
 				while (c.next()) {
 					if (c.wasPermutated()) {
-						// => this case will never happen!
+						// => this case will never happen! TODO: doch, wenn das Bild umbenannt wird!
 						// for (int i = c.getFrom(); i < c.getTo(); ++i) {
-							// permutate ...
+							// permutate ... here: do NOTHING!
 						//}
 					} else if (c.wasUpdated()) {
 						// => this case will never happen!
@@ -167,6 +167,7 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	public void addPicture(Picture picture) {
+		// TODO: wenn das Bild umbenannt wird, ändert sich hier in Temp bislang NICHT die Reihenfolge!!
 		tempCollection.add(Logic.getIndexForPictureInsertion(tempCollection, picture), picture);
 	}
 
@@ -175,7 +176,9 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	public void clearPictures() {
-		tempCollection.clear();
+		while (!tempCollection.isEmpty()) {
+			removePicture(tempCollection.get(0));
+		}
 	}
 
 	public PictureSwitchingState getPreviousState() {
