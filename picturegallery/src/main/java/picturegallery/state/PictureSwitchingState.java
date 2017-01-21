@@ -85,7 +85,7 @@ public abstract class PictureSwitchingState extends State {
 				} else {
 					// picture was removed
 					if (picturesSorted.isEmpty()) {
-						// TODO close this state
+						// TODO close this state or show black/empty image
 					} else {
 						jumpedBefore();
 						changeIndex(0, true); // statt 0 könnte man auch zum nächsten (noch vorhandenen) Bild springen => ist aber schierig zu berechnen!
@@ -225,14 +225,20 @@ public abstract class PictureSwitchingState extends State {
 		return Logic.getRealPicture(currentPicture.get());
 	}
 
-	private void updateIndexLabel() {
+	protected void updateIndexLabel() {
+		if (tempState != null) {
+			tempState.updateIndexLabel();
+		}
 		if (!isVisible()) {
 			return;
 		}
 		setLabelIndex((indexCurrentCollection + 1) + " / " + getSize());
 	}
 
-	private void updateMetadataLabel() {
+	protected void updateMetadataLabel() {
+		if (tempState != null) {
+			tempState.updateMetadataLabel();
+		}
 		if (!isVisible()) {
 			return;
 		}
@@ -243,7 +249,10 @@ public abstract class PictureSwitchingState extends State {
 		}
 	}
 
-	public void updatePictureLabel() { // TODO: use Properties instead
+	protected void updatePictureLabel() {
+		if (tempState != null) {
+			tempState.updatePictureLabel();
+		}
 		if (!isVisible()) {
 			return;
 		}
@@ -252,7 +261,7 @@ public abstract class PictureSwitchingState extends State {
 		 * O- anderem currentPicture
 		 * O- currentPicture wird umbenannt usw.
 		 * O- currentPicture wird temp picture
-		 * - currentPicture ist linked: wenn sich das real picture in sich/intern ändert (z.B. umbenannt wird)
+		 * - currentPicture ist linked: wenn sich das real picture in sich/intern ändert (z.B. umbenannt wird) => passiert aktuell nicht!!
 		 * O- wenn sich die links auf das betreffende real picture ändern!
 		 */
 		// update the text description of the picture
@@ -281,7 +290,10 @@ public abstract class PictureSwitchingState extends State {
 		setLabelPictureName(pictureText);
 	}
 
-	public void updateCollectionLabel() { // TODO: auf Properties umstellen??
+	protected void updateCollectionLabel() {
+		if (tempState != null) {
+			tempState.updateCollectionLabel();
+		}
 		if (!isVisible()) {
 			return;
 		}

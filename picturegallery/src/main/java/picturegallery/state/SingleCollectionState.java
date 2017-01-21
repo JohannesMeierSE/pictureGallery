@@ -51,6 +51,12 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 				if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
 					return;
 				}
+				// changes of the name of this collection
+				if (msg.getFeature() == GalleryPackage.eINSTANCE.getPathElement_Name()) {
+					updateCollectionLabel();
+					return;
+				}
+				// add or remove pictures
 				if (msg.getFeature() != GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures()) {
 					return;
 				}
@@ -82,6 +88,7 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 					newValue.eAdapters().add(adapterCurrentCollection);
 					picturesToShow.addAll(newValue.getPictures());
 				}
+				updateCollectionLabel();
 			}
 		});
 

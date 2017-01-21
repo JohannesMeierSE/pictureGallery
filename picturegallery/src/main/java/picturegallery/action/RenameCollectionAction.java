@@ -19,7 +19,6 @@ import org.eclipse.emf.edit.domain.EditingDomain;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
-import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
 public class RenameCollectionAction extends Action {
@@ -89,10 +88,6 @@ public class RenameCollectionAction extends Action {
 
 			// rename in EMF model
 			renameModel(collectionToRename, newName);
-		}
-
-		if (currentState instanceof PictureSwitchingState) {
-			((PictureSwitchingState) currentState).updateCollectionLabel();
 		}
 	}
 
