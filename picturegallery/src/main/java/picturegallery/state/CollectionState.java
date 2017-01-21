@@ -40,7 +40,7 @@ public class CollectionState extends State {
 
 	public CollectionState() {
 		super();
-		singleState = new SingleCollectionState(MainApp.get(), this);
+		singleState = new SingleCollectionState(this);
 		singleState.onInit();
 
 		table = new TreeTableView<>();

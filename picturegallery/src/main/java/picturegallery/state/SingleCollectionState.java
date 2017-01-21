@@ -30,11 +30,11 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	private final Label labelPictureName;
 	private final Label labelMeta;
 
-	public SingleCollectionState(MainApp app, CollectionState collectionState) {
-		super(app);
+	public SingleCollectionState(CollectionState collectionState) {
+		super();
 		this.previousState = collectionState;
 
-		tempState = new TempCollectionState(app, this);
+		tempState = new TempCollectionState(this);
 		tempState.onInit();
 
 		// Stack Pane

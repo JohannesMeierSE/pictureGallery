@@ -230,7 +230,7 @@ public class MainApp extends Application {
 				// löst anscheinend selbstständig SymLinks auf !!
 				Image loaded = null;
 				try {
-					// TODO: Optimierung: Bilder nur so groß wie benötigt laden!! https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
+					// load picture completely!
 					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
 
 					// load meta data directly with the image => improves the initial loading time!
@@ -242,7 +242,6 @@ public class MainApp extends Application {
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
-					// TODO
 					e.printStackTrace();
 				}
 				return loaded;
@@ -254,7 +253,10 @@ public class MainApp extends Application {
 				// löst anscheinend selbstständig SymLinks auf !!
 				Image loaded = null;
 				try {
-					// https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
+					/*
+					 * this is an optimization: load pictures only in the required size!
+					 * https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
+					 */
 					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString(),
 							MultiPictureState.WIDTH, MultiPictureState.HEIGHT, true, true);
 
@@ -267,7 +269,6 @@ public class MainApp extends Application {
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
-					// TODO
 					e.printStackTrace();
 				}
 				return loaded;

@@ -44,11 +44,8 @@ public abstract class PictureSwitchingState extends State {
 	protected abstract void setLabelCollectionPath(String newText);
 	protected abstract ImageView getImage();
 
-	protected final MainApp app;
-
-	public PictureSwitchingState(MainApp app) {
+	public PictureSwitchingState() {
 		super();
-		this.app = app;
 		indexCurrentCollection = -1;
 
 		currentPicture = new SimpleObjectProperty<>();
@@ -174,8 +171,8 @@ public abstract class PictureSwitchingState extends State {
 
 	private void requestWithoutCallback(Picture picture) {
 		RealPicture key = Logic.getRealPicture(picture);
-		if (!app.getImageCache().isLoadedOrLoading(key)) {
-			app.getImageCache().request(key, null);
+		if (!MainApp.get().getImageCache().isLoadedOrLoading(key)) {
+			MainApp.get().getImageCache().request(key, null);
 		}
 	}
 

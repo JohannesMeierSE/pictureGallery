@@ -9,7 +9,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import picturegallery.Logic;
-import picturegallery.MainApp;
 
 public class TempCollectionState extends PictureSwitchingState {
 	public final ObservableList<Picture> tempCollection;
@@ -17,8 +16,8 @@ public class TempCollectionState extends PictureSwitchingState {
 	private final PictureSwitchingState previousState;
 	private TempCollectionState tempState;
 
-	public TempCollectionState(MainApp app, PictureSwitchingState previousState) {
-		super(app);
+	public TempCollectionState(PictureSwitchingState previousState) {
+		super();
 		this.previousState = previousState;
 
 		tempCollection = FXCollections.observableArrayList();
@@ -29,11 +28,13 @@ public class TempCollectionState extends PictureSwitchingState {
 				// update the picture label, if the currently shown picture will be added to or removed from the temp collection(s)
 				while (c.next()) {
 					if (c.wasPermutated()) {
-						for (int i = c.getFrom(); i < c.getTo(); ++i) {
-							// TODO permutate
-						}
+						// => this case will never happen!
+						// for (int i = c.getFrom(); i < c.getTo(); ++i) {
+							// permutate ...
+						//}
 					} else if (c.wasUpdated()) {
-						// TODO update item
+						// => this case will never happen!
+						// update item ...
 					} else {
 						Picture currentPictureShown = previousState.getCurrentPicture();
 						if (currentPictureShown == null) {
@@ -89,7 +90,7 @@ public class TempCollectionState extends PictureSwitchingState {
 	public TempCollectionState getTempState() {
 		if (tempState == null) {
 			// Lazy initialization prevents infinite loops
-			tempState = new TempCollectionState(app, this);
+			tempState = new TempCollectionState(this);
 			tempState.onInit();
 		}
 		return tempState;
