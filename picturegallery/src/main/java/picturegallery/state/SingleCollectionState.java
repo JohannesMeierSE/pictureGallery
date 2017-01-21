@@ -30,7 +30,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
-	private final TempCollectionState tempState;
 	private final CollectionState previousState;
 
 	private final Adapter adapterCurrentCollection;
@@ -45,9 +44,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	public SingleCollectionState(CollectionState collectionState) {
 		super();
 		this.previousState = collectionState;
-
-		tempState = new TempCollectionState(this);
-		tempState.onInit();
 
 		adapterCurrentCollection = new AdapterImpl() {
 			@Override
@@ -176,7 +172,9 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 		setLinktoCollection(null);
 		indexCurrentCollection = -1;
 
-		showInitialPicture();
+		if (isVisible()) {
+			showInitialPicture();
+		}
 	}
 
 	@Override
@@ -186,17 +184,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 		registerAction(new JumpLeftAction());
 		registerAction(new ExitSingleCollectionStateAction());
 		registerAction(new RenamePictureAction());
-	}
-
-	@Override
-	public void onClose() {
-		super.onClose();
-		tempState.onClose();
-	}
-
-	@Override
-	public TempCollectionState getTempState() {
-		return tempState;
 	}
 
 	@Override

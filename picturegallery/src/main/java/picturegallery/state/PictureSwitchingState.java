@@ -10,6 +10,8 @@ import gallery.RealPictureCollection;
 import java.util.Comparator;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -49,8 +51,9 @@ public abstract class PictureSwitchingState extends State {
 	protected boolean jumpedBefore = false;
 	private final Adapter adapterCurrentPicture;
 
+	protected TempCollectionState tempState;
+
 	public abstract PictureCollection getCurrentCollection();
-	public abstract TempCollectionState getTempState();
 	protected abstract String getCollectionDescription();
 	protected abstract ImageView getImage();
 
@@ -67,8 +70,8 @@ public abstract class PictureSwitchingState extends State {
 
 	public PictureSwitchingState() {
 		super();
+		currentPicture = new SimpleObjectProperty<>();
 		indexCurrentCollection = -1;
-
 		picturesToShow = FXCollections.observableArrayList();
 
 		picturesSorted = new SortedList<>(picturesToShow);
@@ -78,10 +81,10 @@ public abstract class PictureSwitchingState extends State {
 				if (containsPicture(getCurrentPicture())) {
 					// show is picture furthermore => update index
 					jumpedBefore();
-					changeIndex(getIndexOfPicture(getCurrentPicture()), true);
+					changeIndex(picturesSorted.indexOf(getCurrentPicture()), true);
 				} else {
 					// picture was removed
-					if (picturesToShow.isEmpty()) {
+					if (picturesSorted.isEmpty()) {
 						// TODO close this state
 					} else {
 						jumpedBefore();
@@ -120,10 +123,9 @@ public abstract class PictureSwitchingState extends State {
 			}
 		};
 
-		currentPicture = new SimpleObjectProperty<>();
-		currentPicture.addListener(new ChangeListener<Picture>() {
+		currentPicture.addListener(new InvalidationListener() {
 			@Override
-			public void changed(ObservableValue<? extends Picture> observable, Picture oldValue, Picture newValue) {
+			public void invalidated(Observable observable) {
 				// picture changed => show this picture in ImageView
 				Logic.renderPicture(new PictureProvider() {
 					@Override
@@ -135,7 +137,12 @@ public abstract class PictureSwitchingState extends State {
 				// update the labels for the new picture
 				updatePictureLabel();
 				updateMetadataLabel();
-
+			}
+		});
+		// TODO: warum wird initial das Bild nicht aktualisiert??
+		currentPicture.addListener(new ChangeListener<Picture>() {
+			@Override
+			public void changed(ObservableValue<? extends Picture> observable, Picture oldValue, Picture newValue) {
 				if (oldValue != null) {
 					oldValue.eAdapters().remove(adapterCurrentPicture);
 				}
@@ -143,21 +150,41 @@ public abstract class PictureSwitchingState extends State {
 					newValue.eAdapters().add(adapterCurrentPicture);
 				}
 			}
-
 		});
 	}
 
+	public final TempCollectionState getTempState() {
+		if (tempState == null) {
+			// Lazy initialization prevents infinite loops
+			tempState = new TempCollectionState(this);
+			tempState.onInit();
+
+			// the following lines listen to the pictures in the next temp mode to render the current image properly
+			tempState.picturesSorted.addListener(new ListChangeListener<Picture>() {
+				@Override
+				public void onChanged(javafx.collections.ListChangeListener.Change<? extends Picture> c) {
+					if (currentPicture.get() == null) {
+						return;
+					}
+					while (c.next()) {
+						if (c.getAddedSubList().contains(currentPicture.get()) || c.getRemoved().contains(currentPicture.get())) {
+							updatePictureLabel();
+						}
+					}
+				}
+			});
+		}
+		return tempState;
+	}
+
 	public final int getSize() {
-		return picturesToShow.size();
+		return picturesSorted.size();
 	}
-	public final Picture getPictureAtIndex(int index) {
-		return picturesToShow.get(index);
-	}
-	public final int getIndexOfPicture(Picture picture) {
-		return picturesToShow.indexOf(picture);
+	private final Picture getPictureAtIndex(int index) {
+		return picturesSorted.get(index);
 	}
 	public final boolean containsPicture(Picture picture) {
-		return picturesToShow.contains(picture);
+		return picturesSorted.contains(picture);
 	}
 
 	public void gotoPicture(int diff, boolean preload) {
@@ -178,11 +205,12 @@ public abstract class PictureSwitchingState extends State {
 
 		indexCurrentCollection = newIndex;
 		updateIndexLabel();
+
 		Picture newPicture = getPictureAtIndex(indexCurrentCollection);
 		currentPicture.set(newPicture); // => requests the image and updates the labels by listeners!
 
 		// pre-load next pictures
-		if (preload) {
+		if (preload && isVisible()) {
 			if (jumpedBefore) {
 				requestNearPictures(indexCurrentCollection);
 				jumpedBefore = false;
@@ -198,10 +226,16 @@ public abstract class PictureSwitchingState extends State {
 	}
 
 	private void updateIndexLabel() {
+		if (!isVisible()) {
+			return;
+		}
 		setLabelIndex((indexCurrentCollection + 1) + " / " + getSize());
 	}
 
 	private void updateMetadataLabel() {
+		if (!isVisible()) {
+			return;
+		}
 		if (currentPicture.get() == null) {
 			setLabelMeta("no metadata of 'null' available");
 		} else {
@@ -210,6 +244,9 @@ public abstract class PictureSwitchingState extends State {
 	}
 
 	public void updatePictureLabel() { // TODO: use Properties instead
+		if (!isVisible()) {
+			return;
+		}
 		/*
 		 * Änderungen bei ... (alles Informationen, die angezeigt werden!)
 		 * O- anderem currentPicture
@@ -245,6 +282,9 @@ public abstract class PictureSwitchingState extends State {
 	}
 
 	public void updateCollectionLabel() { // TODO: auf Properties umstellen??
+		if (!isVisible()) {
+			return;
+		}
 		// print additional information about the current collection, e.g. about temp states => see concrete implementations
 		String value = getCollectionDescription();
 
@@ -311,10 +351,14 @@ public abstract class PictureSwitchingState extends State {
 	public void onClose() {
 		picturesToShow.clear();
 		currentPicture.set(null);
+		if (tempState != null) {
+			tempState.onClose();
+		}
 	}
 
 	@Override
 	public void onEntry(State previousState) {
+		super.onEntry(previousState);
 		showInitialPicture();
 	}
 
@@ -327,10 +371,5 @@ public abstract class PictureSwitchingState extends State {
 		}
 		requestNearPictures(indexCurrentCollection);
 		updateCollectionLabel();
-	}
-
-	@Override
-	public void onExit(State nextState) {
-		// empty
 	}
 }

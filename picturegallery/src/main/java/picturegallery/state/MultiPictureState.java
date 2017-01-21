@@ -86,16 +86,6 @@ public class MultiPictureState extends State implements StatePrevious {
 	}
 
 	@Override
-	public void onEntry(State previousState) {
-		// empty
-	}
-
-	@Override
-	public void onExit(State nextState) {
-		// empty
-	}
-
-	@Override
 	public Region getRootNode() {
 		return grid;
 	}

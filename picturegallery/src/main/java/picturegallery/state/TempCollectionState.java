@@ -8,7 +8,6 @@ import javafx.scene.layout.Region;
 
 public class TempCollectionState extends PictureSwitchingState {
 	private final PictureSwitchingState previousState;
-	private TempCollectionState tempState;
 
 	public TempCollectionState(PictureSwitchingState previousState) {
 		super();
@@ -18,16 +17,6 @@ public class TempCollectionState extends PictureSwitchingState {
 	@Override
 	public PictureCollection getCurrentCollection() {
 		return previousState.getCurrentCollection();
-	}
-
-	@Override
-	public TempCollectionState getTempState() {
-		if (tempState == null) {
-			// Lazy initialization prevents infinite loops
-			tempState = new TempCollectionState(this);
-			tempState.onInit();
-		}
-		return tempState;
 	}
 
 	@Override
@@ -80,10 +69,6 @@ public class TempCollectionState extends PictureSwitchingState {
 		super.onClose();
 
 		clearPictures();
-
-		if (tempState != null) {
-			tempState.onClose();
-		}
 	}
 
 	public void addPicture(Picture picture) {

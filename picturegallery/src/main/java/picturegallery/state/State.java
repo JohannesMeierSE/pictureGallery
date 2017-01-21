@@ -8,6 +8,7 @@ import picturegallery.action.Action;
 
 public abstract class State {
 	private final List<Action> registeredActions = new ArrayList<>();
+	private boolean visible = false;
 
 	public abstract void onInit();
 	public abstract void onClose();
@@ -15,8 +16,16 @@ public abstract class State {
 	 * 
 	 * @param previousState could be null, if this state is the first on within the application life
 	 */
-	public abstract void onEntry(State previousState);
-	public abstract void onExit(State nextState);
+	public void onEntry(State previousState) {
+		visible = true;
+	}
+	public void onExit(State nextState) {
+		visible = false;
+	}
+
+	public boolean isVisible() {
+		return visible;
+	}
 
 	public final List<Action> getActions() {
 		return registeredActions;

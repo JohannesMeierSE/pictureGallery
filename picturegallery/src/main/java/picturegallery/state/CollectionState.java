@@ -205,16 +205,6 @@ public class CollectionState extends State {
 		table.setRoot(null);
 	}
 
-	@Override
-	public void onEntry(State previousState) {
-		// empty
-	}
-
-	@Override
-	public void onExit(State nextState) {
-		// empty
-	}
-
 	/**
 	 * Returns the currently selected picture collection (or null).
 	 * @return
