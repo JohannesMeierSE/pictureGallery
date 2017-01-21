@@ -9,7 +9,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
@@ -160,22 +159,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	public void onClose() {
 		super.onClose();
 		tempState.onClose();
-	}
-
-	@Override
-	public void onEntry(State previousState) {
-		// select the initial collection!
-		while (currentCollection == null) {
-			PictureCollection newCol = Logic.selectCollection(this, false, false, true);
-    		if (newCol == null) {
-    			System.err.println("the library does not contain any picture!!");
-    			break;
-    		} else {
-    			setCurrentCollection(newCol);
-    		}
-		}
-
-		super.onEntry(previousState);
 	}
 
 	@Override

@@ -14,10 +14,6 @@ import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
-/*
- * TODO: alles im Detail über prüfen
- * - ein (schlechtes?) Beispiel: StringPropertyBase
- */
 public class ObservablePictureCollection implements ObservableValue<PictureCollection> {
 	private final PictureCollection collection;
 	private final List<ChangeListener<? super PictureCollection>> listenerChange;
@@ -38,6 +34,7 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 		if (collection == null) {
 			throw new IllegalArgumentException();
 		}
+
 		this.collection = collection;
 		this.adapter = new AdapterImpl() {
 			@Override
@@ -65,12 +62,10 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 					return;
 				}
 				if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
-					// TODO: warum wird dies beim Rename 8x aufgerufen??
 					update();
 				}
 			}
 		};
-		this.collection.eAdapters().add(this.adapter); // TODO: wann geschieht das Abmelden??
 
 		this.listenerChange = new ArrayList<>();
 		this.listenerInvalide = new ArrayList<>();
@@ -89,27 +84,50 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 				}
 			}
 		};
-		this.otherValues.forEach(c -> c.addListener(this.otherValuesListener));
+	}
+
+	private void addObserver() {
+		if (listenerChange.isEmpty() && listenerInvalide.isEmpty()) {
+			collection.eAdapters().add(adapter);
+			otherValues.forEach(c -> c.addListener(otherValuesListener));
+		}
+	}
+
+	private void removeObserver() {
+		/*
+		 * problem: adding the required observer is easy, but to remove them afterwards to prevent memory-leaks is hard
+		 * idea for the implemented solution:
+		 * add the observer when someone starts to listen to this PictureCollection, and
+		 * remove the observer when no one listens to this PictureCollection anymore!
+		 */
+		if (listenerChange.isEmpty() && listenerInvalide.isEmpty()) {
+			collection.eAdapters().remove(adapter);
+			otherValues.forEach(c -> c.removeListener(otherValuesListener));
+		}
 	}
 
 	@Override
 	public void addListener(InvalidationListener listener) {
+		addObserver();
 		listenerInvalide.add(listener);
 	}
 
 	@Override
 	public void removeListener(InvalidationListener listener) {
 		listenerInvalide.remove(listener);
+		removeObserver();
 	}
 
 	@Override
 	public void addListener(ChangeListener<? super PictureCollection> listener) {
+		addObserver();
 		listenerChange.add(listener);
 	}
 
 	@Override
 	public void removeListener(ChangeListener<? super PictureCollection> listener) {
 		listenerChange.remove(listener);
+		removeObserver();
 	}
 
 	@Override
