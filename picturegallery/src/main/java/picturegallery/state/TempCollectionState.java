@@ -132,19 +132,24 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
-	public void onClose() {
-		super.onClose();
-		if (tempState != null) {
-			tempState.onClose();
+	public void onExit(State nextState) {
+		super.onExit(nextState);
+		if (tempState != null && nextState == tempState) {
+			// keep the pictures, if the "next deeper temp level" will be reached
+		} else {
+			clearPictures();
 		}
 	}
 
 	@Override
-	public void onEntry(State previousState) {
-		// in-place sorting
-		//Logic.sortPictures(tempCollection);
+	public void onClose() {
+		super.onClose();
 
-		super.onEntry(previousState);
+		clearPictures();
+
+		if (tempState != null) {
+			tempState.onClose();
+		}
 	}
 
 	@Override

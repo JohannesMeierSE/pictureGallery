@@ -22,7 +22,6 @@ public class ShowOrExitTempCollectionAction extends Action {
 		} else if (state instanceof TempCollectionState) {
 
 			// exit and clear TEMP collection
-			((TempCollectionState) state).clearPictures();
 			MainApp.get().switchState(((TempCollectionState) state).getPreviousState());
 
 		} else {

@@ -1254,7 +1254,7 @@ public class Logic {
 	public static void renderPicture(PictureProvider provider, ImageView image, ObjectCache<RealPicture, Image> cache) {
 		RealPicture realCurrentPicture = provider.get();
 		if (realCurrentPicture == null) {
-			// show no picture (TODO: überprüfen!)
+			// show no picture
 			if (Platform.isFxApplicationThread()) {
 				image.setImage(null);
 			} else {

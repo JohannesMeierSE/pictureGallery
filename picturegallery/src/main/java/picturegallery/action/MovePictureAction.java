@@ -43,8 +43,7 @@ public class MovePictureAction extends Action {
 
 		// close temp mode (only one level)
 		if (state instanceof TempCollectionState) {
-			// exit and clear TEMP collection => see ShowOrExitTempCollectionAction TODO: ist irgendwie unschön!
-			((TempCollectionState) state).clearPictures();
+			// exit and clear TEMP collection => see ShowOrExitTempCollectionAction
 			MainApp.get().switchState(((TempCollectionState) state).getPreviousState());
 		}
 
