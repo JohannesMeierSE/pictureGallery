@@ -873,6 +873,18 @@ public class Logic {
 		return true;
 	}
 
+	public static boolean isPictureNameUnique(Picture picture, String newName) {
+		if (picture.getName().equals(newName)) {
+			return true;
+		}
+		for (Picture pic : picture.getCollection().getPictures()) {
+			if (pic.getName().equals(newName)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static void replaceRealByLinkedPicture(RealPicture oldReal, RealPicture newRef) {
 		// check the input
 		if (oldReal == null || newRef == null) {
@@ -1154,8 +1166,26 @@ public class Logic {
 	public static int getIndexForPictureInsertion(List<? extends Picture> pictureList, Picture picture) {
 		int result = 0;
 		while (result < pictureList.size()
-				&& pictureList.get(result).getName().compareTo(picture.getName()) < 0) {
+				&& pictureList.get(result).getName().toLowerCase().compareTo(picture.getName().toLowerCase()) < 0) {
 			result++;
+		}
+		return result;
+	}
+
+	public static int getIndexForPictureAtWrongPositionMove(List<? extends Picture> pictureList, Picture picture) {
+		int result = pictureList.indexOf(picture);
+		if (result < 0) {
+			throw new IllegalArgumentException();
+		}
+		// move to the right?
+		while (result < (pictureList.size() - 1)
+				&& picture.getName().toLowerCase().compareTo(pictureList.get(result + 1).getName().toLowerCase()) > 0) {
+			result++;
+		}
+		// move to the left?
+		while (result > 0
+				&& pictureList.get(result - 1).getName().toLowerCase().compareTo(picture.getName().toLowerCase()) > 0) {
+			result--;
 		}
 		return result;
 	}
@@ -1164,13 +1194,13 @@ public class Logic {
 	 * Computes the index at which the given collection should be inserted into the given list of collections.
 	 * Does not have side-effects (read-only, no changes)!
 	 * @param collectionList
-	 * @param picture
+	 * @param collection
 	 * @return
 	 */
-	public static int getIndexForCollectionInsertion(List<? extends PictureCollection> collectionList, PictureCollection picture) {
+	public static int getIndexForCollectionInsertion(List<? extends PictureCollection> collectionList, PictureCollection collection) {
 		int result = 0;
 		while (result < collectionList.size()
-				&& collectionList.get(result).getName().compareTo(picture.getName()) < 0) {
+				&& collectionList.get(result).getName().toLowerCase().compareTo(collection.getName().toLowerCase()) < 0) {
 			result++;
 		}
 		return result;
@@ -1179,22 +1209,22 @@ public class Logic {
 	/**
 	 * 
 	 * @param collectionList list which is sorted (exception: the given picture is inserted an any (wrong) position)
-	 * @param picture
+	 * @param collection
 	 * @return the target index after moving the given picture to the correction position (see {@link MoveCommand})
 	 */
-	public static int getIndexForCollectionAtWrongPositionMove(List<? extends PictureCollection> collectionList, PictureCollection picture) {
-		int result = collectionList.indexOf(picture);
+	public static int getIndexForCollectionAtWrongPositionMove(List<? extends PictureCollection> collectionList, PictureCollection collection) {
+		int result = collectionList.indexOf(collection);
 		if (result < 0) {
 			throw new IllegalArgumentException();
 		}
 		// move to the right?
 		while (result < (collectionList.size() - 1)
-				&& collectionList.get(result + 1).getName().compareTo(picture.getName()) < 0) {
+				&& collectionList.get(result + 1).getName().toLowerCase().compareTo(collection.getName().toLowerCase()) < 0) {
 			result++;
 		}
 		// move to the left?
 		while (result > 0
-				&& collectionList.get(result - 1).getName().compareTo(picture.getName()) > 0) {
+				&& collectionList.get(result - 1).getName().toLowerCase().compareTo(collection.getName().toLowerCase()) > 0) {
 			result--;
 		}
 		return result;

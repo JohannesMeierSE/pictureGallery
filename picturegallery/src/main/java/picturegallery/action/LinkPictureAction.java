@@ -87,8 +87,6 @@ public class LinkPictureAction extends Action {
 				MainApp.get().deletePicture(existingLink, false);
 			}
 		}
-		state.updatePictureLabel();
-		// kein Update des Collection-Labels nötig, da der Link in eine Collection =! der aktuellen eingefügt (oder daraus gelöscht) wird!
 	}
 
 	@Override

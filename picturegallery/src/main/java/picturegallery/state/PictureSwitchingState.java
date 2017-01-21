@@ -6,10 +6,16 @@ import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.image.ImageView;
+
+import org.eclipse.emf.common.notify.Adapter;
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.impl.AdapterImpl;
+
 import picturegallery.Logic;
 import picturegallery.Logic.PictureProvider;
 import picturegallery.MainApp;
@@ -21,6 +27,7 @@ import picturegallery.action.LinkPictureAction;
 import picturegallery.action.MovePictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
+import picturegallery.action.RenamePictureAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
 
 public abstract class PictureSwitchingState extends State {
@@ -29,6 +36,7 @@ public abstract class PictureSwitchingState extends State {
 
 	private int previousIndexCurrent;
 	protected boolean jumpedBefore = false;
+	private final Adapter adapterCurrentPicture;
 
 	public abstract int getSize();
 	public abstract Picture getPictureAtIndex(int index);
@@ -48,6 +56,29 @@ public abstract class PictureSwitchingState extends State {
 		super();
 		indexCurrentCollection = -1;
 
+		adapterCurrentPicture = new AdapterImpl() {
+			@Override
+			public void notifyChanged(Notification msg) {
+				if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
+					return;
+				}
+				//if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
+				// TODO: wird so zu viel durchgelassen?
+				if (Platform.isFxApplicationThread()) {
+					updatePictureLabel();
+					updateMetadataLabel();
+				} else {
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							updatePictureLabel();
+							updateMetadataLabel();
+						}
+					});
+				}
+			}
+		};
+
 		currentPicture = new SimpleObjectProperty<>();
 		currentPicture.addListener(new ChangeListener<Picture>() {
 			@Override
@@ -63,6 +94,13 @@ public abstract class PictureSwitchingState extends State {
 				// update the labels for the new picture
 				updatePictureLabel();
 				updateMetadataLabel();
+
+				if (oldValue != null) {
+					oldValue.eAdapters().remove(adapterCurrentPicture);
+				}
+				if (newValue != null) {
+					newValue.eAdapters().add(adapterCurrentPicture);
+				}
 			}
 
 		});
@@ -101,7 +139,6 @@ public abstract class PictureSwitchingState extends State {
 	}
 
 	private void updateMetadataLabel() {
-		// TODO muss auch noch aufgerufen werden, wenn sich die Metadata ändern (z.B. fertig nachgeladen wurden!)
 		if (currentPicture.get() == null) {
 			setLabelMeta("no metadata of 'null' available");
 		} else {
@@ -117,10 +154,10 @@ public abstract class PictureSwitchingState extends State {
 		/*
 		 * Änderungen bei ... (alles Informationen, die angezeigt werden!)
 		 * O- anderem currentPicture
-		 * - currentPicture wird umbenannt usw.
+		 * O- currentPicture wird umbenannt usw.
 		 * O- currentPicture wird temp picture
 		 * - currentPicture ist linked: wenn sich das real picture in sich/intern ändert (z.B. umbenannt wird)
-		 * - wenn sich die links auf das betreffende real picture ändern!
+		 * O- wenn sich die links auf das betreffende real picture ändern!
 		 */
 		// update the text description of the picture
 		String pictureText = "null";
@@ -211,6 +248,7 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new ClearLinktoCollectionAction());
 		registerAction(new MovePictureAction());
 		registerAction(new ClearMovetoCollectionAction());
+		registerAction(new RenamePictureAction());
 	}
 
 	@Override

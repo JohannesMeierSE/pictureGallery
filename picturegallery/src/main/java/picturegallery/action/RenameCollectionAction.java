@@ -110,6 +110,7 @@ public class RenameCollectionAction extends Action {
 				collectionToRename.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(),
 				collectionToRename, Logic.getIndexForCollectionAtWrongPositionMove(
 						collectionToRename.getSuperCollection().getSubCollections(), collectionToRename)));
+		// TODO: does not work in CollectionState!!
 	}
 
 	@Override
