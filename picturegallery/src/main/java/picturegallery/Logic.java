@@ -4,6 +4,7 @@ import gallery.GalleryFactory;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.LinkedPictureCollection;
+import gallery.PathElement;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.PictureLibrary;
@@ -1166,7 +1167,7 @@ public class Logic {
 	public static int getIndexForPictureInsertion(List<? extends Picture> pictureList, Picture picture) {
 		int result = 0;
 		while (result < pictureList.size()
-				&& pictureList.get(result).getName().toLowerCase().compareTo(picture.getName().toLowerCase()) < 0) {
+				&& getComparable(pictureList.get(result)).compareTo(getComparable(picture)) < 0) {
 			result++;
 		}
 		return result;
@@ -1179,12 +1180,12 @@ public class Logic {
 		}
 		// move to the right?
 		while (result < (pictureList.size() - 1)
-				&& picture.getName().toLowerCase().compareTo(pictureList.get(result + 1).getName().toLowerCase()) > 0) {
+				&& getComparable(picture).compareTo(getComparable(pictureList.get(result + 1))) > 0) {
 			result++;
 		}
 		// move to the left?
 		while (result > 0
-				&& pictureList.get(result - 1).getName().toLowerCase().compareTo(picture.getName().toLowerCase()) > 0) {
+				&& getComparable(pictureList.get(result - 1)).compareTo(getComparable(picture)) > 0) {
 			result--;
 		}
 		return result;
@@ -1200,7 +1201,7 @@ public class Logic {
 	public static int getIndexForCollectionInsertion(List<? extends PictureCollection> collectionList, PictureCollection collection) {
 		int result = 0;
 		while (result < collectionList.size()
-				&& collectionList.get(result).getName().toLowerCase().compareTo(collection.getName().toLowerCase()) < 0) {
+				&& getComparable(collectionList.get(result)).compareTo(getComparable(collection)) < 0) {
 			result++;
 		}
 		return result;
@@ -1219,15 +1220,19 @@ public class Logic {
 		}
 		// move to the right?
 		while (result < (collectionList.size() - 1)
-				&& collectionList.get(result + 1).getName().toLowerCase().compareTo(collection.getName().toLowerCase()) < 0) {
+				&& getComparable(collectionList.get(result + 1)).compareTo(getComparable(collection)) < 0) {
 			result++;
 		}
 		// move to the left?
 		while (result > 0
-				&& collectionList.get(result - 1).getName().toLowerCase().compareTo(collection.getName().toLowerCase()) > 0) {
+				&& getComparable(collectionList.get(result - 1)).compareTo(getComparable(collection)) > 0) {
 			result--;
 		}
 		return result;
+	}
+
+	private static String getComparable(PathElement picture) {
+		return picture.getName().toLowerCase();
 	}
 
 	public interface PictureProvider {
