@@ -6,10 +6,17 @@ import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
+
+import java.util.Comparator;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.image.ImageView;
 
 import org.eclipse.emf.common.notify.Adapter;
@@ -29,31 +36,66 @@ import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
 
+/**
+ * This state shows one picture out of a list of (sorted) pictures.
+ * @author Johannes Meier
+ */
 public abstract class PictureSwitchingState extends State {
+	protected final ObservableList<Picture> picturesToShow;
+	protected final SortedList<Picture> picturesSorted;
 	protected final SimpleObjectProperty<Picture> currentPicture;
 	protected int indexCurrentCollection;
 
-	private int previousIndexCurrent;
 	protected boolean jumpedBefore = false;
 	private final Adapter adapterCurrentPicture;
 
-	public abstract int getSize();
-	public abstract Picture getPictureAtIndex(int index);
-	public abstract int getIndexOfPicture(Picture picture);
-	public abstract boolean containsPicture(Picture pic);
 	public abstract PictureCollection getCurrentCollection();
-
 	public abstract TempCollectionState getTempState();
 	protected abstract String getCollectionDescription();
+	protected abstract ImageView getImage();
+
 	protected abstract void setLabelIndex(String newText);
 	protected abstract void setLabelMeta(String newText);
 	protected abstract void setLabelPictureName(String newText);
 	protected abstract void setLabelCollectionPath(String newText);
-	protected abstract ImageView getImage();
+
+	public abstract RealPictureCollection getMovetoCollection();
+	public abstract void setMovetoCollection(RealPictureCollection movetoCollection);
+
+	public abstract RealPictureCollection getLinktoCollection();
+	public abstract void setLinktoCollection(RealPictureCollection linktoCollection);
 
 	public PictureSwitchingState() {
 		super();
 		indexCurrentCollection = -1;
+
+		picturesToShow = FXCollections.observableArrayList();
+
+		picturesSorted = new SortedList<>(picturesToShow);
+		picturesSorted.addListener(new ListChangeListener<Picture>() {
+			@Override
+			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
+				if (containsPicture(getCurrentPicture())) {
+					// show is picture furthermore => update index
+					jumpedBefore();
+					changeIndex(getIndexOfPicture(getCurrentPicture()), true);
+				} else {
+					// picture was removed
+					if (picturesToShow.isEmpty()) {
+						// TODO close this state
+					} else {
+						jumpedBefore();
+						changeIndex(0, true); // statt 0 könnte man auch zum nächsten (noch vorhandenen) Bild springen => ist aber schierig zu berechnen!
+					}
+				}
+			}
+		});
+		picturesSorted.setComparator(new Comparator<Picture>() {
+			@Override
+			public int compare(Picture o1, Picture o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
+			}
+		});
 
 		adapterCurrentPicture = new AdapterImpl() {
 			@Override
@@ -105,6 +147,19 @@ public abstract class PictureSwitchingState extends State {
 		});
 	}
 
+	public final int getSize() {
+		return picturesToShow.size();
+	}
+	public final Picture getPictureAtIndex(int index) {
+		return picturesToShow.get(index);
+	}
+	public final int getIndexOfPicture(Picture picture) {
+		return picturesToShow.indexOf(picture);
+	}
+	public final boolean containsPicture(Picture picture) {
+		return picturesToShow.contains(picture);
+	}
+
 	public void gotoPicture(int diff, boolean preload) {
 		int size = getSize();
 
@@ -120,8 +175,9 @@ public abstract class PictureSwitchingState extends State {
 		if (newIndex >= size) {
 			throw new IllegalArgumentException();
 		}
+
 		indexCurrentCollection = newIndex;
-		setLabelIndex((indexCurrentCollection + 1) + " / " + size);
+		updateIndexLabel();
 		Picture newPicture = getPictureAtIndex(indexCurrentCollection);
 		currentPicture.set(newPicture); // => requests the image and updates the labels by listeners!
 
@@ -137,16 +193,20 @@ public abstract class PictureSwitchingState extends State {
 		}
 	}
 
+	private RealPicture getCurrentRealPicture() {
+		return Logic.getRealPicture(currentPicture.get());
+	}
+
+	private void updateIndexLabel() {
+		setLabelIndex((indexCurrentCollection + 1) + " / " + getSize());
+	}
+
 	private void updateMetadataLabel() {
 		if (currentPicture.get() == null) {
 			setLabelMeta("no metadata of 'null' available");
 		} else {
 			setLabelMeta(Logic.printMetadata(currentPicture.get().getMetadata()));
 		}
-	}
-
-	private RealPicture getCurrentRealPicture() {
-		return Logic.getRealPicture(currentPicture.get());
 	}
 
 	public void updatePictureLabel() { // TODO: use Properties instead
@@ -185,12 +245,10 @@ public abstract class PictureSwitchingState extends State {
 	}
 
 	public void updateCollectionLabel() { // TODO: auf Properties umstellen??
-		String value = "";
+		// print additional information about the current collection, e.g. about temp states => see concrete implementations
+		String value = getCollectionDescription();
 
 		PictureCollection currentCollection = getCurrentCollection();
-
-		// print additional information about the current collection, e.g. about temp states => see concrete implementations
-		value = value + getCollectionDescription();
 
 		if (currentCollection instanceof LinkedPictureCollection) {
 			value = value + "\n    => " + ((LinkedPictureCollection) currentCollection).getRealCollection().getRelativePath();
@@ -218,7 +276,7 @@ public abstract class PictureSwitchingState extends State {
 		// load initially the directly sibbling ones (will be loaded directly, if the loading thread was inactive before)!
     	requestWithoutCallback(getPictureAtIndex((position) % size));
 
-//		for (int i = 1; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
+		// for (int i = 1; i < (PRE_LOAD + 1) && i < size; i++) { // "+ 1" vermeidet fehlende vorgeladene Bilder!
 		for (int i = Math.min(MainApp.PRE_LOAD, size / 2); i >= 1; i--) {
         	requestWithoutCallback(getPictureAtIndex((position + i) % size));
         	requestWithoutCallback(getPictureAtIndex((position + size - i) % size));
@@ -251,6 +309,7 @@ public abstract class PictureSwitchingState extends State {
 
 	@Override
 	public void onClose() {
+		picturesToShow.clear();
 		currentPicture.set(null);
 	}
 
@@ -274,41 +333,4 @@ public abstract class PictureSwitchingState extends State {
 	public void onExit(State nextState) {
 		// empty
 	}
-
-	public void onRemovePictureBefore(Picture pictureToRemoveLater) {
-		previousIndexCurrent = getIndexOfPicture(pictureToRemoveLater);
-	}
-
-	public void onRemovePictureAfter(Picture removedPicture, boolean updateGui) {
-		if (previousIndexCurrent < 0) {
-			// the picture was not part of the currently shown collection => do nothing
-			return;
-		}
-
-		int newIndexCurrent = indexCurrentCollection;
-		if (previousIndexCurrent < newIndexCurrent) {
-			// Bild vor dem aktuellen Bild wird gelöscht
-			newIndexCurrent--;
-		} else {
-			// wegen Sonderfall, dass das letzte Bild gelöscht wird
-			newIndexCurrent = Math.min(newIndexCurrent, getSize() - 1);
-		}
-
-		if (updateGui) {
-			// update the GUI
-			if (getSize() > 0) {
-				changeIndex(newIndexCurrent, true);
-			} else {
-				// TODO: dafür richtigen Mode einrichten mit schwarzem Hintergrund!!
-			}
-		} else {
-			indexCurrentCollection = newIndexCurrent;
-		}
-	}
-
-	public abstract RealPictureCollection getMovetoCollection();
-	public abstract void setMovetoCollection(RealPictureCollection movetoCollection);
-
-	public abstract RealPictureCollection getLinktoCollection();
-	public abstract void setLinktoCollection(RealPictureCollection linktoCollection);
 }

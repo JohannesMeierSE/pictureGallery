@@ -49,7 +49,6 @@ import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.Settings;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
-import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
 // TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
@@ -285,11 +284,6 @@ public class MainApp extends Application {
 			}
 		}
 
-		// update GUI
-		if (currentState instanceof PictureSwitchingState) {
-			((PictureSwitchingState) currentState).onRemovePictureBefore(picture);
-		}
-
 		// delete file in file system => TODO: do that in new thread??
 		try {
 			Files.delete(Paths.get(picture.getFullPath()));
@@ -319,11 +313,6 @@ public class MainApp extends Application {
 			domain.getCommandStack().execute(RemoveCommand.create(domain,
 					lp.getRealPicture(), GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), lp));
 //			lp.getRealPicture().getLinkedBy().remove(lp);
-		}
-
-		// update GUI
-		if (currentState instanceof PictureSwitchingState) {
-			((PictureSwitchingState) currentState).onRemovePictureAfter(picture, updateGui);
 		}
 	}
 
@@ -369,11 +358,6 @@ public class MainApp extends Application {
 					+ "The links will be changed accordingly.", content)) {
 				return;
 			}
-		}
-
-		// update GUI
-		if (currentState instanceof PictureSwitchingState) {
-			((PictureSwitchingState) currentState).onRemovePictureBefore(picture);
 		}
 
 		Task<Void> task = new Task<Void>() { // do the long-running moving in another thread!
@@ -432,15 +416,6 @@ public class MainApp extends Application {
 //				Logic.sortPicturesInCollection(newCollection);
 			}
 		};
-		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-				// update GUI
-				if (currentState instanceof PictureSwitchingState) {
-					((PictureSwitchingState) currentState).onRemovePictureAfter(picture, true);
-				}
-			}
-		});
 		new Thread(task).start();
 	}
 

@@ -1,14 +1,24 @@
 package picturegallery.state;
 
+import gallery.GalleryPackage;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
+import javax.ws.rs.NotSupportedException;
+
+import org.eclipse.emf.common.notify.Adapter;
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.impl.AdapterImpl;
+
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
@@ -16,13 +26,14 @@ import picturegallery.action.JumpRightAction;
 import picturegallery.action.RenamePictureAction;
 
 public class SingleCollectionState extends PictureSwitchingState implements StatePrevious {
-	public final SimpleObjectProperty<PictureCollection> currentCollection = new SimpleObjectProperty<>();
+	public final SimpleObjectProperty<PictureCollection> currentCollection;
 	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
 	private final TempCollectionState tempState;
 	private final CollectionState previousState;
 
+	private final Adapter adapterCurrentCollection;
 	private final ImageView iv;
 	private final StackPane root;
 	private final VBox vBox;
@@ -37,6 +48,46 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 
 		tempState = new TempCollectionState(this);
 		tempState.onInit();
+
+		adapterCurrentCollection = new AdapterImpl() {
+			@Override
+			public void notifyChanged(Notification msg) {
+				if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
+					return;
+				}
+				if (msg.getFeature() != GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures()) {
+					return;
+				}
+				switch (msg.getEventType()) {
+				case Notification.ADD:
+					picturesToShow.add((Picture) msg.getNewValue());
+					break;
+				case Notification.ADD_MANY:
+					throw new NotSupportedException(msg.getNewValue().toString());
+				case Notification.REMOVE:
+					picturesToShow.remove(msg.getOldValue());
+					break;
+				case Notification.REMOVE_MANY:
+					throw new NotSupportedException(msg.getOldValue().toString());
+				}
+			}
+		};
+
+		currentCollection = new SimpleObjectProperty<>();
+		currentCollection.addListener(new ChangeListener<PictureCollection>() {
+			@Override
+			public void changed(ObservableValue<? extends PictureCollection> observable,
+					PictureCollection oldValue, PictureCollection newValue) {
+				if (oldValue != null) {
+					oldValue.eAdapters().remove(adapterCurrentCollection);
+					picturesToShow.removeAll(oldValue.getPictures());
+				}
+				if (newValue != null) {
+					newValue.eAdapters().add(adapterCurrentCollection);
+					picturesToShow.addAll(newValue.getPictures());
+				}
+			}
+		});
 
 		// Stack Pane
 		root = new StackPane();
@@ -78,26 +129,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	@Override
 	public Region getRootNode() {
     	return root;
-	}
-
-	@Override
-	public int getSize() {
-		return currentCollection.get().getPictures().size();
-	}
-
-	@Override
-	public Picture getPictureAtIndex(int index) {
-		return currentCollection.get().getPictures().get(index);
-	}
-
-	@Override
-	public int getIndexOfPicture(Picture picture) {
-		return currentCollection.get().getPictures().indexOf(picture);
-	}
-
-	@Override
-	public boolean containsPicture(Picture pic) {
-		return currentCollection.get().getPictures().contains(pic);
 	}
 
 	@Override
@@ -161,20 +192,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	public void onClose() {
 		super.onClose();
 		tempState.onClose();
-	}
-
-	@Override
-	public void onRemovePictureBefore(Picture pictureToRemoveLater) {
-		super.onRemovePictureBefore(pictureToRemoveLater);
-
-		tempState.onRemovePictureBefore(pictureToRemoveLater);
-	}
-
-	@Override
-	public void onRemovePictureAfter(Picture removedPicture, boolean updateGui) {
-		super.onRemovePictureAfter(removedPicture, updateGui);
-
-		tempState.onRemovePictureAfter(removedPicture, updateGui);
 	}
 
 	@Override

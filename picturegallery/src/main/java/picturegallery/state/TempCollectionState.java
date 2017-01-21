@@ -3,82 +3,16 @@ package picturegallery.state;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
-import picturegallery.Logic;
 
 public class TempCollectionState extends PictureSwitchingState {
-	public final ObservableList<Picture> tempCollection;
-
 	private final PictureSwitchingState previousState;
 	private TempCollectionState tempState;
 
 	public TempCollectionState(PictureSwitchingState previousState) {
 		super();
 		this.previousState = previousState;
-
-		tempCollection = FXCollections.observableArrayList();
-		tempCollection.addListener(new ListChangeListener<Picture>() {
-			@Override
-			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
-				boolean update = false;
-				// update the picture label, if the currently shown picture will be added to or removed from the temp collection(s)
-				while (c.next()) {
-					if (c.wasPermutated()) {
-						// => this case will never happen! TODO: doch, wenn das Bild umbenannt wird!
-						// for (int i = c.getFrom(); i < c.getTo(); ++i) {
-							// permutate ... here: do NOTHING!
-						//}
-					} else if (c.wasUpdated()) {
-						// => this case will never happen!
-						// update item ...
-					} else {
-						Picture currentPictureShown = previousState.getCurrentPicture();
-						if (currentPictureShown == null) {
-							return;
-						}
-						for (Picture remitem : c.getRemoved()) {
-							if (remitem == currentPictureShown) {
-								update = true;
-								break;
-							}
-						}
-						for (Picture additem : c.getAddedSubList()) {
-							if (additem == currentPictureShown) {
-								update = true;
-								break;
-							}
-						}
-					}
-				}
-				if (update) {
-					previousState.updatePictureLabel();
-				}
-			}
-		});
-	}
-
-	@Override
-	public int getSize() {
-		return tempCollection.size();
-	}
-
-	@Override
-	public Picture getPictureAtIndex(int index) {
-		return tempCollection.get(index);
-	}
-
-	@Override
-	public int getIndexOfPicture(Picture picture) {
-		return tempCollection.indexOf(picture);
-	}
-
-	@Override
-	public boolean containsPicture(Picture pic) {
-		return tempCollection.contains(pic);
 	}
 
 	@Override
@@ -152,38 +86,16 @@ public class TempCollectionState extends PictureSwitchingState {
 		}
 	}
 
-	@Override
-	public void onRemovePictureBefore(Picture pictureToRemoveLater) {
-		super.onRemovePictureBefore(pictureToRemoveLater);
-
-		tempCollection.remove(pictureToRemoveLater);
-		if (tempState != null) {
-			tempState.onRemovePictureBefore(pictureToRemoveLater);
-		}
-	}
-
-	@Override
-	public void onRemovePictureAfter(Picture removedPicture, boolean updateGui) {
-		super.onRemovePictureAfter(removedPicture, updateGui);
-
-		if (tempState != null) {
-			tempState.onRemovePictureAfter(removedPicture, updateGui);
-		}
-	}
-
 	public void addPicture(Picture picture) {
-		// TODO: wenn das Bild umbenannt wird, ändert sich hier in Temp bislang NICHT die Reihenfolge!!
-		tempCollection.add(Logic.getIndexForPictureInsertion(tempCollection, picture), picture);
+		picturesToShow.add(picture);
 	}
 
 	public void removePicture(Picture picture) {
-		tempCollection.remove(picture);
+		picturesToShow.remove(picture);
 	}
 
 	public void clearPictures() {
-		while (!tempCollection.isEmpty()) {
-			removePicture(tempCollection.get(0));
-		}
+		picturesToShow.clear();
 	}
 
 	public PictureSwitchingState getPreviousState() {
