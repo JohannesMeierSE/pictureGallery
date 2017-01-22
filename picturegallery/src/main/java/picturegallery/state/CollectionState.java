@@ -20,6 +20,7 @@ import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
+import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ClearLinkCollectionsAction;
 import picturegallery.action.CreateNewCollection;
@@ -32,6 +33,7 @@ import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
 import picturegallery.persistency.SubCollectionCallback;
 import picturegallery.ui.RecursiveTreeItem;
+import picturegallery.ui.RecursiveTreeItem.PositionCalculator;
 
 public class CollectionState extends State {
 	protected final TreeTableView<PictureCollection> table;
@@ -177,8 +179,19 @@ public class CollectionState extends State {
 		});
 		table.getColumns().add(linkCol);
 
-		TreeItem<PictureCollection> rootItem =
+		RecursiveTreeItem<PictureCollection> rootItem =
 				new RecursiveTreeItem<PictureCollection>(MainApp.get().getBaseCollection(), new SubCollectionCallback());
+		rootItem.setPositionFactory(new PositionCalculator<PictureCollection>() {
+			@Override
+			public int calculate(List<TreeItem<PictureCollection>> items, PictureCollection itemToAdd) {
+				int result = 0;
+				while (result < items.size()
+						&& Logic.getComparable(items.get(result).getValue()).compareTo(Logic.getComparable(itemToAdd)) < 0) {
+					result++;
+				}
+				return result;
+			}
+		});
 		rootItem.setExpanded(true);
 		table.setShowRoot(true);
 		table.setRoot(rootItem);

@@ -27,7 +27,7 @@ public class ShowSingleCollectionAction extends Action {
 
 	@Override
 	public KeyCode getKey() {
-		return KeyCode.ENTER;
+		return KeyCode.S;
 	}
 
 	@Override

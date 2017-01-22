@@ -1231,8 +1231,8 @@ public class Logic {
 		return result;
 	}
 
-	private static String getComparable(PathElement picture) {
-		return picture.getName().toLowerCase();
+	public static String getComparable(PathElement picture) {
+		return picture.getName().toUpperCase().toLowerCase();
 	}
 
 	public interface PictureProvider {

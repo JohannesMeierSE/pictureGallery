@@ -66,7 +66,6 @@ public class LinkPictureAction extends Action {
 			newLink.setRealPicture(linkedPicture);
 
 			int index = Logic.getIndexForPictureInsertion(linktoCollection.getPictures(), newLink);
-			System.out.println("index: " + index); // TODO: index ist richtig, aber das Einfügen passiert trotzdem am Ende!!!
 			domain.getCommandStack().execute(AddCommand.create(domain,
 					linktoCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), newLink,
 					index));

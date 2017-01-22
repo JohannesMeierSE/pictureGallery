@@ -34,12 +34,15 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 import javafx.util.Callback;
 
+import javax.ws.rs.NotSupportedException;
+
 public class RecursiveTreeItem<T> extends TreeItem<T> {
 	private Callback<T, ObservableList<T>> childrenFactory;
 
-	public RecursiveTreeItem(Callback<T, ObservableList<T>> func) {
-		this(null, func);
+	public interface PositionCalculator<T> {
+		public int calculate(List<TreeItem<T>> items, T itemToAdd);
 	}
+	private PositionCalculator<T> positionFactory;
 
 	public RecursiveTreeItem(final T value, Callback<T, ObservableList<T>> func) {
 		this(value, (Node) null, func);
@@ -78,8 +81,11 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 		final ObservableList<T> children = childrenFactory.call(value);
 
 		// initialization of the currently available children
-		children.forEach(child -> RecursiveTreeItem.this.getChildren().add(
-				new RecursiveTreeItem<>(child, getGraphic(), childrenFactory)));
+		children.forEach(child -> {
+				RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(child, getGraphic(), childrenFactory);
+				newElement.setPositionFactory(positionFactory);
+				getChildren().add(getAddPosition(value), newElement);
+			});
 
 		children.addListener((ListChangeListener<T>) change -> {
 			while (change.next()) {
@@ -90,7 +96,24 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
                     for (int i = change.getFrom(); i < change.getTo(); ++i) {
                          // TODO permutate
                     }
+					throw new NotSupportedException();
                 }
+
+				// it is important to remove first, and to add after that, to handle movements (?)
+				if (change.wasRemoved()) {
+					change.getRemoved().forEach(
+							t -> {
+								final List<TreeItem<T>> itemsToRemove = RecursiveTreeItem.this
+										.getChildren()
+										.stream()
+										.filter(treeItem -> treeItem.getValue().equals(t))
+										.collect(Collectors.toList());
+								
+								RecursiveTreeItem.this.getChildren().removeAll(itemsToRemove);
+								
+								removeChildrenListener(t);
+							});
+				}
 
 				if (change.wasAdded()) {
 					change.getAddedSubList().forEach(
@@ -102,28 +125,26 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 									.collect(Collectors.toList());
 
 							if (itemsAlreadyAvailable.isEmpty()) {
-								RecursiveTreeItem.this.getChildren().add(
-										new RecursiveTreeItem<>(t, getGraphic(), childrenFactory));
+								RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(t, getGraphic(), childrenFactory);
+								newElement.setPositionFactory(positionFactory);
+								getChildren().add(getAddPosition(t), newElement);
 							}
-						});
-				}
-
-				if (change.wasRemoved()) {
-					change.getRemoved().forEach(
-						t -> {
-							final List<TreeItem<T>> itemsToRemove = RecursiveTreeItem.this
-									.getChildren()
-									.stream()
-									.filter(treeItem -> treeItem.getValue().equals(t))
-									.collect(Collectors.toList());
-
-							RecursiveTreeItem.this.getChildren().removeAll(itemsToRemove);
-
-							removeChildrenListener(t);
 						});
 				}
 
 			}
 		});
+	}
+
+	private int getAddPosition(T valueToAdd) {
+		if (positionFactory == null) {
+			return getChildren().size();
+		} else {
+			return positionFactory.calculate(getChildren(), valueToAdd);
+		}
+	}
+
+	public void setPositionFactory(PositionCalculator<T> positionFactory) {
+		this.positionFactory = positionFactory;
 	}
 }
