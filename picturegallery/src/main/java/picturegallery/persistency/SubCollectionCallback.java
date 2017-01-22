@@ -63,7 +63,7 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 				}
 			}
 		};
-		param.eAdapters().add(adapter); // TODO: wann geschieht das Abmelden??
+		param.eAdapters().add(adapter); // removing these adapters will never happen, because CollectionState will never be closed!
 
 		return result;
 	}

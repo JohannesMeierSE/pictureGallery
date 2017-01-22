@@ -73,8 +73,10 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 	}
 
 	private void removeChildrenListener(T value) {
+		@SuppressWarnings("unused")
 		final ObservableList<T> children = childrenFactory.call(value);
-		// TODO remove the listener of the children => the factory/callback has to cache the returned ObservableList!
+		// remove the listener of the children => the factory/callback has to cache the returned ObservableList!
+		// this will never be done, because the CollectionState will never be closed!
 	}
 
 	private void addChildrenListener(T value) {
@@ -94,7 +96,7 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 
 				if (change.wasPermutated()) {
                     for (int i = change.getFrom(); i < change.getTo(); ++i) {
-                         // TODO permutate
+                         // permutate
                     }
 					throw new NotSupportedException();
                 }
