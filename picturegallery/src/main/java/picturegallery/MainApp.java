@@ -133,9 +133,10 @@ public class MainApp extends Application {
 
     	// https://stackoverflow.com/questions/23163189/keylistener-javafx
     	// https://stackoverflow.com/questions/16834997/cannot-listen-to-keyevent-in-javafx
-    	scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+    	EventHandler<KeyEvent> keyHandler = new EventHandler<KeyEvent>() {
     		@Override
     		public void handle(KeyEvent event) {
+    			// will be called from the UI-Thread => no nesting (while handling one key, another key appears) of KeyEvents is possible!
     			int numberListeners = 0;
     			for (Action action : getAllCurrentActions()) {
     				if (action.getKey().equals(event.getCode())) {
@@ -146,11 +147,21 @@ public class MainApp extends Application {
     					}
     				}
     			}
+
     			if (numberListeners > 1) {
     				throw new IllegalStateException();
     			}
     		}
-    	});
+    	};
+    	/*
+    	 * general information about event pprocessing: https://docs.oracle.com/javafx/2/events/processing.htm
+    	 * handling vs. filtering: does not make a difference here!
+    	 * scene.addEventFilter(KeyEvent.KEY_RELEASED, keyHandler);
+    	 * the next possibility does not work because: the default buttons do not consume the KeyReleased events, only the KeyPressed events in dialogs!
+    	 * as described here: https://stackoverflow.com/questions/32300028/javafx-prevent-enter-key-propogating-from-default-button-action
+    	 * scene.setOnKeyReleased(keyHandler);
+    	 */
+		scene.setOnKeyPressed(keyHandler);
 
     	initCache();
 
@@ -477,5 +488,6 @@ public class MainApp extends Application {
 
     	newNode.minHeightProperty().bind(root.minHeightProperty());
     	newNode.minWidthProperty().bind(root.minWidthProperty());
+		newNode.requestFocus();
 	}
 }
