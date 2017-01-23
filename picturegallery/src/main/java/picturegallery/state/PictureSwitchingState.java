@@ -51,6 +51,7 @@ public abstract class PictureSwitchingState extends State {
 	private final Adapter adapterCurrentPicture;
 
 	protected TempCollectionState tempState;
+	private final InvalidationListener currentPictureInvalidationListener;
 
 	public abstract PictureCollection getCurrentCollection();
 	protected abstract String getCollectionDescription();
@@ -122,7 +123,7 @@ public abstract class PictureSwitchingState extends State {
 			}
 		};
 
-		currentPicture.addListener(new InvalidationListener() {
+		currentPictureInvalidationListener = new InvalidationListener() {
 			@Override
 			public void invalidated(Observable observable) {
 				// picture changed => show this picture in ImageView
@@ -137,8 +138,8 @@ public abstract class PictureSwitchingState extends State {
 				updatePictureLabel();
 				updateMetadataLabel();
 			}
-		});
-		// TODO: warum wird initial das Bild nicht aktualisiert??
+		};
+		currentPicture.addListener(currentPictureInvalidationListener);
 		currentPicture.addListener(new ChangeListener<Picture>() {
 			@Override
 			public void changed(ObservableValue<? extends Picture> observable, Picture oldValue, Picture newValue) {
@@ -207,7 +208,12 @@ public abstract class PictureSwitchingState extends State {
 		updateIndexLabel();
 
 		Picture newPicture = getPictureAtIndex(indexCurrentCollection);
-		currentPicture.set(newPicture); // => requests the image and updates the labels by listeners!
+		if (newPicture != currentPicture.get()) {
+			currentPicture.set(newPicture); // => requests the image and updates the labels by listeners!
+		} else {
+			// setting the current value again => no change => call the listener directly!
+			currentPictureInvalidationListener.invalidated(currentPicture);
+		}
 
 		// pre-load next pictures
 		if (preload && isVisible()) {
@@ -365,7 +371,7 @@ public abstract class PictureSwitchingState extends State {
 		super.onClose();
 		picturesToShow.clear();
 		currentPicture.set(null);
-		if (tempState != null) {
+		if (tempState != null && !tempState.wasClosed()) {
 			tempState.onClose();
 		}
 	}

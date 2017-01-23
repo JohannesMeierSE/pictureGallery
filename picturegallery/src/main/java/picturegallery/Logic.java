@@ -1293,6 +1293,7 @@ public class Logic {
 									image.setImage(value);
 								} else {
 									// ignore the result, because another picture should be shown
+									System.err.println("ignored the update!");
 								}
 							}
 						});
