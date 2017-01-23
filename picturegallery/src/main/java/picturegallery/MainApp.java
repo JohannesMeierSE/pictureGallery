@@ -175,7 +175,9 @@ public class MainApp extends Application {
 					if (s.isVisible()) {
 						s.onExit(null);
 					}
-					s.onClose();
+					if (!s.wasClosed()) {
+						s.onClose();
+					}
 				}
 
 				// save model afterwards => for debugging purpose

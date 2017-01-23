@@ -18,6 +18,8 @@ import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
+import picturegallery.Logic;
+
 public class SubCollectionCallback implements Callback<PictureCollection, ObservableList<PictureCollection>> {
 	/**
 	 * Caches the called/returned lists within one instance of this {@link SubCollectionCallback}:
@@ -47,20 +49,25 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 				if (msg.getFeature() != GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections()) {
 					return;
 				}
-				// only sub/super collections are relevant:
-				Object newValue = msg.getNewValue();
-				if (msg.getEventType() == Notification.ADD) {
-					result.add(msg.getPosition(), (PictureCollection) newValue);
-				} else if (msg.getEventType() == Notification.ADD_MANY) {
-					throw new NotSupportedException();
-				} else if (msg.getEventType() == Notification.REMOVE) {
-					result.remove(msg.getOldValue());
-				} else if (msg.getEventType() == Notification.REMOVE_MANY) {
-					throw new NotSupportedException();
-				} else if (msg.getEventType() == Notification.MOVE) {
-					result.remove(newValue);
-					result.add(msg.getPosition(), (PictureCollection) newValue);
-				}
+				Logic.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						// only sub/super collections are relevant:
+						Object newValue = msg.getNewValue();
+						if (msg.getEventType() == Notification.ADD) {
+							result.add(msg.getPosition(), (PictureCollection) newValue);
+						} else if (msg.getEventType() == Notification.ADD_MANY) {
+							throw new NotSupportedException();
+						} else if (msg.getEventType() == Notification.REMOVE) {
+							result.remove(msg.getOldValue());
+						} else if (msg.getEventType() == Notification.REMOVE_MANY) {
+							throw new NotSupportedException();
+						} else if (msg.getEventType() == Notification.MOVE) {
+							result.remove(newValue);
+							result.add(msg.getPosition(), (PictureCollection) newValue);
+						}
+					}
+				});
 			}
 		};
 		param.eAdapters().add(adapter); // removing these adapters will never happen, because CollectionState will never be closed!

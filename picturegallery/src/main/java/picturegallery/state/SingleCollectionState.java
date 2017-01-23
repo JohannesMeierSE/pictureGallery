@@ -19,6 +19,7 @@ import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
+import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
@@ -48,27 +49,32 @@ public class SingleCollectionState extends PictureSwitchingState {
 				if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
 					return;
 				}
-				// changes of the name of this collection
-				if (msg.getFeature() == GalleryPackage.eINSTANCE.getPathElement_Name()) {
-					updateCollectionLabel();
-					return;
-				}
-				// add or remove pictures
-				if (msg.getFeature() != GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures()) {
-					return;
-				}
-				switch (msg.getEventType()) {
-				case Notification.ADD:
-					picturesToShow.add((Picture) msg.getNewValue());
-					break;
-				case Notification.ADD_MANY:
-					throw new NotSupportedException(msg.getNewValue().toString());
-				case Notification.REMOVE:
-					picturesToShow.remove(msg.getOldValue());
-					break;
-				case Notification.REMOVE_MANY:
-					throw new NotSupportedException(msg.getOldValue().toString());
-				}
+				Logic.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						// changes of the name of this collection
+						if (msg.getFeature() == GalleryPackage.eINSTANCE.getPathElement_Name()) {
+							updateCollectionLabel();
+							return;
+						}
+						// add or remove pictures
+						if (msg.getFeature() != GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures()) {
+							return;
+						}
+						switch (msg.getEventType()) {
+						case Notification.ADD:
+							picturesToShow.add((Picture) msg.getNewValue());
+							break;
+						case Notification.ADD_MANY:
+							throw new NotSupportedException(msg.getNewValue().toString());
+						case Notification.REMOVE:
+							picturesToShow.remove(msg.getOldValue());
+							break;
+						case Notification.REMOVE_MANY:
+							throw new NotSupportedException(msg.getOldValue().toString());
+						}
+					}
+				});
 			}
 		};
 

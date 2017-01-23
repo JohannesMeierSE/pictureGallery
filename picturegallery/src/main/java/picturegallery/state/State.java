@@ -50,7 +50,7 @@ public abstract class State {
 	public final boolean isVisible() {
 		return visible;
 	}
-	public final boolean isWasClosed() {
+	public final boolean wasClosed() {
 		return wasClosed;
 	}
 

@@ -14,6 +14,8 @@ import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
+import picturegallery.Logic;
+
 public class ObservablePictureCollection implements ObservableValue<PictureCollection> {
 	private final PictureCollection collection;
 	private final List<ChangeListener<? super PictureCollection>> listenerChange;
@@ -62,7 +64,13 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 					return;
 				}
 				if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
-					update();
+					Logic.runOnUiThread(new Runnable() {
+						// I am not sure, if this is really required ...
+						@Override
+						public void run() {
+							update();
+						}
+					});
 				}
 			}
 		};

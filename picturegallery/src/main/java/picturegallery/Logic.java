@@ -1271,16 +1271,12 @@ public class Logic {
 		RealPicture realCurrentPicture = provider.get();
 		if (realCurrentPicture == null) {
 			// show no picture
-			if (Platform.isFxApplicationThread()) {
-				image.setImage(null);
-			} else {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						image.setImage(null);
-					}
-				});
-			}
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					image.setImage(null);
+				}
+			});
 		} else {
 			cache.request(realCurrentPicture, new CallBack<RealPicture, Image>() {
 				@Override
@@ -1303,6 +1299,14 @@ public class Logic {
 					}
 				}
 			});
+		}
+	}
+
+	public static void runOnUiThread(Runnable run) {
+		if (Platform.isFxApplicationThread()) {
+			run.run();
+		} else {
+			Platform.runLater(run);
 		}
 	}
 }

@@ -9,7 +9,6 @@ import gallery.RealPictureCollection;
 
 import java.util.Comparator;
 
-import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
@@ -113,18 +112,13 @@ public abstract class PictureSwitchingState extends State {
 				}
 				//if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
 				// TODO: wird so zu viel durchgelassen?
-				if (Platform.isFxApplicationThread()) {
-					updatePictureLabel();
-					updateMetadataLabel();
-				} else {
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							updatePictureLabel();
-							updateMetadataLabel();
-						}
-					});
-				}
+				Logic.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						updatePictureLabel();
+						updateMetadataLabel();
+					}
+				});
 			}
 		};
 
