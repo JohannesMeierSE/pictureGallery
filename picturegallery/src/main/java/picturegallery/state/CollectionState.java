@@ -42,7 +42,8 @@ public class CollectionState extends State {
 
 	public CollectionState() {
 		super();
-		singleState = new SingleCollectionState(this);
+		singleState = new SingleCollectionState();
+		singleState.setNextAfterClosed(this);
 		singleState.onInit();
 
 		table = new TreeTableView<>();
@@ -204,6 +205,7 @@ public class CollectionState extends State {
 
 	@Override
 	public void onInit() {
+		super.onInit();
 		registerAction(new ShowSingleCollectionAction());
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());
@@ -215,6 +217,7 @@ public class CollectionState extends State {
 
 	@Override
 	public void onClose() {
+		super.onClose();
 		table.setRoot(null);
 	}
 

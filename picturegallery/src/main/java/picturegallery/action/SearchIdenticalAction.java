@@ -44,18 +44,23 @@ public class SearchIdenticalAction extends Action {
 				if (result.isEmpty()) {
 					return;
 				}
-				MultiPictureState nextState = new MultiPictureState(state);
+				MultiPictureState nextState = new MultiPictureState();
+				nextState.setNextAfterClosed(state);
 				nextState.onInit();
 				nextState.registerAction(Action.createTempAction(KeyCode.D, "delete duplicated identical pictures", new ActionRunnable() {
 					@Override
 					public void run(State currentState) {
-						// TODO: eigentlich müsste vorher zu State geschlossen werden, damit keine (nicht mehr vorhandenen!!) Pictures nachgeladen werden können!!
 						// the key will not be deleted => one picture will be kept!!
 						if (!Logic.askForConfirmation("Delete duplicated items?", "In the collection " + selection
 								+ ", there are " + result.size() + " pictures with duplicates!",
 								"Do you want to delete all the duplicated pictures?")) {
 							return;
 						}
+
+						// close the state => prevents loading removed pictures again!
+						MainApp.get().switchToPreviousState();
+						nextState.onClose();
+
 						for (Entry<Picture, List<Picture>> e : result.entrySet()) {
 							for (Picture picToDelete : e.getValue()) {
 								MainApp.get().deletePicture(picToDelete, false);

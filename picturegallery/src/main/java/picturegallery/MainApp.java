@@ -51,7 +51,6 @@ import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
 
-// TODO: aus irgendeinem seltsamen Grund werden alle Dateien geändert "Last Modified Date" zeigt immer auf das Datum beim Öffnen!?
 public class MainApp extends Application {
 	public final static int SPACE = 25;
 	public final static int PRE_LOAD = 5;
@@ -68,7 +67,7 @@ public class MainApp extends Application {
 	private ObjectCache<RealPicture, Image> imageCache;
 	private ObjectCache<RealPicture, Image> imageCacheSmall;
 
-	private State currentState;
+	private final List<State> stateStack = new ArrayList<>();
 	private final List<Action> globalActions = new ArrayList<>();
 	public SimpleBooleanProperty labelsVisible = new SimpleBooleanProperty(true);
 
@@ -143,7 +142,7 @@ public class MainApp extends Application {
     					if (action.requiresShift() == event.isShiftDown()) {
     						numberListeners++;
     						System.out.println("run " + action.toString());
-    						action.run(currentState);
+    						action.run(getCurrentState());
     					}
     				}
     			}
@@ -172,8 +171,11 @@ public class MainApp extends Application {
 			@Override
 			public void handle(WindowEvent event) {
 				stopCache();
-				if (currentState != null) {
-					currentState.onClose();
+				for (State s : stateStack) {
+					if (s.isVisible()) {
+						s.onExit(null);
+					}
+					s.onClose();
 				}
 
 				// save model afterwards => for debugging purpose
@@ -219,7 +221,7 @@ public class MainApp extends Application {
 
     private List<Action> getAllCurrentActions() {
     	List<Action> newList = new ArrayList<>();
-    	// TODO: theoretisch könnte man hier beim Wechsel noch synchronized usw. nutzen...
+    	State currentState = getCurrentState();
     	if (currentState != null) {
     		newList.addAll(currentState.getActions());
     	}
@@ -450,26 +452,42 @@ public class MainApp extends Application {
 		return modelDomain;
 	}
 
+	public State getCurrentState() {
+		if (stateStack.isEmpty()) {
+			return null;
+		}
+		return stateStack.get(stateStack.size() - 1);
+	}
+
+	private State getPreviousState() {
+		if (stateStack.size() <= 1) {
+			return null;
+		}
+		return stateStack.get(stateStack.size() - 2);
+	}
+
 	public void switchState(State newState) {
 		if (newState == null) {
 			throw new IllegalArgumentException();
 		}
-		if (newState == currentState) {
+		final State previousState = getCurrentState();
+		if (newState == previousState) {
 			throw new IllegalArgumentException();
 		}
 
-		// switch state
-		if (currentState != null) {
-			currentState.onExit(newState);
-			Region oldNode = currentState.getRootNode();
+		// handle "previous" state
+		if (previousState != null) {
+			previousState.onExit(newState);
+			Region oldNode = previousState.getRootNode();
 			root.getChildren().remove(oldNode);
 
 			oldNode.minHeightProperty().unbind();
 			oldNode.minWidthProperty().unbind();
 		}
-		State previous = currentState;
-		currentState = newState;
-		newState.onEntry(previous);
+
+		// switch state
+		stateStack.add(stateStack.size(), newState);
+		newState.onEntry(newState);
 
 		// update GUI: keys
 		String newKeys = "";
@@ -483,11 +501,21 @@ public class MainApp extends Application {
     	labelKeys.setText(newKeys);
 
     	// update GUI: use root node of the new state
-    	Region newNode = currentState.getRootNode();
+    	Region newNode = newState.getRootNode();
     	root.getChildren().add(0, newNode);
 
     	newNode.minHeightProperty().bind(root.minHeightProperty());
     	newNode.minWidthProperty().bind(root.minWidthProperty());
 		newNode.requestFocus();
+	}
+
+	public void switchToPreviousState() {
+		State current = getCurrentState();
+		if (current == null || current.getNextAfterClosed() == null) {
+			throw new IllegalStateException();
+		}
+		switchState(current.getNextAfterClosed());
+		stateStack.remove(stateStack.size() - 2); // the "current" state should be ignored from now on
+		stateStack.remove(stateStack.size() - 3); // the "previous" state should not added twice
 	}
 }

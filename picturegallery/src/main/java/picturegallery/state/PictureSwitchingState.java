@@ -85,7 +85,12 @@ public abstract class PictureSwitchingState extends State {
 				} else {
 					// picture was removed
 					if (picturesSorted.isEmpty()) {
-						// TODO close this state or show black/empty image
+						if (isVisible()) {
+							// close this state
+							MainApp.get().switchToPreviousState();
+						} else {
+							// do nothing, if this state was already hidden / "onExit"
+						}
 					} else {
 						jumpedBefore();
 						changeIndex(0, true); // statt 0 könnte man auch zum nächsten (noch vorhandenen) Bild springen => ist aber schierig zu berechnen!
@@ -156,7 +161,8 @@ public abstract class PictureSwitchingState extends State {
 	public final TempCollectionState getTempState() {
 		if (tempState == null) {
 			// Lazy initialization prevents infinite loops
-			tempState = new TempCollectionState(this);
+			tempState = new TempCollectionState();
+			tempState.setNextAfterClosed(this);
 			tempState.onInit();
 
 			// the following lines listen to the pictures in the next temp mode to render the current image properly
@@ -348,6 +354,7 @@ public abstract class PictureSwitchingState extends State {
 
 	@Override
 	public void onInit() {
+		super.onInit();
 		registerAction(new NextPictureAction());
 		registerAction(new PreviousPictureAction());
 		registerAction(new JumpFirstAction());
@@ -361,6 +368,7 @@ public abstract class PictureSwitchingState extends State {
 
 	@Override
 	public void onClose() {
+		super.onClose();
 		picturesToShow.clear();
 		currentPicture.set(null);
 		if (tempState != null) {

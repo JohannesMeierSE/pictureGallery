@@ -16,19 +16,17 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 
-public class MultiPictureState extends State implements StatePrevious {
+public class MultiPictureState extends State {
 	public static final double WIDTH = 200.0;
 	public static final double HEIGHT = 100.0;
 	private static final double SPACING = 8.0;
 
-	private final State previousState;
 	public final ObservableList<Picture> pictures;
 	// http://controlsfx.bitbucket.org/org/controlsfx/control/GridView.html
 	private final GridView<Picture> grid;
 
-	public MultiPictureState(State previousState) {
+	public MultiPictureState() {
 		super();
-		this.previousState = previousState;
 
 		pictures = FXCollections.observableArrayList();
 
@@ -77,21 +75,18 @@ public class MultiPictureState extends State implements StatePrevious {
 
 	@Override
 	public void onInit() {
+		super.onInit();
 		registerAction(new ExitSingleCollectionStateAction());
 	}
 
 	@Override
 	public void onClose() {
+		super.onClose();
 		pictures.clear();
 	}
 
 	@Override
 	public Region getRootNode() {
 		return grid;
-	}
-
-	@Override
-	public State getPreviousState() {
-		return previousState;
 	}
 }

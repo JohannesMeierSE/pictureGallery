@@ -7,51 +7,56 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 
 public class TempCollectionState extends PictureSwitchingState {
-	private final PictureSwitchingState previousState;
-
-	public TempCollectionState(PictureSwitchingState previousState) {
+	public TempCollectionState() {
 		super();
-		this.previousState = previousState;
+	}
+
+	private PictureSwitchingState getReal() {
+		if (getNextAfterClosed() instanceof PictureSwitchingState) {
+			return (PictureSwitchingState) getNextAfterClosed();
+		} else {
+			throw new IllegalStateException();
+		}
 	}
 
 	@Override
 	public PictureCollection getCurrentCollection() {
-		return previousState.getCurrentCollection();
+		return getReal().getCurrentCollection();
 	}
 
 	@Override
 	protected String getCollectionDescription() {
-		return "temp collection within (" + previousState.getCollectionDescription() + ")";
+		return "temp collection within (" + getReal().getCollectionDescription() + ")";
 	}
 
 	@Override
 	protected void setLabelIndex(String newText) {
-		previousState.setLabelIndex(newText);
+		getReal().setLabelIndex(newText);
 	}
 
 	@Override
 	protected void setLabelMeta(String newText) {
-		previousState.setLabelMeta(newText);
+		getReal().setLabelMeta(newText);
 	}
 
 	@Override
 	protected void setLabelPictureName(String newText) {
-		previousState.setLabelPictureName(newText);
+		getReal().setLabelPictureName(newText);
 	}
 
 	@Override
 	protected void setLabelCollectionPath(String newText) {
-		previousState.setLabelCollectionPath(newText);
+		getReal().setLabelCollectionPath(newText);
 	}
 
 	@Override
 	protected ImageView getImage() {
-		return previousState.getImage();
+		return getReal().getImage();
 	}
 
 	@Override
 	public Region getRootNode() {
-		return previousState.getRootNode();
+		return getReal().getRootNode();
 	}
 
 	@Override
@@ -67,7 +72,6 @@ public class TempCollectionState extends PictureSwitchingState {
 	@Override
 	public void onClose() {
 		super.onClose();
-
 		clearPictures();
 	}
 
@@ -83,27 +87,23 @@ public class TempCollectionState extends PictureSwitchingState {
 		picturesToShow.clear();
 	}
 
-	public PictureSwitchingState getPreviousState() {
-		return previousState;
-	}
-
 	@Override
 	public RealPictureCollection getMovetoCollection() {
-		return previousState.getMovetoCollection();
+		return getReal().getMovetoCollection();
 	}
 
 	@Override
 	public void setMovetoCollection(RealPictureCollection movetoCollection) {
-		previousState.setMovetoCollection(movetoCollection);
+		getReal().setMovetoCollection(movetoCollection);
 	}
 
 	@Override
 	public RealPictureCollection getLinktoCollection() {
-		return previousState.getLinktoCollection();
+		return getReal().getLinktoCollection();
 	}
 
 	@Override
 	public void setLinktoCollection(RealPictureCollection linktoCollection) {
-		previousState.setLinktoCollection(linktoCollection);
+		getReal().setLinktoCollection(linktoCollection);
 	}
 }

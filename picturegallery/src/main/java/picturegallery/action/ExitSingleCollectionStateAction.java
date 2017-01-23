@@ -3,18 +3,14 @@ package picturegallery.action;
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
 import picturegallery.state.State;
-import picturegallery.state.StatePrevious;
 
 public class ExitSingleCollectionStateAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof StatePrevious)) {
-			throw new IllegalStateException();
+		if (currentState.getNextAfterClosed() != null) {
+			MainApp.get().switchState(currentState.getNextAfterClosed());
 		}
-		StatePrevious state = (StatePrevious) currentState;
-
-		MainApp.get().switchState(state.getPreviousState());
 	}
 
 	@Override

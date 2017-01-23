@@ -25,12 +25,10 @@ import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.RenamePictureAction;
 
-public class SingleCollectionState extends PictureSwitchingState implements StatePrevious {
+public class SingleCollectionState extends PictureSwitchingState {
 	public final SimpleObjectProperty<PictureCollection> currentCollection;
 	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
-
-	private final CollectionState previousState;
 
 	private final Adapter adapterCurrentCollection;
 	private final ImageView iv;
@@ -41,9 +39,8 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 	private final Label labelPictureName;
 	private final Label labelMeta;
 
-	public SingleCollectionState(CollectionState collectionState) {
+	public SingleCollectionState() {
 		super();
-		this.previousState = collectionState;
 
 		adapterCurrentCollection = new AdapterImpl() {
 			@Override
@@ -191,11 +188,6 @@ public class SingleCollectionState extends PictureSwitchingState implements Stat
 		registerAction(new JumpLeftAction());
 		registerAction(new ExitSingleCollectionStateAction());
 		registerAction(new RenamePictureAction());
-	}
-
-	@Override
-	public State getPreviousState() {
-		return previousState;
 	}
 
 	public RealPictureCollection getLinktoCollection() {

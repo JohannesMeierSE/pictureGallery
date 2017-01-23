@@ -22,7 +22,7 @@ public class ShowOrExitTempCollectionAction extends Action {
 		} else if (state instanceof TempCollectionState) {
 
 			// exit and clear TEMP collection
-			MainApp.get().switchState(((TempCollectionState) state).getPreviousState());
+			MainApp.get().switchToPreviousState();
 
 		} else {
 			// do nothing
