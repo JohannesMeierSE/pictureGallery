@@ -106,8 +106,6 @@ public abstract class PathElementImpl extends MinimalEObjectImpl.Container imple
 	 * @generated
 	 */
 	public String getRelativePath() {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 

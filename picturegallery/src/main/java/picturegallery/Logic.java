@@ -60,6 +60,7 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.image.ImageParser;
 import org.apache.tika.parser.jpeg.JpegParser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.command.MoveCommand;
@@ -985,28 +986,43 @@ public class Logic {
 		 */
 
 		RealPicture real = getRealPicture(picture);
-		System.out.println("load next");
-		// TODO: hier die Domain + EMF Commands einsetzen??
+		System.out.println("load next for hash");
 		try {
 			if (!fast) {
 				// https://github.com/pragone/jphash
 				RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
-				real.setHash(hash1 + "");
+				setHashLogic(real, hash1 + "", false);
 			} else {
 				// https://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java
 				FileInputStream fis = new FileInputStream(new File(real.getFullPath()));
 				String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
 				fis.close();
-				real.setHashFast(md5);
+				setHashLogic(real, md5, true);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			real.setHash(NO_HASH);
+			setHashLogic(real, NO_HASH, fast);
 		} catch (Throwable e) {
 			e.printStackTrace();
-			real.setHash(NO_HASH);
+			setHashLogic(real, NO_HASH, fast);
 		}
-		return real.getHash();
+		// return the calculated result
+		if (fast) {
+			return real.getHashFast();
+		} else {
+			return real.getHash();
+		}
+	}
+
+	private static void setHashLogic(RealPicture picture, String hash, boolean fast) {
+		EditingDomain domain = MainApp.get().getModelDomain();
+		final Command set;
+		if (fast) {
+			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getRealPicture_HashFast(), hash);
+		} else {
+			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getRealPicture_Hash(), hash);
+		}
+		domain.getCommandStack().execute(set);
 	}
 
 	public static double getSimilarity(Picture p1, Picture p2, boolean fast) {

@@ -140,8 +140,6 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * @generated
 	 */
 	public Metadata getMetadata() {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
@@ -151,8 +149,6 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * @generated
 	 */
 	public String getHash() {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
@@ -162,8 +158,6 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * @generated
 	 */
 	public String getHashFast() {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
