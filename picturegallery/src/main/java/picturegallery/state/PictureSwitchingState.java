@@ -93,7 +93,7 @@ public abstract class PictureSwitchingState extends State {
 						}
 					} else {
 						jumpedBefore();
-						changeIndex(0, true); // statt 0 könnte man auch zum nächsten (noch vorhandenen) Bild springen => ist aber schierig zu berechnen!
+						changeIndex(0, true); // TODO statt 0 könnte man auch zum nächsten (noch vorhandenen) Bild springen => ist aber schierig zu berechnen!
 					}
 				}
 			}
@@ -108,11 +108,15 @@ public abstract class PictureSwitchingState extends State {
 		adapterCurrentPicture = new AdapterImpl() {
 			@Override
 			public void notifyChanged(Notification msg) {
+				// not interesting
 				if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
 					return;
 				}
-				//if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
-				// TODO: wird so zu viel durchgelassen?
+				// moving the picture around will be detected by listening to the collection parent itself in SingleCollectionState!
+				if (msg.getEventType() == Notification.MOVE) {
+					return;
+				}
+				// all other changes may have an impact on the rendering:
 				Logic.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -167,10 +171,14 @@ public abstract class PictureSwitchingState extends State {
 					if (currentPicture.get() == null) {
 						return;
 					}
+					boolean change = false;
 					while (c.next()) {
 						if (c.getAddedSubList().contains(currentPicture.get()) || c.getRemoved().contains(currentPicture.get())) {
-							updatePictureLabel();
+							change = true;
 						}
+					}
+					if (change) {
+						updatePictureLabel();
 					}
 				}
 			});

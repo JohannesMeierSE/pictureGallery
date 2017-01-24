@@ -50,7 +50,7 @@ public class CollectionState extends State {
 		table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
 		TreeTableColumn<PictureCollection, PictureCollection> nameCol = new TreeTableColumn<>("Collection name");
-		nameCol.setEditable(false);
+		setupColumn(nameCol);
 		nameCol.setPrefWidth(250.0);
 		nameCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
@@ -91,7 +91,7 @@ public class CollectionState extends State {
 		table.getColumns().add(nameCol);
 
 		TreeTableColumn<PictureCollection, PictureCollection> sizeRealPicturesCol = new TreeTableColumn<>("Real Pictures");
-		sizeRealPicturesCol.setEditable(false);
+		setupColumn(sizeRealPicturesCol);
 		sizeRealPicturesCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
@@ -121,7 +121,7 @@ public class CollectionState extends State {
 		table.getColumns().add(sizeRealPicturesCol);
 
 		TreeTableColumn<PictureCollection, PictureCollection> sizeLinkedPicturesCol = new TreeTableColumn<>("Linked Pictures");
-		sizeLinkedPicturesCol.setEditable(false);
+		setupColumn(sizeLinkedPicturesCol);
 		sizeLinkedPicturesCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
@@ -151,7 +151,7 @@ public class CollectionState extends State {
 		table.getColumns().add(sizeLinkedPicturesCol);
 
 		TreeTableColumn<PictureCollection, PictureCollection> linkCol = new TreeTableColumn<>("Links");
-		linkCol.setEditable(false);
+		setupColumn(linkCol);
 		linkCol.setPrefWidth(300.0);
 		linkCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
@@ -196,6 +196,11 @@ public class CollectionState extends State {
 		rootItem.setExpanded(true);
 		table.setShowRoot(true);
 		table.setRoot(rootItem);
+	}
+
+	private void setupColumn(TreeTableColumn<PictureCollection, PictureCollection> column) {
+		column.setEditable(false);
+		column.setSortable(false);
 	}
 
 	@Override

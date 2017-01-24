@@ -92,7 +92,6 @@ public class RenamePictureAction extends Action {
 				picture.getCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(),
 				picture, Logic.getIndexForPictureAtWrongPositionMove(
 						picture.getCollection().getPictures(), picture)));
-		// TODO: check in SinglePictureState and TempState!!
 	}
 
 	@Override

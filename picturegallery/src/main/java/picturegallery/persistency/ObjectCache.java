@@ -203,7 +203,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 				if (index >= 0) {
 					requested.remove(index);
 				} else {
-					// TODO: was ist mit gerade ladenden Objekten, die entfernt werden sollen??
+					// the ObjectCache is currently loading the element to remove => do not interrupt loading => reduces possible errors
 				}
 			}
 		}
