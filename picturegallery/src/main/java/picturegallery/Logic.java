@@ -33,6 +33,7 @@ import java.util.Optional;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -1308,6 +1309,21 @@ public class Logic {
 			run.run();
 		} else {
 			Platform.runLater(run);
+		}
+	}
+
+	public static void runNotOnUiThread(Runnable run) {
+		if (Platform.isFxApplicationThread()) {
+			Task<Void> task = new Task<Void>() {
+				@Override
+				protected Void call() throws Exception {
+					run.run();
+					return null;
+				}
+			};
+	        new Thread(task).start();
+		} else {
+			run.run();
 		}
 	}
 }

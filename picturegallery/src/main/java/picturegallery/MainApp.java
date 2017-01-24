@@ -290,16 +290,22 @@ public class MainApp extends Application {
 		};
 	}
 
-	public void deletePicture(Picture picture, boolean updateGui) {
+	/**
+	 * Removes the given picture in file system and in the EMF model completely.
+	 * This method do not uses threads.
+	 * Therefore, the caller of this method has to ensure, that the thread handling is correct.
+	 * @param picture
+	 */
+	public void deletePicture(Picture picture) {
 		// real picture => remove all linked pictures, too!
 		if (picture instanceof RealPicture) {
 			RealPicture realToDelete = (RealPicture) picture;
 			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
-				deletePicture(linked, false);
+				deletePicture(linked);
 			}
 		}
 
-		// delete file in file system => TODO: do that in new thread??
+		// delete file in file system
 		try {
 			Files.delete(Paths.get(picture.getFullPath()));
 		} catch (IOException e) {

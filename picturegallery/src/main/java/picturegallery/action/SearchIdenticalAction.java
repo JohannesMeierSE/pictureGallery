@@ -61,11 +61,16 @@ public class SearchIdenticalAction extends Action {
 						MainApp.get().switchToPreviousState();
 						nextState.onClose();
 
-						for (Entry<Picture, List<Picture>> e : result.entrySet()) {
-							for (Picture picToDelete : e.getValue()) {
-								MainApp.get().deletePicture(picToDelete, false);
+						Logic.runNotOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								for (Entry<Picture, List<Picture>> e : result.entrySet()) {
+									for (Picture picToDelete : e.getValue()) {
+										MainApp.get().deletePicture(picToDelete);
+									}
+								}
 							}
-						}
+						});
 					}
 				}));
 				List<Picture> picturesToShow = new ArrayList<>();
