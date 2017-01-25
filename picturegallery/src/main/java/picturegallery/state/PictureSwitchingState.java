@@ -7,7 +7,8 @@ import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
 
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -17,7 +18,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.scene.image.ImageView;
 
 import org.eclipse.emf.common.notify.Adapter;
@@ -36,6 +36,8 @@ import picturegallery.action.MovePictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
+import picturegallery.persistency.ObservablePicture;
+import picturegallery.persistency.SpecialSortedList;
 
 /**
  * This state shows one picture out of a list of (sorted) pictures.
@@ -43,7 +45,7 @@ import picturegallery.action.ShowOrExitTempCollectionAction;
  */
 public abstract class PictureSwitchingState extends State {
 	protected final ObservableList<Picture> picturesToShow;
-	protected final SortedList<Picture> picturesSorted;
+	protected final SpecialSortedList<Picture> picturesSorted;
 	protected final SimpleObjectProperty<Picture> currentPicture;
 	protected int indexCurrentCollection;
 
@@ -74,7 +76,19 @@ public abstract class PictureSwitchingState extends State {
 		indexCurrentCollection = -1;
 		picturesToShow = FXCollections.observableArrayList();
 
-		picturesSorted = new SortedList<>(picturesToShow);
+		picturesSorted = new SpecialSortedList<Picture>(picturesToShow, Logic.createComparatorPictures()) {
+			private Map<Picture, ObservableValue<Picture>> map = new HashMap<>();
+
+			@Override
+			protected ObservableValue<Picture> createObservable(Picture value) {
+				ObservableValue<Picture> observable = map.get(value);
+				if (observable == null) {
+					observable = new ObservablePicture(value);
+					map.put(value, observable);
+				}
+				return observable;
+			}
+		};
 		picturesSorted.addListener(new ListChangeListener<Picture>() {
 			@Override
 			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
@@ -96,12 +110,6 @@ public abstract class PictureSwitchingState extends State {
 						changeIndex(0, true); // TODO statt 0 könnte man auch zum nächsten (noch vorhandenen) Bild springen => ist aber schierig zu berechnen!
 					}
 				}
-			}
-		});
-		picturesSorted.setComparator(new Comparator<Picture>() {
-			@Override
-			public int compare(Picture o1, Picture o2) {
-				return o1.getName().compareToIgnoreCase(o2.getName());
 			}
 		});
 

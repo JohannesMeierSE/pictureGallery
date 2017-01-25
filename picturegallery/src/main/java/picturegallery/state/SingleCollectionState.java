@@ -72,6 +72,9 @@ public class SingleCollectionState extends PictureSwitchingState {
 							break;
 						case Notification.REMOVE_MANY:
 							throw new NotSupportedException(msg.getOldValue().toString());
+						case Notification.MOVE:
+							// nothing to do, because this case is handled by the SpecialSortedList in PictureSwitchingState!
+							break;
 						}
 					}
 				});

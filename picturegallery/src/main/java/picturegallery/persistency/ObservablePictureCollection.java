@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -16,11 +15,7 @@ import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
 import picturegallery.Logic;
 
-public class ObservablePictureCollection implements ObservableValue<PictureCollection> {
-	private final PictureCollection collection;
-	private final List<ChangeListener<? super PictureCollection>> listenerChange;
-	private final List<InvalidationListener> listenerInvalide;
-
+public class ObservablePictureCollection extends ObservableBase<PictureCollection> {
 	private final Adapter adapter;
 	private final List<ObservableValue<? extends PictureCollection>> otherValues;
 	private final ChangeListener<PictureCollection> otherValuesListener;
@@ -36,8 +31,8 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 		if (collection == null) {
 			throw new IllegalArgumentException();
 		}
+		setValue(collection);
 
-		this.collection = collection;
 		this.adapter = new AdapterImpl() {
 			@Override
 			public void notifyChanged(Notification msg) {
@@ -65,18 +60,15 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 				}
 				if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
 					Logic.runOnUiThread(new Runnable() {
-						// I am not sure, if this is really required ...
+						// I am not sure, if the UI thread is really required ...
 						@Override
 						public void run() {
-							update();
+							updateAll();
 						}
 					});
 				}
 			}
 		};
-
-		this.listenerChange = new ArrayList<>();
-		this.listenerInvalide = new ArrayList<>();
 
 		// will be updated if other properties gets this collection as new value OR removed as value
 		this.otherValues = new ArrayList<>(otherValues);
@@ -85,71 +77,37 @@ public class ObservablePictureCollection implements ObservableValue<PictureColle
 			public void changed(ObservableValue<? extends PictureCollection> observable,
 					PictureCollection oldValue, PictureCollection newValue) {
 				if (oldValue != null && oldValue == collection) {
-					update();
+					updateAll();
 				}
 				if (newValue != null && newValue == collection) {
-					update();
+					updateAll();
 				}
+				// both cases can not be happen, because than it would not be a change!
 			}
 		};
 	}
 
-	private void addObserver() {
-		if (listenerChange.isEmpty() && listenerInvalide.isEmpty()) {
-			collection.eAdapters().add(adapter);
-			otherValues.forEach(c -> c.addListener(otherValuesListener));
-		}
-	}
-
-	private void removeObserver() {
-		/*
-		 * problem: adding the required observer is easy, but to remove them afterwards to prevent memory-leaks is hard
-		 * idea for the implemented solution:
-		 * add the observer when someone starts to listen to this PictureCollection, and
-		 * remove the observer when no one listens to this PictureCollection anymore!
-		 */
-		if (listenerChange.isEmpty() && listenerInvalide.isEmpty()) {
-			collection.eAdapters().remove(adapter);
-			otherValues.forEach(c -> c.removeListener(otherValuesListener));
-		}
+	@Override
+	protected void addObserverLogic() {
+		super.addObserverLogic();
+		otherValues.forEach(c -> c.addListener(otherValuesListener));
 	}
 
 	@Override
-	public void addListener(InvalidationListener listener) {
-		addObserver();
-		listenerInvalide.add(listener);
+	protected void removeObserverLogic() {
+		super.removeObserverLogic();
+		otherValues.forEach(c -> c.removeListener(otherValuesListener));
 	}
 
 	@Override
-	public void removeListener(InvalidationListener listener) {
-		listenerInvalide.remove(listener);
-		removeObserver();
+	protected void addAdditionalObserver(PictureCollection value) {
+		super.addAdditionalObserver(value);
+		value.eAdapters().add(adapter);
 	}
 
 	@Override
-	public void addListener(ChangeListener<? super PictureCollection> listener) {
-		addObserver();
-		listenerChange.add(listener);
-	}
-
-	@Override
-	public void removeListener(ChangeListener<? super PictureCollection> listener) {
-		listenerChange.remove(listener);
-		removeObserver();
-	}
-
-	@Override
-	public PictureCollection getValue() {
-		return collection;
-	}
-
-	private void update() {
-		for (ChangeListener<? super PictureCollection> l : listenerChange) {
-			l.changed(this, getValue(), getValue());
-		}
-		// https://blog.netopyr.com/2012/02/08/when-to-use-a-changelistener-or-an-invalidationlistener/
-		for (InvalidationListener l : listenerInvalide) {
-			l.invalidated(this);
-		}
+	protected void removeAdditionalObserver(PictureCollection value) {
+		super.removeAdditionalObserver(value);
+		value.eAdapters().remove(adapter);
 	}
 }

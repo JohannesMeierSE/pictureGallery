@@ -297,18 +297,19 @@ public class Logic {
 	 */
 	public static void sortPicturesInCollection(PictureCollection collectionToSort) {
 		// http://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/common/util/ECollections.html#sort(org.eclipse.emf.common.util.EList)
-		ECollections.sort(collectionToSort.getPictures(), new Comparator<Picture>() {
+		ECollections.sort(collectionToSort.getPictures(), createComparatorPictures());
+	}
+
+	public static Comparator<Picture> createComparatorPictures() {
+		return new Comparator<Picture>() {
 			@Override
 			public int compare(Picture o1, Picture o2) {
 				if (o1 == o2) {
 					return 0;
 				}
-				if (o1.getName() == o2.getName()) {
-					throw new IllegalStateException();
-				}
-				return o1.getName().compareTo(o2.getName());
+				return o1.getName().compareToIgnoreCase(o2.getName());
 			}
-		});
+		};
 	}
 
 	/**
