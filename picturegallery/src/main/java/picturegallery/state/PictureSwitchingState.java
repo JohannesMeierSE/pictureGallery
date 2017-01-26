@@ -92,10 +92,14 @@ public abstract class PictureSwitchingState extends State {
 		picturesSorted.addListener(new ListChangeListener<Picture>() {
 			@Override
 			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
-				if (containsPicture(getCurrentPicture())) {
+				Picture current = getCurrentPicture();
+				if (current == null) {
+					return;
+				}
+				if (containsPicture(current)) {
 					// show is picture furthermore => update index
 					jumpedBefore();
-					changeIndex(picturesSorted.indexOf(getCurrentPicture()), true);
+					changeIndex(picturesSorted.indexOf(current), true);
 				} else {
 					// picture was removed
 					if (picturesSorted.isEmpty()) {
@@ -106,8 +110,24 @@ public abstract class PictureSwitchingState extends State {
 							// do nothing, if this state was already hidden / "onExit"
 						}
 					} else {
-						jumpedBefore();
-						changeIndex(0, true); // TODO statt 0 könnte man auch zum nächsten (noch vorhandenen) Bild springen => ist aber schierig zu berechnen!
+						// picture was removed, but there are still pictures to show => calculate new picture (index) to show
+						int newIndex = indexCurrentCollection;
+						while (c.next()) {
+							if (c.wasReplaced()) {
+								// => replace => show that new/replaced picture
+							} else if (c.wasRemoved()) {
+								if (newIndex > c.getFrom()) {
+									newIndex = newIndex - c.getRemovedSize();
+								}
+							}
+						}
+
+						// fix problems if the last picture of the list was removed
+						newIndex = Math.min(newIndex, getSize() - 1);
+
+						// show next/updated/permutated picture
+						jumpedBefore(); // => requests sibling pictures, too!
+						changeIndex(newIndex, true);
 					}
 				}
 			}
