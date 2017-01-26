@@ -408,6 +408,9 @@ public abstract class PictureSwitchingState extends State {
 		picturesToShow.clear();
 		currentPicture.set(null);
 		if (tempState != null && !tempState.wasClosed()) {
+			if (tempState.isVisible()) {
+				tempState.onExit(null);
+			}
 			tempState.onClose();
 		}
 	}
