@@ -227,7 +227,6 @@ public class Logic {
 	public static RealPictureCollection createEmptyLibrary(final String baseDir) {
 		String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
         String dirName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1);
-        System.out.println(baseDir + " == " + parentDir + " + " + dirName);
 
         PictureLibrary lib = GalleryFactory.eINSTANCE.createPictureLibrary();
         lib.setBasePath(parentDir);
@@ -415,7 +414,7 @@ public class Logic {
 		}
 		in.close();
 //		System.out.println("");
-		System.out.println(picture.getFullPath());
+//		System.out.println(picture.getFullPath());
 
 		gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
 
@@ -988,7 +987,7 @@ public class Logic {
 		 */
 
 		RealPicture real = getRealPicture(picture);
-		System.out.println("load next for hash");
+//		System.out.println("load next for hash");
 		try {
 			if (!fast) {
 				// https://github.com/pragone/jphash
@@ -1295,7 +1294,6 @@ public class Logic {
 									image.setImage(value);
 								} else {
 									// ignore the result, because another picture should be shown
-									System.err.println("ignored the update!");
 								}
 							}
 						});

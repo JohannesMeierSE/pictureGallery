@@ -48,8 +48,7 @@ public class RenameCollectionAction extends Action {
 		}
 		// check for uniqueness
 		if (!Logic.isCollectionNameUnique(collectionToRename.getSuperCollection(), newName)) {
-			System.err.println("The new name " + newName + " is not unique!");
-			return; // the new name is not unique!
+			throw new IllegalArgumentException("The new name " + newName + " is not unique!");
 		}
 
 		if (collectionToRename instanceof RealPictureCollection) {

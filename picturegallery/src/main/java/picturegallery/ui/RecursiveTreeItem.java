@@ -51,7 +51,6 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 	public RecursiveTreeItem(final T value, Node graphic, Callback<T, ObservableList<T>> func) {
 		super(value, graphic);
 
-		System.out.println("new item for " + value);
 		this.childrenFactory = func;
 
 		// required for new children of the current value

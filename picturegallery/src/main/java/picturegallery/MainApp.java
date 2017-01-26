@@ -141,7 +141,6 @@ public class MainApp extends Application {
     				if (action.getKey().equals(event.getCode())) {
     					if (action.requiresShift() == event.isShiftDown()) {
     						numberListeners++;
-    						System.out.println("run " + action.toString());
     						action.run(getCurrentState());
     					}
     				}
@@ -344,14 +343,12 @@ public class MainApp extends Application {
 		}
 		if (picture.getCollection() == newCollection) {
 			// nothing to do!
-			System.err.println("picture is already in this collection");
-			return;
+			throw new IllegalArgumentException("picture is already in this collection");
 		}
 		// check for uniqueness
 		for (Picture existing : newCollection.getPictures()) {
 			if (existing.getName().equals(picture.getName())) {
-				System.err.println("moving is not possible: uniqueness is hurt!");
-				return;
+				throw new IllegalArgumentException("moving is not possible: uniqueness is hurt!");
 			}
 		}
 		// Real- und LinkedPicture (mit Bezug zueinander) dürfen NICHT im selben Ordner/Collection landen

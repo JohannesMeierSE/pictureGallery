@@ -49,8 +49,7 @@ public class RenamePictureAction extends Action {
 		}
 		// check for uniqueness
 		if (!Logic.isPictureNameUnique(currentPicture, newName)) {
-			System.err.println("The new name " + newName + " is not unique!");
-			return; // the new name is not unique!
+			throw new IllegalArgumentException("The new name " + newName + " is not unique!");
 		}
 
 		if (currentPicture instanceof LinkedPicture) {
