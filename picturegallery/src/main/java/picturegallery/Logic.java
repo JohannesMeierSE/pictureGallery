@@ -23,6 +23,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -214,6 +215,7 @@ public class Logic {
 			e.printStackTrace();
 		}
 
+        // handle all sub-collections
     	List<PictureCollection> collectionsToRemove = new ArrayList<>();
     	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
     		if (!new File(newSubCollection.getFullPath()).exists()) {
@@ -228,9 +230,54 @@ public class Logic {
 
     	// remove collections with all its children which do not exist anymore
     	while (!collectionsToRemove.isEmpty()) {
-    		// http://eclipsesource.com/blogs/2015/05/26/emf-dos-and-donts-11/
-    		EcoreUtil.delete(collectionsToRemove.get(0), true);
+    		deleteCollectionSimple(collectionsToRemove.remove(0));
        	}
+
+    	// remove all deleted pictures of this collection
+    	List<Picture> picturesToRemove = new ArrayList<>();
+    	Collection<RealPicture> availablePictures = mapPictures.values();
+    	for (Picture pic : currentCollection.getPictures()) {
+    		if (pic instanceof LinkedPicture) {
+    			continue;
+    		}
+    		if (!availablePictures.contains(pic)) {
+    			picturesToRemove.add(pic);
+    		}
+    	}
+    	while (!picturesToRemove.isEmpty()) {
+    		System.out.println("removed picture " + picturesToRemove.get(0).getRelativePath());
+    		deletePictureSimple(picturesToRemove.remove(0));
+    	}
+	}
+
+	private static void deleteCollectionSimple(PictureCollection collectionToRemove) {
+		if (collectionToRemove instanceof RealPictureCollection) {
+			// delete contained pictures
+			List<Picture> pictures = collectionToRemove.getPictures();
+			while (!pictures.isEmpty()) {
+				deletePictureSimple(pictures.get(0));
+			}
+
+			// delete sub-collections
+			List<PictureCollection> subs = collectionToRemove.getSubCollections();
+			while (!subs.isEmpty()) {
+				deleteCollectionSimple(subs.get(0));
+			}
+		}
+		// http://eclipsesource.com/blogs/2015/05/26/emf-dos-and-donts-11/
+		EcoreUtil.delete(collectionToRemove, true);
+	}
+
+	private static void deletePictureSimple(Picture pictureToDelete) {
+		if (pictureToDelete instanceof RealPicture) {
+			// delete all pictures which are linking on this picture to remove!
+			List<LinkedPicture> linked = ((RealPicture) pictureToDelete).getLinkedBy();
+			while (!linked.isEmpty()) {
+				deletePictureSimple(linked.get(0));
+			}
+		}
+		// removes also possible Metadata!
+		EcoreUtil.delete(pictureToDelete, true);
 	}
 
 	private static void initPicture(RealPictureCollection currentCollection, String name, Picture pic) {
