@@ -63,6 +63,7 @@ import org.apache.tika.parser.jpeg.JpegParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.ECollections;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.command.MoveCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
@@ -86,7 +87,7 @@ public class Logic {
     	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>();
 
-    	loadDirectoryLogic(baseCollection, true, mapPictures, mapCollections, symlinks);
+    	loadDirectoryLogic(baseCollection, mapPictures, mapCollections, symlinks);
 
     	String baseFullPath = baseCollection.getFullPath();
 
@@ -150,7 +151,7 @@ public class Logic {
 		sortSubCollections(baseCollection, true, true);
 	}
 
-	private static void loadDirectoryLogic(RealPictureCollection currentCollection, boolean recursive,
+	private static void loadDirectoryLogic(RealPictureCollection currentCollection,
 			Map<String, RealPicture> mapPictures, Map<String, RealPictureCollection> mapCollections,
 			List<Pair<Path, RealPictureCollection>> symlinks) {
 		String baseDir = currentCollection.getFullPath();
@@ -165,20 +166,20 @@ public class Logic {
 					if (name.equals(baseDir)) {
 			    		return FileVisitResult.CONTINUE;
 			    	}
-			    	if (recursive) {
-			    		String childName = name.substring(name.lastIndexOf(File.separator) + 1);
-			    		RealPictureCollection sub = (RealPictureCollection) getCollectionByName(currentCollection, childName, true, false);
-			    		if (sub == null) {
-			    			sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
-			    			sub.setSuperCollection(currentCollection);
-			    			currentCollection.getSubCollections().add(sub);
-			    			sub.setName(childName);
-			    		} else {
-		        			System.out.println("already available: " + sub.getRelativePath());
-			    		}
-			    		mapCollections.put(sub.getFullPath(), sub);
-			    	}
-					return FileVisitResult.SKIP_SUBTREE;
+
+					String childName = name.substring(name.lastIndexOf(File.separator) + 1);
+		    		RealPictureCollection sub = (RealPictureCollection) getCollectionByName(currentCollection, childName, true, false);
+		    		if (sub == null) {
+		    			sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
+		    			sub.setSuperCollection(currentCollection);
+		    			currentCollection.getSubCollections().add(sub);
+		    			sub.setName(childName);
+		    		} else {
+	        			System.out.println("already available: " + sub.getRelativePath());
+		    		}
+		    		mapCollections.put(sub.getFullPath(), sub);
+
+			    	return FileVisitResult.SKIP_SUBTREE;
 				}
 
 				@Override
@@ -213,14 +214,23 @@ public class Logic {
 			e.printStackTrace();
 		}
 
-        if (recursive) {
-        	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
-        		if (newSubCollection instanceof LinkedPictureCollection) {
-        			continue;
-        		}
-        		loadDirectoryLogic((RealPictureCollection) newSubCollection, recursive, mapPictures, mapCollections, symlinks);
-        	}
-        }
+    	List<PictureCollection> collectionsToRemove = new ArrayList<>();
+    	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
+    		if (!new File(newSubCollection.getFullPath()).exists()) {
+    			collectionsToRemove.add(newSubCollection);
+    			continue;
+    		}
+    		if (newSubCollection instanceof LinkedPictureCollection) {
+    			continue;
+    		}
+    		loadDirectoryLogic((RealPictureCollection) newSubCollection, mapPictures, mapCollections, symlinks);
+    	}
+
+    	// remove collections with all its children which do not exist anymore
+    	while (!collectionsToRemove.isEmpty()) {
+    		// http://eclipsesource.com/blogs/2015/05/26/emf-dos-and-donts-11/
+    		EcoreUtil.delete(collectionsToRemove.get(0), true);
+       	}
 	}
 
 	private static void initPicture(RealPictureCollection currentCollection, String name, Picture pic) {
