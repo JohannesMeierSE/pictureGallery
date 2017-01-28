@@ -81,17 +81,15 @@ import com.pragone.jphash.image.radial.RadialHash;
 public class Logic {
 	public static final String NO_HASH = "nohash!";
 
-	public static void loadDirectory(PictureLibrary library, boolean recursive) {
-		RealPictureCollection baseCollection = library.getBaseCollection();
+	public static void loadDirectory(RealPictureCollection baseCollection) {
     	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
     	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>();
 
-    	loadDirectoryLogic(baseCollection, recursive, mapPictures, mapCollections, symlinks);
+    	loadDirectoryLogic(baseCollection, true, mapPictures, mapCollections, symlinks);
 
-    	List<PictureCollection> collectionsToSort = new ArrayList<>(); // collects the collections which have to be sorted again, because linked picture were added!
-    	List<PictureCollection> subcollectionsToSort = new ArrayList<>(); // collects the collections from which their subcollections have to be sorted again, because linked collections were added as subcollection!
     	String baseFullPath = baseCollection.getFullPath();
+
     	// handle symlinks
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
 		for (Pair<Path, RealPictureCollection> symlink : symlinks) {
@@ -107,25 +105,24 @@ public class Logic {
 				System.err.println("Found symlink to a picture which is not part of this library!");
 				continue; // => ignore it!
 			}
+			String name = symlink.getKey().toString();
 			if (Files.isDirectory(real)) {
 				// symlink onto a directory
 				RealPictureCollection ref = mapCollections.get(r);
 				if (ref == null) {
 					String message = "missing link on directory: " + r + " of " + symlink.toString();
-					System.err.println(message);
 					throw new IllegalArgumentException(message);
 				} else {
-					LinkedPictureCollection linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
-					ref.getLinkedBy().add(linkedCollection);
-					linkedCollection.setRealCollection(ref);
-					symlink.getValue().getSubCollections().add(linkedCollection);
-					linkedCollection.setSuperCollection(symlink.getValue());
-					String name = symlink.getKey().toString();
-					linkedCollection.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.length()));
-
-					// sort sub-collections again
-					if (!subcollectionsToSort.contains(symlink.getValue())) {
-						subcollectionsToSort.add(symlink.getValue());
+					String linkedCollectionName = name.substring(name.lastIndexOf(File.separator) + 1, name.length());
+					LinkedPictureCollection linkedCollection = (LinkedPictureCollection) getCollectionByName(symlink.getValue(),
+							linkedCollectionName, false, true);
+					if (linkedCollection == null) {
+						linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
+						ref.getLinkedBy().add(linkedCollection);
+						linkedCollection.setRealCollection(ref);
+						symlink.getValue().getSubCollections().add(linkedCollection);
+						linkedCollection.setSuperCollection(symlink.getValue());
+						linkedCollection.setName(linkedCollectionName);
 					}
 				}
 			} else {
@@ -136,26 +133,21 @@ public class Logic {
 					System.err.println(message);
 					throw new IllegalArgumentException(message);
 				} else {
-					LinkedPicture linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
-					ref.getLinkedBy().add(linkedPicture);
-					linkedPicture.setRealPicture(ref);
-					initPicture(symlink.getValue(), symlink.getKey().toString(), linkedPicture);
-
-					// sort the pictures (including the new LinkedPicture) in this collection again
-					if (!collectionsToSort.contains(symlink.getValue())) {
-						collectionsToSort.add(symlink.getValue());
+					String linkedPictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
+					LinkedPicture linkedPicture = (LinkedPicture) getPictureByName(symlink.getValue(),
+							linkedPictureName, false, true);
+					if (linkedPicture == null) {
+						linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
+						ref.getLinkedBy().add(linkedPicture);
+						linkedPicture.setRealPicture(ref);
+						initPicture(symlink.getValue(), name, linkedPicture);
 					}
 				}
 			}
 		}
-		// sort collection with additional LinkedPictures (again)
-		for (PictureCollection col : collectionsToSort) {
-			sortPicturesInCollection(col);
-		}
-		// sort sub-collections (again)
-		for (PictureCollection col : subcollectionsToSort) {
-			sortSubCollections(col, false);
-		}
+
+		// sort all recursive sub-collections: order of collections AND pictures!
+		sortSubCollections(baseCollection, true, true);
 	}
 
 	private static void loadDirectoryLogic(RealPictureCollection currentCollection, boolean recursive,
@@ -174,10 +166,16 @@ public class Logic {
 			    		return FileVisitResult.CONTINUE;
 			    	}
 			    	if (recursive) {
-			    		RealPictureCollection sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
-			    		sub.setSuperCollection(currentCollection);
-			    		currentCollection.getSubCollections().add(sub);
-			    		sub.setName(name.substring(name.lastIndexOf(File.separator) + 1));
+			    		String childName = name.substring(name.lastIndexOf(File.separator) + 1);
+			    		RealPictureCollection sub = (RealPictureCollection) getCollectionByName(currentCollection, childName, true, false);
+			    		if (sub == null) {
+			    			sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
+			    			sub.setSuperCollection(currentCollection);
+			    			currentCollection.getSubCollections().add(sub);
+			    			sub.setName(childName);
+			    		} else {
+		        			System.out.println("already available: " + sub.getRelativePath());
+			    		}
 			    		mapCollections.put(sub.getFullPath(), sub);
 			    	}
 					return FileVisitResult.SKIP_SUBTREE;
@@ -195,8 +193,14 @@ public class Logic {
 			        	 * - https://www.tutorials.de/threads/animierte-gifs.180222/ => GIFs fehlerhaft, ohne entsprechend 100ms Delay zwischen den Bildern(?)
 			        	 * - oder die Bilddateien sind einfach beschädigt ... !
 			        	 */
-		        		RealPicture pic = GalleryFactory.eINSTANCE.createRealPicture();
-		        		initPicture(currentCollection, name, pic);
+		        		String pictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
+		        		RealPicture pic = (RealPicture) getPictureByName(currentCollection, pictureName, true, false);
+		        		if (pic == null) {
+		        			pic = GalleryFactory.eINSTANCE.createRealPicture();
+		        			initPicture(currentCollection, name, pic);
+		        		} else {
+		        			System.out.println("already available: " + pic.getRelativePath());
+		        		}
 
 		        		mapPictures.put(pic.getFullPath(), pic);
 			        } else {
@@ -208,10 +212,12 @@ public class Logic {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        sortPicturesInCollection(currentCollection);
-        sortSubCollections(currentCollection, false);
+
         if (recursive) {
         	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
+        		if (newSubCollection instanceof LinkedPictureCollection) {
+        			continue;
+        		}
         		loadDirectoryLogic((RealPictureCollection) newSubCollection, recursive, mapPictures, mapCollections, symlinks);
         	}
         }
@@ -316,21 +322,10 @@ public class Logic {
 	 * @param picturesToSort
 	 */
 	public static void sortPictures(List<Picture> picturesToSort) {
-		Collections.sort(picturesToSort, new Comparator<Picture>() {
-			@Override
-			public int compare(Picture o1, Picture o2) {
-				if (o1 == o2) {
-					return 0;
-				}
-				if (o1.getName() == o2.getName()) {
-					throw new IllegalStateException();
-				}
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
+		Collections.sort(picturesToSort, createComparatorPictures());
 	}
 
-	public static void sortSubCollections(PictureCollection base, boolean recursive) {
+	public static void sortSubCollections(PictureCollection base, boolean recursive, boolean sortPictureToo) {
 		ECollections.sort(base.getSubCollections(), new Comparator<PictureCollection>() {
 			@Override
 			public int compare(PictureCollection o1, PictureCollection o2) {
@@ -343,6 +338,16 @@ public class Logic {
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
+
+		if (sortPictureToo) {
+			sortPicturesInCollection(base);
+		}
+
+		if (recursive) {
+			for (PictureCollection sub : base.getSubCollections()) {
+				sortSubCollections(sub, recursive, sortPictureToo);
+			}
+		}
 	}
 
 	public static String formatBytes(int bytes) {
@@ -987,14 +992,15 @@ public class Logic {
 		 */
 
 		RealPicture real = getRealPicture(picture);
-//		System.out.println("load next for hash");
 		try {
 			if (!fast) {
 				// https://github.com/pragone/jphash
+				System.out.println("load slow hash for " + picture.getRelativePath());
 				RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
 				setHashLogic(real, hash1 + "", false);
 			} else {
 				// https://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java
+				System.out.println("load fast hash for " + picture.getRelativePath());
 				FileInputStream fis = new FileInputStream(new File(real.getFullPath()));
 				String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
 				fis.close();
@@ -1082,9 +1088,6 @@ public class Logic {
 			Picture p1 = list.get(i);
 			int j = i + 1;
 			while (j < list.size()) {
-				if (i == 0) {
-					System.out.println("load next: " + j);
-				}
 				Picture p2 = list.get(j);
 				if (Logic.arePicturesIdentical(p1, p2)) {
 					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
@@ -1149,7 +1152,6 @@ public class Logic {
 		if (one.isEmpty() || two.isEmpty()) {
 			return result;
 		}
-		System.out.println("start");
 		for (Picture twoPic : two) {
 			if (twoPic instanceof LinkedPicture) {
 				continue;
@@ -1164,7 +1166,6 @@ public class Logic {
 				}
 			}
 		}
-		System.out.println("end");
 		return result;
 	}
 
@@ -1320,6 +1321,44 @@ public class Logic {
 				}
 			});
 		}
+	}
+
+	public static PictureCollection getCollectionByName(RealPictureCollection parent, String collectionName,
+			boolean searchReal, boolean searchLinked) {
+		if (!searchReal && !searchLinked) {
+			throw new IllegalArgumentException();
+		}
+		for (PictureCollection sub : parent.getSubCollections()) {
+			if (!searchLinked && sub instanceof LinkedPictureCollection) {
+				continue;
+			}
+			if (!searchReal && sub instanceof RealPictureCollection) {
+				continue;
+			}
+			if (sub.getName().equals(collectionName)) {
+				return sub;
+			}
+		}
+		return null;
+	}
+
+	public static Picture getPictureByName(RealPictureCollection parent, String pictureName,
+			boolean searchReal, boolean searchLinked) {
+		if (!searchReal && !searchLinked) {
+			throw new IllegalArgumentException();
+		}
+		for (Picture pic : parent.getPictures()) {
+			if (!searchLinked && pic instanceof LinkedPicture) {
+				continue;
+			}
+			if (!searchReal && pic instanceof RealPicture) {
+				continue;
+			}
+			if (pic.getName().equals(pictureName)) {
+				return pic;
+			}
+		}
+		return null;
 	}
 
 	public static void runOnUiThread(Runnable run) {

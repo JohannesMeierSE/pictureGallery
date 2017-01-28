@@ -3,6 +3,7 @@ package picturegallery;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.Picture;
+import gallery.PictureLibrary;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
 import gallery.util.GalleryAdapterFactory;
@@ -13,6 +14,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javafx.application.Application;
@@ -108,13 +110,12 @@ public class MainApp extends Application {
 		dialog.setTitle("Choose the base directory of the library to work with!");
 		dialog.setInitialDirectory(new File(Settings.getBasePath()));
 		File choosenLibrary = dialog.showDialog(stage);
-    	String baseDir = Settings.getBasePath();
+    	final String baseDir;
     	if (choosenLibrary != null) {
     		baseDir = choosenLibrary.getAbsolutePath();
+    	} else {
+    		baseDir = Settings.getBasePath();
     	}
-
-    	// initialize the EMF model
-    	baseCollection = Logic.createEmptyLibrary(baseDir);
 
     	labelKeys = new Label("keys");
     	labelKeys.visibleProperty().bind(labelsVisible);
@@ -192,14 +193,31 @@ public class MainApp extends Application {
         Task<Void> task = new Task<Void>() {
         	@Override
         	protected Void call() throws Exception {
-        		Logic.loadDirectory(baseCollection.getLibrary(), true);
+        		String emfModelPath = baseDir + "/model.xmi";
 
         		// http://www.vogella.com/tutorials/EclipseEMFPersistence/article.html
+        		GalleryPackage.eINSTANCE.eClass(); // init the EMF stuff
         		ResourceSet rset = new ResourceSetImpl();
         		rset.getResourceFactoryRegistry().getExtensionToFactoryMap().putIfAbsent("xmi", new XMIResourceFactoryImpl());
-        		URI uri = URI.createFileURI(baseCollection.getFullPath() + "/model.xmi");
-        		modelResource = rset.createResource(uri);
-        		modelResource.getContents().add(baseCollection.getLibrary());
+        		URI uri = URI.createFileURI(emfModelPath);
+        		modelResource = rset.getResource(uri, true);
+
+        		// initialize the EMF model
+        		if (modelResource != null) {
+        			modelResource.load(Collections.EMPTY_MAP);
+        		} else {
+        			modelResource = rset.createResource(uri);
+        		}
+
+        		if (modelResource.getContents().isEmpty()) {
+        			baseCollection = Logic.createEmptyLibrary(baseDir);
+        			modelResource.getContents().add(baseCollection.getLibrary());
+        		} else {
+        			baseCollection = ((PictureLibrary) modelResource.getContents().get(0)).getBaseCollection();
+        		}
+
+        		Logic.loadDirectory(baseCollection);
+
         		modelDomain = new AdapterFactoryEditingDomain(new GalleryAdapterFactory(), new BasicCommandStack(), rset);
 
         		return null;
