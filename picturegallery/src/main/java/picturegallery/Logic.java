@@ -1067,10 +1067,16 @@ public class Logic {
 		}
 	}
 
-	public static Map<Picture, List<Picture>> findIdenticalInOneCollection(PictureCollection collection) {
-		List<Picture> list = new ArrayList<>(collection.getPictures());
-		System.out.println("beginning!");
+	public static Map<Picture, List<Picture>> findIdenticalInOneCollection(RealPictureCollection collection, boolean recursive) {
 		Map<Picture, List<Picture>> result = new HashMap<>();
+		findIdenticalInOneCollectionLogic(collection, recursive, result);
+		return result;
+	}
+	private static void findIdenticalInOneCollectionLogic(RealPictureCollection collection,
+			boolean recursive, Map<Picture, List<Picture>> result) {
+		System.out.println("beginning with " + collection.getRelativePath() + "!");
+
+		List<Picture> list = new ArrayList<>(collection.getPictures());
 		for (int i = 0; i < list.size() - 1; i++) {
 			List<Picture> items = new ArrayList<>();
 			Picture p1 = list.get(i);
@@ -1093,7 +1099,14 @@ public class Logic {
 			}
 		}
 		System.out.println("ready! found " + result.size() + " pictures with duplicates");
-		return result;
+
+		if (recursive) {
+			for (PictureCollection sub : collection.getSubCollections()) {
+				if (sub instanceof RealPictureCollection) {
+					findIdenticalInOneCollectionLogic((RealPictureCollection) sub, recursive, result);
+				}
+			}
+		}
 	}
 
 	public static Map<RealPicture, List<RealPicture>> findIdenticalInSubcollections(RealPictureCollection baseCollection) {

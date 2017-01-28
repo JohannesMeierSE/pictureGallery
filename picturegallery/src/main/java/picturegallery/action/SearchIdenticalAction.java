@@ -1,7 +1,9 @@
 package picturegallery.action;
 
+import gallery.LinkedPictureCollection;
 import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.RealPictureCollection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,14 +29,28 @@ public class SearchIdenticalAction extends Action {
 		}
 		CollectionState state = (CollectionState) currentState;
 		PictureCollection selection = state.getSelection();
-		if (selection == null) {
+		if (selection == null || selection instanceof LinkedPictureCollection) {
 			return;
 		}
 
-        Task<Map<Picture, List<Picture>>> task = new Task<Map<Picture, List<Picture>>>() {
+		// search in sub-collections, too?
+		final boolean searchInSubcollectionsToo;
+		if (!selection.getSubCollections().isEmpty()) {
+			if (Logic.askForConfirmation("Search for identical pictures",
+					"The selected collection has sub-collections.",
+					"If you confirm, in each (recursive) sub-collection will be searched, too (independent from all other collections).")) {
+				searchInSubcollectionsToo = true;
+			} else {
+				searchInSubcollectionsToo = false;
+			}
+		} else {
+			searchInSubcollectionsToo = false;
+		}
+
+		Task<Map<Picture, List<Picture>>> task = new Task<Map<Picture, List<Picture>>>() {
         	@Override
         	protected Map<Picture, List<Picture>> call() throws Exception {
-    			return Logic.findIdenticalInOneCollection(selection);
+    			return Logic.findIdenticalInOneCollection((RealPictureCollection) selection, searchInSubcollectionsToo);
         	}
         };
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
