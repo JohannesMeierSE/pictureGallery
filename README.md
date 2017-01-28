@@ -8,11 +8,15 @@ An individual picture viewer written in Java.
 * link current picture for another folder
 * commands by keyboard only
 * full screen mode
-* real and linked images
+* real and linked pictures/images
 * real and linked collections/folders
-* temporary collection
-* search for duplicated real pictures of the current collection in the (recursive) sub-collections and replace them by linked pictures
-* image caching and pre-loading
+* temporary collection (recursively nestable)
+* search for duplicated real pictures
+	* of the current collection in the (recursive) sub-collections, or
+	* within the current collection
+	* to replace them by linked pictures, or
+	* to delete them
+* image caching and pre-loading with fixed size memory consumption
 
 ## Used Technology
 * Java 8
@@ -20,7 +24,7 @@ An individual picture viewer written in Java.
 * EMF for data representation
   * EMF files: `picturegallery/src/main/resources/model`
   * image of the ECore model: `picturegallery/src/main/resources/model/classdiagram.jpg`
-  * generated sourcecode: `picturegallery/src-gen/main/java`
+  * generated sourcecode (started by hand, not by Maven): `picturegallery/src-gen/main/java`
 * jpHash for image comparison: https://github.com/pragone/jphash
 * Maven as build tool
 
