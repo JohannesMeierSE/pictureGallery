@@ -51,7 +51,7 @@ public class SearchIdenticalAction extends Action {
 					@Override
 					public void run(State currentState) {
 						// the key will not be deleted => one picture will be kept!!
-						if (!Logic.askForConfirmation("Delete duplicated items?", "In the collection " + selection
+						if (!Logic.askForConfirmation("Delete duplicated items?", "In the collection " + selection.getRelativePath()
 								+ ", there are " + result.size() + " pictures with duplicates!",
 								"Do you want to delete all the duplicated pictures?")) {
 							return;

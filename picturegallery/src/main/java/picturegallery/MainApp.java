@@ -302,6 +302,11 @@ public class MainApp extends Application {
 			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
 				deletePicture(linked);
 			}
+		} else {
+			// remove the pictures from the image cache!
+			RealPicture real = (RealPicture) picture;
+			imageCache.remove(real);
+			imageCacheSmall.remove(real);
 		}
 
 		// delete file in file system
@@ -521,6 +526,6 @@ public class MainApp extends Application {
 		}
 		switchState(current.getNextAfterClosed());
 		stateStack.remove(stateStack.size() - 2); // the "current" state should be ignored from now on
-		stateStack.remove(stateStack.size() - 3); // the "previous" state should not added twice
+		stateStack.remove(stateStack.size() - 2); // the "previous" state should not added twice
 	}
 }

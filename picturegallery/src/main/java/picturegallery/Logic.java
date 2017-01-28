@@ -1096,47 +1096,58 @@ public class Logic {
 		return result;
 	}
 
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection) {
-		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
+	public static Map<RealPicture, List<RealPicture>> findIdenticalInSubcollections(RealPictureCollection baseCollection) {
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
 		findIdenticalInSubcollectionsLogic(baseCollection, baseCollection, result);
 		return result;
 	}
-	private static void findIdenticalInSubcollectionsLogic(PictureCollection baseCollection, PictureCollection current,
-			List<Pair<RealPicture, RealPicture>> result) {
+	private static void findIdenticalInSubcollectionsLogic(RealPictureCollection baseCollection, RealPictureCollection current,
+			Map<RealPicture, List<RealPicture>> result) {
 		for (PictureCollection sub : current.getSubCollections()) {
 			if (sub instanceof LinkedPictureCollection) {
 				continue;
 			}
-			List<Pair<RealPicture, RealPicture>> r = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures());
-			if (r != null) {
-				result.addAll(r);
+
+			List<Pair<RealPicture, RealPicture>> foundPictures = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures());
+
+			// moves the found pictures into the result map
+			for (Pair<RealPicture, RealPicture> found : foundPictures) {
+				List<RealPicture> list = result.get(found.getKey());
+				if (list == null) {
+					list = new ArrayList<>();
+					result.put(found.getKey(), list);
+				}
+				list.add(found.getValue());
 			}
-			findIdenticalInSubcollectionsLogic(baseCollection, sub, result);
+
+			// searches in all sub-sub-collections ...
+			findIdenticalInSubcollectionsLogic(baseCollection, (RealPictureCollection) sub, result);
 		}
 	}
 
 	/**
-	 * Searches in two for duplicated real picture of one.
+	 * Searches in two for duplicated real picture of one (ignoring all {@link LinkedPicture}s!).
 	 * @param one
 	 * @param two
+	 * @return
 	 */
 	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two) {
-		if (one.isEmpty() || two.isEmpty()) {
-			return null;
-		}
 		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
+		if (one.isEmpty() || two.isEmpty()) {
+			return result;
+		}
 		System.out.println("start");
-		for (Picture p : two) {
-			if (p instanceof LinkedPicture) {
+		for (Picture twoPic : two) {
+			if (twoPic instanceof LinkedPicture) {
 				continue;
 			}
-			for (Picture o : one) {
-				if (o instanceof LinkedPicture) {
+			for (Picture onePic : one) {
+				if (onePic instanceof LinkedPicture) {
 					continue;
 				}
-				if (arePicturesIdentical(p, o)) {
-					System.out.println(p.getRelativePath() + " == " + o.getRelativePath());
-					result.add(new Pair<>((RealPicture) p, (RealPicture) o));
+				if (arePicturesIdentical(onePic, twoPic)) {
+					System.out.println(onePic.getRelativePath() + " == " + twoPic.getRelativePath());
+					result.add(new Pair<>((RealPicture) onePic, (RealPicture) twoPic));
 				}
 			}
 		}
@@ -1144,34 +1155,29 @@ public class Logic {
 		return result;
 	}
 
-	public static void replaceIdenticalPicturesInSubcollectionsByLink(PictureCollection currentCollection) {
-		// linked collections => do nothing!
-		if (currentCollection instanceof LinkedPictureCollection) {
-			return;
-		}
+	/**
+	 * Searches for identical pictures recursively in sub-collections.
+	 * @param currentCollection
+	 * @return
+	 */
+	public static Map<RealPicture, List<RealPicture>> replaceIdenticalPicturesInSubcollectionsByLink(RealPictureCollection currentCollection) {
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
+
 		// current collection is empty => link to pictures of sub-collections
 		if (currentCollection.getPictures().isEmpty()) {
 			for (PictureCollection sub : currentCollection.getSubCollections()) {
-				replaceIdenticalPicturesInSubcollectionsByLink(sub);
+				if (sub instanceof RealPictureCollection) {
+					result.putAll(replaceIdenticalPicturesInSubcollectionsByLink((RealPictureCollection) sub));
+				}
 			}
-			return;
+			return result;
 		}
+
 		// current collection contains pictures:
-		List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection);
-		if (result.isEmpty()) {
-			return;
-		}
-		String files = "";
-		for (Pair<RealPicture, RealPicture> pair : result) {
-			files = files + pair.getKey().getRelativePath() + " ==> " + pair.getValue().getRelativePath() + "\n";
-		}
-		files = files.trim();
-		boolean replace = Logic.askForConfirmation("Find and replace duplications", "Replace duplicated pictures by links?", files);
-		if (replace) {
-			for (Pair<RealPicture, RealPicture> pair : result) {
-				Logic.replaceRealByLinkedPicture(pair.getKey(), pair.getValue());
-			}
-		}
+		Map<RealPicture, List<RealPicture>> resultLocal = Logic.findIdenticalInSubcollections(currentCollection);
+		result.putAll(resultLocal);
+
+		return result;
 	}
 
 	/**
