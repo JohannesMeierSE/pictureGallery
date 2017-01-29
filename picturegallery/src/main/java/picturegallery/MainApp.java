@@ -182,7 +182,9 @@ public class MainApp extends Application {
 
 				// save model afterwards => for debugging purpose
 				try {
-					modelResource.save(null); // falls vorhanden, wird es überschrieben!
+					if (modelResource != null) {
+						modelResource.save(null); // falls vorhanden, wird es überschrieben!
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -200,7 +202,12 @@ public class MainApp extends Application {
         		ResourceSet rset = new ResourceSetImpl();
         		rset.getResourceFactoryRegistry().getExtensionToFactoryMap().putIfAbsent("xmi", new XMIResourceFactoryImpl());
         		URI uri = URI.createFileURI(emfModelPath);
-        		modelResource = rset.getResource(uri, true);
+        		try {
+        			modelResource = rset.getResource(uri, true);
+        		} catch (Throwable e) {
+        			// no "model.xmi" is available => no problem
+        			modelResource = null;
+        		}
 
         		// initialize the EMF model
         		if (modelResource != null) {
@@ -314,13 +321,14 @@ public class MainApp extends Application {
 	 * @param picture
 	 */
 	public void deletePicture(Picture picture) {
-		// real picture => remove all linked pictures, too!
+		// real picture ...
 		if (picture instanceof RealPicture) {
+			// => remove all linked pictures, too!
 			RealPicture realToDelete = (RealPicture) picture;
 			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
 				deletePicture(linked);
 			}
-		} else {
+
 			// remove the pictures from the image cache!
 			RealPicture real = (RealPicture) picture;
 			imageCache.remove(real);
