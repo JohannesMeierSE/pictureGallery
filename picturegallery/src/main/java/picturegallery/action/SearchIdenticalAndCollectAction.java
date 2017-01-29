@@ -52,6 +52,8 @@ public class SearchIdenticalAndCollectAction extends Action {
 				nextState.setNextAfterClosed(currentState);
 				nextState.onInit();
 
+				nextState.registerAction(new DeleteAndMoveMappedPicturesAction(result));
+
 				List<Picture> picturesToShow = new ArrayList<>();
 				for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
 					picturesToShow.add(e.getKey());

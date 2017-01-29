@@ -366,7 +366,8 @@ public class MainApp extends Application {
 		}
 		if (picture.getCollection() == newCollection) {
 			// nothing to do!
-			throw new IllegalArgumentException("picture is already in this collection");
+			System.out.println(picture.getRelativePath() + " is already in the collection " + newCollection.getRelativePath());
+			return;
 		}
 		// check for uniqueness
 		for (Picture existing : newCollection.getPictures()) {
@@ -401,9 +402,10 @@ public class MainApp extends Application {
 			}
 		}
 
-		Task<Void> task = new Task<Void>() { // do the long-running moving in another thread!
+		// do the long-running moving in another thread!
+		Logic.runNotOnUiThread(new Runnable() {
 			@Override
-			protected Void call() throws Exception {
+			public void run() {
 				if (picture instanceof RealPicture) {
 					// move the file in the file system
 					Logic.moveFileIntoDirectory(picture.getFullPath(), newCollection.getFullPath());
@@ -433,7 +435,6 @@ public class MainApp extends Application {
 
 					Logic.createSymlinkPicture(pictureToMove); // ... und dann neu erstellen
 				}
-				return null;
 			}
 
 			private void movePictureInModel(Picture picture, RealPictureCollection newCollection) {
@@ -456,8 +457,7 @@ public class MainApp extends Application {
 
 //				Logic.sortPicturesInCollection(newCollection);
 			}
-		};
-		new Thread(task).start();
+		});
 	}
 
 	public ObjectCache<RealPicture, Image> getImageCache() {

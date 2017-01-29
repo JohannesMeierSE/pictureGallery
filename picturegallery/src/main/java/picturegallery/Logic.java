@@ -1269,14 +1269,14 @@ public class Logic {
 
 	public static Map<RealPicture, List<RealPicture>> findIdenticalBetweenAllCollections(RealPictureCollection baseCollection) {
 		// collect all collections
-		List<RealPictureCollection> allCollections = new ArrayList<>();
+		List<List<RealPicture>> allCollections = new ArrayList<>();
 		collectAllCollectionsLogic(allCollections, baseCollection);
 
 		// sort them by size descending (?)
-		allCollections.sort(new Comparator<RealPictureCollection>() {
+		allCollections.sort(new Comparator<List<RealPicture>>() {
 			@Override
-			public int compare(RealPictureCollection o1, RealPictureCollection o2) {
-				return Integer.compare(o2.getPictures().size(), o1.getPictures().size());
+			public int compare(List<RealPicture> o1, List<RealPicture> o2) {
+				return Integer.compare(o2.size(), o1.size());
 			}
 		});
 
@@ -1286,7 +1286,7 @@ public class Logic {
 			// compare each picture of the first collection with all other collections
 			for (int i = 1; i < allCollections.size(); i++) {
 				List<Pair<RealPicture, RealPicture>> found = findIdenticalBetweenLists(
-						allCollections.get(0).getPictures(), allCollections.get(i).getPictures());
+						allCollections.get(0), allCollections.get(i));
 
 				// move the found items into the map
 				for (Pair<RealPicture, RealPicture> pair : found) {
@@ -1296,6 +1296,10 @@ public class Logic {
 						result.put(pair.getKey(), item);
 					}
 					item.add(pair.getValue());
+
+					// remove found pictures to ignore them in future
+					// (the found picture of the first list will be ignored automatically, because the first list will not be used in future!)
+					allCollections.get(i).remove(pair.getValue());
 				}
 			}
 
@@ -1306,8 +1310,11 @@ public class Logic {
 		return result;
 	}
 
-	private static void collectAllCollectionsLogic(List<RealPictureCollection> allCollections, RealPictureCollection base) {
-		allCollections.add(base);
+	private static void collectAllCollectionsLogic(List<List<RealPicture>> allCollections, RealPictureCollection base) {
+		List<RealPicture> ne = getRealPicturesOf(base);
+		if (ne != null && !ne.isEmpty()) {
+			allCollections.add(ne);
+		}
 		for (PictureCollection sub : base.getSubCollections()) {
 			if (sub instanceof RealPictureCollection) {
 				collectAllCollectionsLogic(allCollections, (RealPictureCollection) sub);
