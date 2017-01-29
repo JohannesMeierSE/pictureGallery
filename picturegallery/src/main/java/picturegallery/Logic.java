@@ -238,6 +238,7 @@ public class Logic {
     	Collection<RealPicture> availablePictures = mapPictures.values();
     	for (Picture pic : currentCollection.getPictures()) {
     		if (pic instanceof LinkedPicture) {
+    			// TODO: wie alte/tote Links (auf Pictures oder Collections) identifizieren?
     			continue;
     		}
     		if (!availablePictures.contains(pic)) {
@@ -1204,7 +1205,7 @@ public class Logic {
 	 * @param two
 	 * @return
 	 */
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two) {
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<? extends Picture> one, List<? extends Picture> two) {
 		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
 		if (one.isEmpty() || two.isEmpty()) {
 			return result;
@@ -1231,14 +1232,14 @@ public class Logic {
 	 * @param currentCollection
 	 * @return
 	 */
-	public static Map<RealPicture, List<RealPicture>> replaceIdenticalPicturesInSubcollectionsByLink(RealPictureCollection currentCollection) {
+	public static Map<RealPicture, List<RealPicture>> findIdenticalInSubcollectionsRecursive(RealPictureCollection currentCollection) {
 		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
 
 		// current collection is empty => link to pictures of sub-collections
 		if (currentCollection.getPictures().isEmpty()) {
 			for (PictureCollection sub : currentCollection.getSubCollections()) {
 				if (sub instanceof RealPictureCollection) {
-					result.putAll(replaceIdenticalPicturesInSubcollectionsByLink((RealPictureCollection) sub));
+					result.putAll(findIdenticalInSubcollectionsRecursive((RealPictureCollection) sub));
 				}
 			}
 			return result;
@@ -1249,6 +1250,54 @@ public class Logic {
 		result.putAll(resultLocal);
 
 		return result;
+	}
+
+	public static Map<RealPicture, List<RealPicture>> findIdenticalBetweenAllCollections(RealPictureCollection baseCollection) {
+		// collect all collections
+		List<RealPictureCollection> allCollections = new ArrayList<>();
+		collectAllCollectionsLogic(allCollections, baseCollection);
+
+		// sort them by size descending (?)
+		allCollections.sort(new Comparator<RealPictureCollection>() {
+			@Override
+			public int compare(RealPictureCollection o1, RealPictureCollection o2) {
+				return Integer.compare(o2.getPictures().size(), o1.getPictures().size());
+			}
+		});
+
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
+
+		while (allCollections.size() >= 2) {
+			// compare each picture of the first collection with all other collections
+			for (int i = 1; i < allCollections.size(); i++) {
+				List<Pair<RealPicture, RealPicture>> found = findIdenticalBetweenLists(
+						allCollections.get(0).getPictures(), allCollections.get(i).getPictures());
+
+				// move the found items into the map
+				for (Pair<RealPicture, RealPicture> pair : found) {
+					List<RealPicture> item = result.get(pair.getKey());
+					if (item == null) {
+						item = new ArrayList<>();
+						result.put(pair.getKey(), item);
+					}
+					item.add(pair.getValue());
+				}
+			}
+
+			// than repeat that with the second collection (but ignoring the first one), and so on!
+			allCollections.remove(0);
+		}
+
+		return result;
+	}
+
+	private static void collectAllCollectionsLogic(List<RealPictureCollection> allCollections, RealPictureCollection base) {
+		allCollections.add(base);
+		for (PictureCollection sub : base.getSubCollections()) {
+			if (sub instanceof RealPictureCollection) {
+				collectAllCollectionsLogic(allCollections, (RealPictureCollection) sub);
+			}
+		}
 	}
 
 	/**

@@ -37,7 +37,7 @@ public class SearchIdenticalAndReplaceAction extends Action {
         Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
         	protected Map<RealPicture, List<RealPicture>> call() throws Exception {
-    			return Logic.replaceIdenticalPicturesInSubcollectionsByLink((RealPictureCollection) selection);
+    			return Logic.findIdenticalInSubcollectionsRecursive((RealPictureCollection) selection);
         	}
         };
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {

@@ -140,7 +140,7 @@ public class MainApp extends Application {
     			int numberListeners = 0;
     			for (Action action : getAllCurrentActions()) {
     				if (action.getKey().equals(event.getCode())) {
-    					if (action.requiresShift() == event.isShiftDown()) {
+    					if (action.requiresShift() == event.isShiftDown() && action.requiresCtrl() == event.isControlDown()) {
     						numberListeners++;
     						action.run(getCurrentState());
     					}
@@ -487,6 +487,7 @@ public class MainApp extends Application {
 		return stateStack.get(stateStack.size() - 1);
 	}
 
+	@SuppressWarnings("unused")
 	private State getPreviousState() {
 		if (stateStack.size() <= 1) {
 			return null;
@@ -521,6 +522,9 @@ public class MainApp extends Application {
 		String newKeys = "";
 		for (Action action : getAllCurrentActions()) {
 			newKeys = newKeys + "(" + action.getKeyDescription();
+			if (action.requiresCtrl()) {
+				newKeys = newKeys + " + Ctrl";
+			}
 			if (action.requiresShift()) {
 				newKeys = newKeys + " + Shift";
 			}

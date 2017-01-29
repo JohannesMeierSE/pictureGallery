@@ -74,6 +74,12 @@ public class MultiPictureState extends State {
 	}
 
 	@Override
+	public void onEntry(State previousState) {
+		super.onEntry(previousState);
+		grid.requestFocus();
+	}
+
+	@Override
 	public void onInit() {
 		super.onInit();
 		registerAction(new ExitSingleCollectionStateAction());

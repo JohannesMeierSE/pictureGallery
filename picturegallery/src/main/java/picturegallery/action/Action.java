@@ -28,6 +28,10 @@ public abstract class Action {
 		return false;
 	}
 
+	public boolean requiresCtrl() {
+		return false;
+	}
+
 	public String getKeyDescription() {
 		return getKey().toString();
 	}
