@@ -1027,6 +1027,16 @@ public class Logic {
 		}
 	}
 
+	public static List<RealPicture> getRealPicturesOf(PictureCollection collection) {
+		List<RealPicture> result = new ArrayList<>(collection.getPictures().size());
+		for (Picture pic : collection.getPictures()) {
+			if (pic instanceof RealPicture) {
+				result.add((RealPicture) pic);
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * !fast: requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
 	 * @param picture
@@ -1131,22 +1141,23 @@ public class Logic {
 		}
 	}
 
-	public static Map<Picture, List<Picture>> findIdenticalInOneCollection(RealPictureCollection collection, boolean recursive) {
-		Map<Picture, List<Picture>> result = new HashMap<>();
+	public static Map<RealPicture, List<RealPicture>> findIdenticalInOneCollection(
+			RealPictureCollection collection, boolean recursive) {
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
 		findIdenticalInOneCollectionLogic(collection, recursive, result);
 		return result;
 	}
 	private static void findIdenticalInOneCollectionLogic(RealPictureCollection collection,
-			boolean recursive, Map<Picture, List<Picture>> result) {
+			boolean recursive, Map<RealPicture, List<RealPicture>> result) {
 		System.out.println("beginning with " + collection.getRelativePath() + "!");
 
-		List<Picture> list = new ArrayList<>(collection.getPictures());
+		List<RealPicture> list = new ArrayList<>(getRealPicturesOf(collection));
 		for (int i = 0; i < list.size() - 1; i++) {
-			List<Picture> items = new ArrayList<>();
-			Picture p1 = list.get(i);
+			List<RealPicture> items = new ArrayList<>();
+			RealPicture p1 = list.get(i);
 			int j = i + 1;
 			while (j < list.size()) {
-				Picture p2 = list.get(j);
+				RealPicture p2 = list.get(j);
 				if (Logic.arePicturesIdentical(p1, p2)) {
 					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
 					items.add(p2);

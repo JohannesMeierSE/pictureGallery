@@ -3,6 +3,7 @@ package picturegallery.action;
 import gallery.LinkedPictureCollection;
 import gallery.Picture;
 import gallery.PictureCollection;
+import gallery.RealPicture;
 import gallery.RealPictureCollection;
 
 import java.util.ArrayList;
@@ -47,50 +48,34 @@ public class SearchIdenticalAction extends Action {
 			searchInSubcollectionsToo = false;
 		}
 
-		Task<Map<Picture, List<Picture>>> task = new Task<Map<Picture, List<Picture>>>() {
+		Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
-        	protected Map<Picture, List<Picture>> call() throws Exception {
+        	protected Map<RealPicture, List<RealPicture>> call() throws Exception {
     			return Logic.findIdenticalInOneCollection((RealPictureCollection) selection, searchInSubcollectionsToo);
         	}
         };
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
-				Map<Picture, List<Picture>> result = task.getValue();
+				Map<RealPicture, List<RealPicture>> result = task.getValue();
 				if (result.isEmpty()) {
 					return;
 				}
 				MultiPictureState nextState = new MultiPictureState();
 				nextState.setNextAfterClosed(state);
 				nextState.onInit();
-				nextState.registerAction(Action.createTempAction(KeyCode.D, "delete duplicated identical pictures", new ActionRunnable() {
-					@Override
-					public void run(State currentState) {
-						// the key will not be deleted => one picture will be kept!!
-						if (!Logic.askForConfirmation("Delete duplicated items?", "In the collection " + selection.getRelativePath()
-								+ ", there are " + result.size() + " pictures with duplicates!",
-								"Do you want to delete all the duplicated pictures?")) {
-							return;
-						}
 
-						// close the state => prevents loading removed pictures again!
-						MainApp.get().switchToPreviousState();
-						nextState.onClose();
+				List<Picture> picturesToDelete = new ArrayList<>();
+				for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
+					picturesToDelete.addAll(e.getValue());
+				}
+				nextState.registerAction(new DeleteSelectedPicturesAction(picturesToDelete,
+						"Delete duplicated identical pictures",
+						"In the collection " + selection.getRelativePath()
+						+ ", there are " + result.size() + " pictures with duplicates!"));
 
-						Logic.runNotOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								for (Entry<Picture, List<Picture>> e : result.entrySet()) {
-									for (Picture picToDelete : e.getValue()) {
-										MainApp.get().deletePicture(picToDelete);
-									}
-								}
-							}
-						});
-					}
-				}));
 				List<Picture> picturesToShow = new ArrayList<>();
-				for (Entry<Picture, List<Picture>> e : result.entrySet()) {
+				for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
 					picturesToShow.add(e.getKey());
 					picturesToShow.addAll(e.getValue());
 				}

@@ -65,5 +65,4 @@ public class SearchIdenticalAndCollectAction extends Action {
 	public String getDescription() {
 		return "search for duplicated real pictures within the whole library";
 	}
-
 }

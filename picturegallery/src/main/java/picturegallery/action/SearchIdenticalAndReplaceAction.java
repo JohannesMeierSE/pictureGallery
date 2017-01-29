@@ -51,58 +51,21 @@ public class SearchIdenticalAndReplaceAction extends Action {
 				MultiPictureState nextState = new MultiPictureState();
 				nextState.setNextAfterClosed(state);
 				nextState.onInit();
-				nextState.registerAction(Action.createTempAction(KeyCode.D, "delete duplicated identical pictures", new ActionRunnable() {
-					@Override
-					public void run(State currentState) {
-						// the key will not be deleted => one picture will be kept!!
-						if (!Logic.askForConfirmation("Delete duplicated items?", "In the collection " + selection.getRelativePath()
-								+ ", there are " + result.size() + " pictures with duplicates in (recursive) sub-collections!",
-								"Do you want to delete all the duplicated pictures in the sub-collections?")) {
-							return;
-						}
 
-						// close the state => prevents loading removed pictures again!
-						MainApp.get().switchToPreviousState();
-						nextState.onClose();
+				List<Picture> picturesToDelete = new ArrayList<>();
+				for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
+					picturesToDelete.addAll(e.getValue());
+				}
+				nextState.registerAction(new DeleteSelectedPicturesAction(picturesToDelete,
+						"Delete duplicated identical pictures",
+						"In the collection " + selection.getRelativePath()
+						+ ", there are " + result.size() + " pictures with duplicates in (recursive) sub-collections!"));
 
-						Logic.runNotOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
-									for (Picture picToDelete : e.getValue()) {
-										MainApp.get().deletePicture(picToDelete);
-									}
-								}
-							}
-						});
-					}
-				}));
-				nextState.registerAction(Action.createTempAction(KeyCode.R, "replace duplicated pictures by link", new ActionRunnable() {
-					@Override
-					public void run(State currentState) {
-						// the key will not be replaced => one real picture will be kept!!
-						if (!Logic.askForConfirmation("Replace duplicated items?", "In the collection " + selection.getRelativePath()
-								+ ", there are " + result.size() + " pictures with duplicates in (recursive) sub-collections!",
-								"Do you want to replace all the duplicated pictures in the sub-collections by links?")) {
-							return;
-						}
+				nextState.registerAction(new ReplaceRealPicturesByLinkAction(result,
+						"Replace duplicated pictures by link",
+						"In the collection " + selection.getRelativePath()
+						+ ", there are " + result.size() + " pictures with duplicates in (recursive) sub-collections!"));
 
-						// close the state => prevents loading removed pictures again!
-						MainApp.get().switchToPreviousState();
-						nextState.onClose();
-
-						Logic.runNotOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
-									for (RealPicture picToDelete : e.getValue()) {
-										Logic.replaceRealByLinkedPicture(picToDelete, e.getKey());
-									}
-								}
-							}
-						});
-					}
-				}));
 				List<Picture> picturesToShow = new ArrayList<>();
 				for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
 					picturesToShow.add(e.getKey());
