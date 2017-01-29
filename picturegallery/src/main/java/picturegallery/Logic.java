@@ -83,7 +83,40 @@ import com.pragone.jphash.image.radial.RadialHash;
 public class Logic {
 	public static final String NO_HASH = "nohash!";
 
+	private static Map<String, Map<String, Picture>> findByNameMap = new HashMap<>();
+
+	private static void findByNameInit(RealPictureCollection currentCollection) {
+		Map<String, Picture> map = new HashMap<>();
+		findByNameMap.put(currentCollection.getRelativePath(), map);
+
+		for (Picture pic : currentCollection.getPictures()) {
+			map.put(pic.getName(), pic);
+		}
+
+		for (PictureCollection sub : currentCollection.getSubCollections()) {
+			if (sub instanceof RealPictureCollection) {
+				findByNameInit((RealPictureCollection) sub);
+			}
+		}
+	}
+	private static void findByNamePut(Picture newPicture) {
+		Map<String, Picture> map = findByNameMap.get(newPicture.getCollection().getRelativePath());
+		if (map == null) {
+			map = new HashMap<>();
+			findByNameMap.put(newPicture.getCollection().getRelativePath(), map);
+		}
+		map.put(newPicture.getName(), newPicture);
+	}
+	private static Picture findByNameGet(RealPictureCollection parent, String pictureName) {
+		Map<String, Picture> map = findByNameMap.get(parent.getRelativePath());
+		if (map == null) {
+			return null;
+		}
+		return map.get(pictureName);
+	}
+
 	public static void loadDirectory(RealPictureCollection baseCollection) {
+		findByNameInit(baseCollection);
     	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
     	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>();
@@ -136,17 +169,20 @@ public class Logic {
 					throw new IllegalArgumentException(message);
 				} else {
 					String linkedPictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
-					LinkedPicture linkedPicture = (LinkedPicture) getPictureByName(symlink.getValue(),
-							linkedPictureName, false, true);
+					LinkedPicture linkedPicture = (LinkedPicture) findByNameGet(symlink.getValue(), linkedPictureName);
+//							(LinkedPicture) getPictureByName(symlink.getValue(), linkedPictureName, false, true);
 					if (linkedPicture == null) {
 						linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
 						ref.getLinkedBy().add(linkedPicture);
 						linkedPicture.setRealPicture(ref);
 						initPicture(symlink.getValue(), name, linkedPicture);
+//						findByNamePut(linkedPicture);
 					}
 				}
 			}
 		}
+
+		findByNameMap.clear();
 
 		// sort all recursive sub-collections: order of collections AND pictures!
 		sortSubCollections(baseCollection, true, true);
@@ -176,7 +212,7 @@ public class Logic {
 		    			currentCollection.getSubCollections().add(sub);
 		    			sub.setName(childName);
 		    		} else {
-	        			System.out.println("already available: " + sub.getRelativePath());
+//	        			System.out.println("already available: " + sub.getRelativePath());
 		    		}
 		    		mapCollections.put(sub.getFullPath(), sub);
 
@@ -195,13 +231,17 @@ public class Logic {
 			        	 * - https://www.tutorials.de/threads/animierte-gifs.180222/ => GIFs fehlerhaft, ohne entsprechend 100ms Delay zwischen den Bildern(?)
 			        	 * - oder die Bilddateien sind einfach beschädigt ... !
 			        	 */
+		        		// 155.461 = 43.5 GB
+		        		// 138.258 = 38.6 GB
 		        		String pictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
-		        		RealPicture pic = (RealPicture) getPictureByName(currentCollection, pictureName, true, false);
+		        		RealPicture pic = (RealPicture) findByNameGet(currentCollection, pictureName);
+//		        				(RealPicture) getPictureByName(currentCollection, pictureName, true, false);
 		        		if (pic == null) {
 		        			pic = GalleryFactory.eINSTANCE.createRealPicture();
 		        			initPicture(currentCollection, name, pic);
+//		        			findByNamePut(pic);
 		        		} else {
-		        			System.out.println("already available: " + pic.getRelativePath());
+//		        			System.out.println("already available: " + pic.getRelativePath());
 		        		}
 
 		        		mapPictures.put(pic.getFullPath(), pic);
@@ -1465,25 +1505,6 @@ public class Logic {
 			}
 			if (sub.getName().equals(collectionName)) {
 				return sub;
-			}
-		}
-		return null;
-	}
-
-	public static Picture getPictureByName(RealPictureCollection parent, String pictureName,
-			boolean searchReal, boolean searchLinked) {
-		if (!searchReal && !searchLinked) {
-			throw new IllegalArgumentException();
-		}
-		for (Picture pic : parent.getPictures()) {
-			if (!searchLinked && pic instanceof LinkedPicture) {
-				continue;
-			}
-			if (!searchReal && pic instanceof RealPicture) {
-				continue;
-			}
-			if (pic.getName().equals(pictureName)) {
-				return pic;
 			}
 		}
 		return null;
