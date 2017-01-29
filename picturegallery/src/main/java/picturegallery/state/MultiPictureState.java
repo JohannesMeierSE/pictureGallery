@@ -1,12 +1,15 @@
 package picturegallery.state;
 
 import gallery.Picture;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 
 import org.controlsfx.control.GridCell;
@@ -15,6 +18,7 @@ import org.controlsfx.control.GridView;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
+import picturegallery.action.HidePathInformationAction;
 
 public class MultiPictureState extends State {
 	public static final double WIDTH = 200.0;
@@ -22,6 +26,7 @@ public class MultiPictureState extends State {
 	private static final double SPACING = 8.0;
 
 	public final ObservableList<Picture> pictures;
+	public final SimpleBooleanProperty pathVisible;
 	// http://controlsfx.bitbucket.org/org/controlsfx/control/GridView.html
 	private final GridView<Picture> grid;
 
@@ -29,6 +34,7 @@ public class MultiPictureState extends State {
 		super();
 
 		pictures = FXCollections.observableArrayList();
+		pathVisible = new SimpleBooleanProperty(true);
 
 		grid = new GridView<>(pictures);
 		grid.cellHeightProperty().set(HEIGHT);
@@ -58,13 +64,21 @@ public class MultiPictureState extends State {
 								text = text + item.getMetadata().getWidth() + " x " + item.getMetadata().getHeight() + "\n";
 								text = text + Logic.formatBytes(item.getMetadata().getSize()) + "\n";
 							}
-							Label label = new Label(text.trim());
-							label.visibleProperty().bind(MainApp.get().labelsVisible);
-							label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
+							Label labelText = new Label(text.trim());
+							labelText.visibleProperty().bind(MainApp.get().labelsVisible);
+							labelText.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
 									+ "-fx-text-fill: white;");
-							label.setWrapText(true);
+							labelText.setWrapText(true);
 
-							StackPane stack = new StackPane(imageView, label);
+							Label labelPath = new Label(Logic.getShortRelativePath(item));
+							labelPath.visibleProperty().bind(Bindings.and(
+									MainApp.get().labelsVisible, pathVisible));
+							labelPath.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
+									+ "-fx-text-fill: white;");
+							labelPath.setWrapText(true);
+
+							VBox labelBox = new VBox(labelText, labelPath);
+							StackPane stack = new StackPane(imageView, labelBox);
 							setGraphic(stack);
 						}
 					}
@@ -83,6 +97,7 @@ public class MultiPictureState extends State {
 	public void onInit() {
 		super.onInit();
 		registerAction(new ExitSingleCollectionStateAction());
+		registerAction(new HidePathInformationAction());
 	}
 
 	@Override

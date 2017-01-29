@@ -1,7 +1,10 @@
 package picturegallery.action;
 
+import gallery.LinkedPictureCollection;
 import gallery.Picture;
+import gallery.PictureCollection;
 import gallery.RealPicture;
+import gallery.RealPictureCollection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +17,7 @@ import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
 
@@ -21,10 +25,19 @@ public class SearchIdenticalAndCollectAction extends Action {
 
 	@Override
 	public void run(State currentState) {
+		if (!(currentState instanceof CollectionState)) {
+			throw new IllegalStateException();
+		}
+		CollectionState state = (CollectionState) currentState;
+		PictureCollection selection = state.getSelection();
+		if (selection == null || selection instanceof LinkedPictureCollection) {
+			return;
+		}
+
         Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
         	protected Map<RealPicture, List<RealPicture>> call() throws Exception {
-    			return Logic.findIdenticalBetweenAllCollections(MainApp.get().getBaseCollection());
+    			return Logic.findIdenticalBetweenAllCollections((RealPictureCollection) selection);
         	}
         };
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -63,6 +76,6 @@ public class SearchIdenticalAndCollectAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "search for duplicated real pictures within the whole library";
+		return "search for duplicated real pictures pair-wise between all (sub)-collections of the selected collection";
 	}
 }

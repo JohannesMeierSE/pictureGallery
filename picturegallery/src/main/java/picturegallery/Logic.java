@@ -951,6 +951,10 @@ public class Logic {
 		return true;
 	}
 
+	public static String getShortRelativePath(Picture picture) {
+		return picture.getCollection().getRelativePath() + File.separator;
+	}
+
 	public static void replaceRealByLinkedPicture(RealPicture oldReal, RealPicture newRef) {
 		// check the input
 		if (oldReal == null || newRef == null) {
