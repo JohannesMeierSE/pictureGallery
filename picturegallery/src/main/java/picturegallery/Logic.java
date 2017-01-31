@@ -83,10 +83,11 @@ import com.pragone.jphash.image.radial.RadialHash;
 public class Logic {
 	public static final String NO_HASH = "nohash!";
 
+	// (collection.relative path -> (picture.name -> Picture))
 	private static Map<String, Map<String, Picture>> findByNameMap = new HashMap<>();
 
 	private static void findByNameInit(RealPictureCollection currentCollection) {
-		Map<String, Picture> map = new HashMap<>();
+		Map<String, Picture> map = new HashMap<>(currentCollection.getPictures().size());
 		findByNameMap.put(currentCollection.getRelativePath(), map);
 
 		for (Picture pic : currentCollection.getPictures()) {
@@ -116,8 +117,11 @@ public class Logic {
 	}
 
 	public static void loadDirectory(RealPictureCollection baseCollection) {
+		long startTime = System.currentTimeMillis();
+		findByNameMap = new HashMap<>(baseCollection.getSubCollections().size());
 		findByNameInit(baseCollection);
     	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
+    	// TODO: mapPictures und die globale Map sind doppelt => reduzieren!
     	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>();
 
@@ -186,6 +190,11 @@ public class Logic {
 
 		// sort all recursive sub-collections: order of collections AND pictures!
 		sortSubCollections(baseCollection, true, true);
+
+		long completeTime = System.currentTimeMillis() - startTime;
+		System.out.println("init time: " + (completeTime / 1000) + " seconds, " + (completeTime % 1000) + " ms");
+		// init time: 130 seconds, 275 ms
+		// init time: 126 seconds, 355 ms (Map-Größe vorher gesetzt)
 	}
 
 	private static void loadDirectoryLogic(RealPictureCollection currentCollection,
@@ -233,6 +242,7 @@ public class Logic {
 			        	 */
 		        		// 155.461 = 43.5 GB
 		        		// 138.258 = 38.6 GB
+		        		// 138.202 = 38.6 GB
 		        		String pictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
 		        		RealPicture pic = (RealPicture) findByNameGet(currentCollection, pictureName);
 //		        				(RealPicture) getPictureByName(currentCollection, pictureName, true, false);
