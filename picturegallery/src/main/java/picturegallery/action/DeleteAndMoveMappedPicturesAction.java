@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.state.CollectionState;
 import picturegallery.state.State;
 
 public class DeleteAndMoveMappedPicturesAction extends Action {
@@ -39,7 +40,7 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 		}
 
 		// close the state => prevents loading removed pictures again!
-		MainApp.get().switchToPreviousState();
+		MainApp.get().switchState(((CollectionState) currentState.getNextAfterClosed()).getWaitingState());
 		currentState.onClose();
 
 		Logic.runNotOnUiThread(new Runnable() {
@@ -56,6 +57,13 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 				for (Entry<RealPicture, List<RealPicture>> e : map.entrySet()) {
 					MainApp.get().movePicture(e.getKey(), movetoCollection);
 				}
+
+				Logic.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						MainApp.get().switchToPreviousState();
+					}
+				});
 			}
 		});
 	}

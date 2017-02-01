@@ -82,7 +82,7 @@ public class ObservablePictureCollection extends ObservableBase<PictureCollectio
 				if (newValue != null && newValue == collection) {
 					updateAll();
 				}
-				// both cases can not be happen, because than it would not be a change!
+				// both cases at the same time can not be happen, because than it would not be a change!
 			}
 		};
 	}

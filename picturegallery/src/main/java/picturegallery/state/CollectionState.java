@@ -40,12 +40,17 @@ public class CollectionState extends State {
 	protected final TreeTableView<PictureCollection> table;
 	private SimpleObjectProperty<RealPictureCollection> collectionWithNewLinks = new SimpleObjectProperty<>();
 	private final SingleCollectionState singleState;
+	private final WaitingState waitingState; // TODO: move as singleton into MainApp??
 
 	public CollectionState() {
 		super();
 		singleState = new SingleCollectionState();
 		singleState.setNextAfterClosed(this);
 		singleState.onInit();
+
+		waitingState = new WaitingState();
+		waitingState.setNextAfterClosed(this);
+		waitingState.onInit();
 
 		table = new TreeTableView<>();
 		table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -106,6 +111,10 @@ public class CollectionState extends State {
 					@Override
 					protected String toText(PictureCollection item) {
 						int count = 0;
+						/* TODO Exception in thread "JavaFX Application Thread" java.util.ConcurrentModificationException
+						 * durch WaitingState behandelt, aber auch vollständig und funktionierend?
+						 * oder muss jeder Zugriff aus Modell doch synchronisiert werden??
+						 */
 						for (Picture pic : item.getPictures()) {
 							if (pic instanceof RealPicture) {
 								count++;
@@ -250,5 +259,9 @@ public class CollectionState extends State {
 
 	public SingleCollectionState getSingleState() {
 		return singleState;
+	}
+
+	public WaitingState getWaitingState() {
+		return waitingState;
 	}
 }
