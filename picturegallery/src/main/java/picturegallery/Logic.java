@@ -1147,9 +1147,9 @@ public class Logic {
 		EditingDomain domain = MainApp.get().getModelDomain();
 		final Command set;
 		if (fast) {
-			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getRealPicture_HashFast(), hash);
+			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getPictureWithHash_HashFast(), hash);
 		} else {
-			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getRealPicture_Hash(), hash);
+			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getPictureWithHash_Hash(), hash);
 		}
 		domain.getCommandStack().execute(set);
 	}

@@ -5,6 +5,7 @@ package gallery.impl;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.Metadata;
+import gallery.PictureWithHash;
 import gallery.RealPicture;
 
 import java.util.Collection;
@@ -28,36 +29,16 @@ import org.eclipse.emf.ecore.util.InternalEList;
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link gallery.impl.RealPictureImpl#getLinkedBy <em>Linked By</em>}</li>
- *   <li>{@link gallery.impl.RealPictureImpl#getMetadata <em>Metadata</em>}</li>
  *   <li>{@link gallery.impl.RealPictureImpl#getHash <em>Hash</em>}</li>
  *   <li>{@link gallery.impl.RealPictureImpl#getHashFast <em>Hash Fast</em>}</li>
+ *   <li>{@link gallery.impl.RealPictureImpl#getLinkedBy <em>Linked By</em>}</li>
+ *   <li>{@link gallery.impl.RealPictureImpl#getMetadata <em>Metadata</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
 public class RealPictureImpl extends PictureImpl implements RealPicture {
-	/**
-	 * The cached value of the '{@link #getLinkedBy() <em>Linked By</em>}' reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getLinkedBy()
-	 * @generated
-	 * @ordered
-	 */
-	protected EList<LinkedPicture> linkedBy;
-
-	/**
-	 * The cached value of the '{@link #getMetadata() <em>Metadata</em>}' containment reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getMetadata()
-	 * @generated
-	 * @ordered
-	 */
-	protected Metadata metadata;
-
 	/**
 	 * The default value of the '{@link #getHash() <em>Hash</em>}' attribute.
 	 * <!-- begin-user-doc -->
@@ -97,6 +78,26 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	 * @ordered
 	 */
 	protected String hashFast = HASH_FAST_EDEFAULT;
+
+	/**
+	 * The cached value of the '{@link #getLinkedBy() <em>Linked By</em>}' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getLinkedBy()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList<LinkedPicture> linkedBy;
+
+	/**
+	 * The cached value of the '{@link #getMetadata() <em>Metadata</em>}' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getMetadata()
+	 * @generated
+	 * @ordered
+	 */
+	protected Metadata metadata;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -257,14 +258,14 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
-			case GalleryPackage.REAL_PICTURE__LINKED_BY:
-				return getLinkedBy();
-			case GalleryPackage.REAL_PICTURE__METADATA:
-				return getMetadata();
 			case GalleryPackage.REAL_PICTURE__HASH:
 				return getHash();
 			case GalleryPackage.REAL_PICTURE__HASH_FAST:
 				return getHashFast();
+			case GalleryPackage.REAL_PICTURE__LINKED_BY:
+				return getLinkedBy();
+			case GalleryPackage.REAL_PICTURE__METADATA:
+				return getMetadata();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -278,18 +279,18 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	@Override
 	public void eSet(int featureID, Object newValue) {
 		switch (featureID) {
+			case GalleryPackage.REAL_PICTURE__HASH:
+				setHash((String)newValue);
+				return;
+			case GalleryPackage.REAL_PICTURE__HASH_FAST:
+				setHashFast((String)newValue);
+				return;
 			case GalleryPackage.REAL_PICTURE__LINKED_BY:
 				getLinkedBy().clear();
 				getLinkedBy().addAll((Collection<? extends LinkedPicture>)newValue);
 				return;
 			case GalleryPackage.REAL_PICTURE__METADATA:
 				setMetadata((Metadata)newValue);
-				return;
-			case GalleryPackage.REAL_PICTURE__HASH:
-				setHash((String)newValue);
-				return;
-			case GalleryPackage.REAL_PICTURE__HASH_FAST:
-				setHashFast((String)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -303,17 +304,17 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	@Override
 	public void eUnset(int featureID) {
 		switch (featureID) {
-			case GalleryPackage.REAL_PICTURE__LINKED_BY:
-				getLinkedBy().clear();
-				return;
-			case GalleryPackage.REAL_PICTURE__METADATA:
-				setMetadata((Metadata)null);
-				return;
 			case GalleryPackage.REAL_PICTURE__HASH:
 				setHash(HASH_EDEFAULT);
 				return;
 			case GalleryPackage.REAL_PICTURE__HASH_FAST:
 				setHashFast(HASH_FAST_EDEFAULT);
+				return;
+			case GalleryPackage.REAL_PICTURE__LINKED_BY:
+				getLinkedBy().clear();
+				return;
+			case GalleryPackage.REAL_PICTURE__METADATA:
+				setMetadata((Metadata)null);
 				return;
 		}
 		super.eUnset(featureID);
@@ -327,16 +328,50 @@ public class RealPictureImpl extends PictureImpl implements RealPicture {
 	@Override
 	public boolean eIsSet(int featureID) {
 		switch (featureID) {
-			case GalleryPackage.REAL_PICTURE__LINKED_BY:
-				return linkedBy != null && !linkedBy.isEmpty();
-			case GalleryPackage.REAL_PICTURE__METADATA:
-				return metadata != null;
 			case GalleryPackage.REAL_PICTURE__HASH:
 				return HASH_EDEFAULT == null ? hash != null : !HASH_EDEFAULT.equals(hash);
 			case GalleryPackage.REAL_PICTURE__HASH_FAST:
 				return HASH_FAST_EDEFAULT == null ? hashFast != null : !HASH_FAST_EDEFAULT.equals(hashFast);
+			case GalleryPackage.REAL_PICTURE__LINKED_BY:
+				return linkedBy != null && !linkedBy.isEmpty();
+			case GalleryPackage.REAL_PICTURE__METADATA:
+				return metadata != null;
 		}
 		return super.eIsSet(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public int eBaseStructuralFeatureID(int derivedFeatureID, Class<?> baseClass) {
+		if (baseClass == PictureWithHash.class) {
+			switch (derivedFeatureID) {
+				case GalleryPackage.REAL_PICTURE__HASH: return GalleryPackage.PICTURE_WITH_HASH__HASH;
+				case GalleryPackage.REAL_PICTURE__HASH_FAST: return GalleryPackage.PICTURE_WITH_HASH__HASH_FAST;
+				default: return -1;
+			}
+		}
+		return super.eBaseStructuralFeatureID(derivedFeatureID, baseClass);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public int eDerivedStructuralFeatureID(int baseFeatureID, Class<?> baseClass) {
+		if (baseClass == PictureWithHash.class) {
+			switch (baseFeatureID) {
+				case GalleryPackage.PICTURE_WITH_HASH__HASH: return GalleryPackage.REAL_PICTURE__HASH;
+				case GalleryPackage.PICTURE_WITH_HASH__HASH_FAST: return GalleryPackage.REAL_PICTURE__HASH_FAST;
+				default: return -1;
+			}
+		}
+		return super.eDerivedStructuralFeatureID(baseFeatureID, baseClass);
 	}
 
 	/**

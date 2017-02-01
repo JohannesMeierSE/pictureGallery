@@ -104,6 +104,14 @@ public class GalleryAdapterFactory extends AdapterFactoryImpl {
 				return createLinkedPictureCollectionAdapter();
 			}
 			@Override
+			public Adapter caseDeletedPicture(DeletedPicture object) {
+				return createDeletedPictureAdapter();
+			}
+			@Override
+			public Adapter casePictureWithHash(PictureWithHash object) {
+				return createPictureWithHashAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -246,6 +254,34 @@ public class GalleryAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createLinkedPictureCollectionAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link gallery.DeletedPicture <em>Deleted Picture</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see gallery.DeletedPicture
+	 * @generated
+	 */
+	public Adapter createDeletedPictureAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link gallery.PictureWithHash <em>Picture With Hash</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see gallery.PictureWithHash
+	 * @generated
+	 */
+	public Adapter createPictureWithHashAdapter() {
 		return null;
 	}
 

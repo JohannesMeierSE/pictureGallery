@@ -88,7 +88,7 @@ public class LinkPictureAction extends Action {
 				Logic.runNotOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						MainApp.get().deletePicture(pictureToRemove);
+						MainApp.get().deletePicture(pictureToRemove, false);
 					}
 				});
 			}

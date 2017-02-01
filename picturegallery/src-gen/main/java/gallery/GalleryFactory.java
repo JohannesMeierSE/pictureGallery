@@ -76,6 +76,15 @@ public interface GalleryFactory extends EFactory {
 	LinkedPictureCollection createLinkedPictureCollection();
 
 	/**
+	 * Returns a new object of class '<em>Deleted Picture</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Deleted Picture</em>'.
+	 * @generated
+	 */
+	DeletedPicture createDeletedPicture();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

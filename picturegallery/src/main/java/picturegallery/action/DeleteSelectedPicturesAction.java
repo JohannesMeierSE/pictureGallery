@@ -37,7 +37,7 @@ public class DeleteSelectedPicturesAction extends Action {
 			@Override
 			public void run() {
 				for (Picture picToDelete : picturesToDelete) {
-					MainApp.get().deletePicture(picToDelete);
+					MainApp.get().deletePicture(picToDelete, false);
 				}
 			}
 		});

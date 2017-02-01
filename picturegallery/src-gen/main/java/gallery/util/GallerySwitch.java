@@ -84,6 +84,7 @@ public class GallerySwitch<T> extends Switch<T> {
 				RealPicture realPicture = (RealPicture)theEObject;
 				T result = caseRealPicture(realPicture);
 				if (result == null) result = casePicture(realPicture);
+				if (result == null) result = casePictureWithHash(realPicture);
 				if (result == null) result = casePathElement(realPicture);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
@@ -127,6 +128,19 @@ public class GallerySwitch<T> extends Switch<T> {
 				T result = caseLinkedPictureCollection(linkedPictureCollection);
 				if (result == null) result = casePictureCollection(linkedPictureCollection);
 				if (result == null) result = casePathElement(linkedPictureCollection);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case GalleryPackage.DELETED_PICTURE: {
+				DeletedPicture deletedPicture = (DeletedPicture)theEObject;
+				T result = caseDeletedPicture(deletedPicture);
+				if (result == null) result = casePictureWithHash(deletedPicture);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case GalleryPackage.PICTURE_WITH_HASH: {
+				PictureWithHash pictureWithHash = (PictureWithHash)theEObject;
+				T result = casePictureWithHash(pictureWithHash);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -266,6 +280,36 @@ public class GallerySwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseLinkedPictureCollection(LinkedPictureCollection object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Deleted Picture</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Deleted Picture</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseDeletedPicture(DeletedPicture object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Picture With Hash</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Picture With Hash</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T casePictureWithHash(PictureWithHash object) {
 		return null;
 	}
 

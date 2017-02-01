@@ -49,7 +49,7 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 				// 1. delete all mapped values
 				for (Entry<RealPicture, List<RealPicture>> e : map.entrySet()) {
 					for (Picture picToDelete : e.getValue()) {
-						MainApp.get().deletePicture(picToDelete);
+						MainApp.get().deletePicture(picToDelete, false);
 					}
 				}
 

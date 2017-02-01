@@ -1,5 +1,7 @@
 package picturegallery;
 
+import gallery.DeletedPicture;
+import gallery.GalleryFactory;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.Picture;
@@ -319,20 +321,34 @@ public class MainApp extends Application {
 	 * This method do not uses threads.
 	 * Therefore, the caller of this method has to ensure, that the thread handling is correct.
 	 * @param picture
+	 * @param saveDeletedInformation
 	 */
-	public void deletePicture(Picture picture) {
+	public void deletePicture(Picture picture, boolean saveDeletedInformation) {
 		// real picture ...
 		if (picture instanceof RealPicture) {
 			// => remove all linked pictures, too!
 			RealPicture realToDelete = (RealPicture) picture;
 			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
-				deletePicture(linked);
+				deletePicture(linked, false);
 			}
 
 			// remove the pictures from the image cache!
 			RealPicture real = (RealPicture) picture;
 			imageCache.remove(real);
 			imageCacheSmall.remove(real);
+
+			// save deleted information
+			if (saveDeletedInformation) {
+				PictureLibrary library = baseCollection.getLibrary();
+				DeletedPicture deleted = GalleryFactory.eINSTANCE.createDeletedPicture();
+				deleted.setLibrary(library);
+				deleted.setRelativePath(picture.getRelativePath());
+				deleted.setHash(Logic.getOrLoadHashOfPicture(realToDelete, false));
+				deleted.setHashFast(Logic.getOrLoadHashOfPicture(realToDelete, true));
+
+				modelDomain.getCommandStack().execute(AddCommand.create(modelDomain,
+						library, GalleryPackage.eINSTANCE.getPictureLibrary_DeletedPictures(), deleted));
+			}
 		}
 
 		// delete file in file system
@@ -357,13 +373,13 @@ public class MainApp extends Application {
 		if (picture instanceof LinkedPicture) {
 			LinkedPicture lp = (LinkedPicture) picture;
 
-			domain.getCommandStack().execute(SetCommand.create(domain,
-					lp, GalleryPackage.eINSTANCE.getLinkedPicture_RealPicture(), null));
-//			lp.setRealPicture(null);
-
 			domain.getCommandStack().execute(RemoveCommand.create(domain,
 					lp.getRealPicture(), GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), lp));
 //			lp.getRealPicture().getLinkedBy().remove(lp);
+
+			domain.getCommandStack().execute(SetCommand.create(domain,
+					lp, GalleryPackage.eINSTANCE.getLinkedPicture_RealPicture(), null));
+//			lp.setRealPicture(null);
 		}
 	}
 

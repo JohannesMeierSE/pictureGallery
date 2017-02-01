@@ -2,6 +2,7 @@
  */
 package gallery;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -15,6 +16,7 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link gallery.PictureLibrary#getBasePath <em>Base Path</em>}</li>
  *   <li>{@link gallery.PictureLibrary#getName <em>Name</em>}</li>
  *   <li>{@link gallery.PictureLibrary#getBaseCollection <em>Base Collection</em>}</li>
+ *   <li>{@link gallery.PictureLibrary#getDeletedPictures <em>Deleted Pictures</em>}</li>
  * </ul>
  * </p>
  *
@@ -76,6 +78,24 @@ public interface PictureLibrary extends EObject {
 	 * @generated
 	 */
 	void setBaseCollection(RealPictureCollection value);
+
+	/**
+	 * Returns the value of the '<em><b>Deleted Pictures</b></em>' containment reference list.
+	 * The list contents are of type {@link gallery.DeletedPicture}.
+	 * It is bidirectional and its opposite is '{@link gallery.DeletedPicture#getLibrary <em>Library</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Deleted Pictures</em>' containment reference list isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Deleted Pictures</em>' containment reference list.
+	 * @see gallery.GalleryPackage#getPictureLibrary_DeletedPictures()
+	 * @see gallery.DeletedPicture#getLibrary
+	 * @model opposite="library" containment="true"
+	 * @generated
+	 */
+	EList<DeletedPicture> getDeletedPictures();
 
 	/**
 	 * Returns the value of the '<em><b>Name</b></em>' attribute.
