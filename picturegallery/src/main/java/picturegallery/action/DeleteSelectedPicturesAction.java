@@ -10,11 +10,11 @@ import picturegallery.MainApp;
 import picturegallery.state.State;
 
 public class DeleteSelectedPicturesAction extends Action {
-	private final List<Picture> picturesToDelete;
+	private final List<? extends Picture> picturesToDelete;
 	private final String title;
 	private final String description;
 
-	public DeleteSelectedPicturesAction(List<Picture> picturesToDelete, String title, String description) {
+	public DeleteSelectedPicturesAction(List<? extends Picture> picturesToDelete, String title, String description) {
 		super();
 		this.picturesToDelete = picturesToDelete;
 		this.title = title;

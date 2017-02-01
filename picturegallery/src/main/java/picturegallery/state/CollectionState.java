@@ -29,6 +29,7 @@ import picturegallery.action.RenameCollectionAction;
 import picturegallery.action.SearchIdenticalAction;
 import picturegallery.action.SearchIdenticalAndCollectAction;
 import picturegallery.action.SearchIdenticalAndReplaceAction;
+import picturegallery.action.SearchIdenticalDeletedAction;
 import picturegallery.action.ShowSingleCollectionAction;
 import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
@@ -229,6 +230,7 @@ public class CollectionState extends State {
 		registerAction(new SearchIdenticalAction());
 		registerAction(new SearchIdenticalAndReplaceAction());
 		registerAction(new SearchIdenticalAndCollectAction());
+		registerAction(new SearchIdenticalDeletedAction());
 	}
 
 	@Override

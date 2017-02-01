@@ -1,5 +1,6 @@
 package picturegallery;
 
+import gallery.DeletedPicture;
 import gallery.GalleryFactory;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
@@ -1368,6 +1369,35 @@ public class Logic {
 		for (PictureCollection sub : base.getSubCollections()) {
 			if (sub instanceof RealPictureCollection) {
 				collectAllCollectionsLogic(allCollections, (RealPictureCollection) sub);
+			}
+		}
+	}
+
+	public static List<RealPicture> findIdenticalDeletedPictures(PictureLibrary library, RealPictureCollection baseCollection) {
+		Map<String, DeletedPicture> deletedMap = new HashMap<>(library.getDeletedPictures().size());
+		for (DeletedPicture del : library.getDeletedPictures()) {
+			deletedMap.put(del.getHashFast(), del);
+		}
+		List<RealPicture> result = new ArrayList<>();
+		findIdenticalDeletedPicturesLogic(baseCollection, deletedMap, result);
+		return result;
+	}
+
+	private static void findIdenticalDeletedPicturesLogic(RealPictureCollection baseCollection,
+			Map<String, DeletedPicture> deletedMap, List<RealPicture> result) {
+		// search for "deleted" pictures
+		for (Picture pic : baseCollection.getPictures()) {
+			if (pic instanceof RealPicture) {
+				if (deletedMap.containsKey(Logic.getOrLoadHashOfPicture(pic, true))) {
+					result.add((RealPicture) pic);
+				}
+			}
+		}
+
+		// handle the sub-collections
+		for (PictureCollection sub : baseCollection.getSubCollections()) {
+			if (sub instanceof RealPictureCollection) {
+				findIdenticalDeletedPicturesLogic((RealPictureCollection) sub, deletedMap, result);
 			}
 		}
 	}
