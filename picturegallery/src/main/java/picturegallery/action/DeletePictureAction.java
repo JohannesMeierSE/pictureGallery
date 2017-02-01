@@ -11,11 +11,13 @@ import picturegallery.state.TempCollectionState;
 public class DeletePictureAction extends Action {
 	private boolean askUser;
 	private boolean saveDeletedInformation;
+	private boolean initiallyAsked;
 
 	public DeletePictureAction() {
 		super();
 		askUser = true;
 		saveDeletedInformation = true;
+		initiallyAsked = false;
 	}
 
 	@Override
@@ -38,10 +40,9 @@ public class DeletePictureAction extends Action {
 			}
 		}
 
-		// close temp mode (only one level)
-		if (state instanceof TempCollectionState) {
-			// exit and clear TEMP collection => see ShowOrExitTempCollectionAction
-			MainApp.get().switchToPreviousState();
+		// go directly to the next picture
+		if (state.getSize() >= 2) {
+			state.gotoPicture(1, true);
 		}
 
 		// delete the picture
@@ -51,6 +52,15 @@ public class DeletePictureAction extends Action {
 				MainApp.get().deletePicture(pictureToDelete, saveDeletedInformation);
 			}
 		});
+
+		// ask always or never?
+		if (!initiallyAsked) {
+			initiallyAsked = true;
+			if (Logic.askForConfirmation("Delete picture", "Do want to be asked any time you delete a picture?",
+					"If you confirm, than you will never be asked again, if you cancel, than you will be asked always!")) {
+				askUser = false;
+			}
+		}
 	}
 
 	@Override

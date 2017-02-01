@@ -42,6 +42,7 @@ public class SearchIdenticalDeletedAction extends Action {
 			public void handle(WorkerStateEvent event) {
 				List<RealPicture> result = task.getValue();
 				if (result.isEmpty()) {
+					System.out.println("found no identical deleted pictures!");
 					return;
 				}
 
