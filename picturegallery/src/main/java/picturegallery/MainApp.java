@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javafx.application.Application;
@@ -50,6 +51,7 @@ import picturegallery.action.Action;
 import picturegallery.action.FullScreenAction;
 import picturegallery.action.HideInformationAction;
 import picturegallery.persistency.ObjectCache;
+import picturegallery.persistency.ObjectCache.AlternativeWorker;
 import picturegallery.persistency.Settings;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
@@ -164,8 +166,6 @@ public class MainApp extends Application {
     	 */
 		scene.setOnKeyPressed(keyHandler);
 
-    	initCache();
-
     	stage.setFullScreenExitHint("Press F11 or ESC to exit full-screen mode.");
         stage.setTitle("Picture Gallery");
         stage.setScene(scene);
@@ -235,7 +235,9 @@ public class MainApp extends Application {
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
         	@Override
         	public void handle(WorkerStateEvent event) {
-        		globalActions.add(new FullScreenAction());
+            	initCache();
+
+            	globalActions.add(new FullScreenAction());
         		globalActions.add(new HideInformationAction());
 
         		// start with the first/initial state:
@@ -271,10 +273,9 @@ public class MainApp extends Application {
 			@Override
 			protected Image load(RealPicture key) {
 				// löst anscheinend selbstständig SymLinks auf !!
-				Image loaded = null;
 				try {
 					// load picture completely!
-					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
+					Image loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString());
 
 					// load meta data directly with the image => improves the initial loading time!
 					try {
@@ -282,6 +283,7 @@ public class MainApp extends Application {
 					} catch (Throwable e) {
 						// ignore
 					}
+					return loaded;
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
@@ -290,20 +292,33 @@ public class MainApp extends Application {
 					e.printStackTrace();
 					// it seems, that this picture is not contained in a collection anymore!
 				}
-				return loaded;
+				return null;
 			}
 		};
+		imageCache.setAlternativeWorker(new AlternativeWorker() {
+			private Iterator<RealPicture> pictures = Logic.iteratorPictures(baseCollection);
+
+			@Override
+			public boolean hasStillWork() {
+				return pictures.hasNext();
+			}
+
+			@Override
+			public void doSomeWork() {
+				RealPicture next = pictures.next();
+				Logic.getOrLoadHashOfPicture(next, false);
+			}
+		});
 		imageCacheSmall = new ObjectCache<RealPicture, Image>() {
 			@Override
 			protected Image load(RealPicture key) {
 				// löst anscheinend selbstständig SymLinks auf !!
-				Image loaded = null;
 				try {
 					/*
 					 * this is an optimization: load pictures only in the required size!
 					 * https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
 					 */
-					loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString(),
+					Image loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString(),
 							MultiPictureState.WIDTH, MultiPictureState.HEIGHT, true, true);
 
 					// load meta data directly with the image => improves the initial loading time!
@@ -312,12 +327,16 @@ public class MainApp extends Application {
 					} catch (Throwable e) {
 						// ignore
 					}
+					return loaded;
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
 					e.printStackTrace();
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+					// it seems, that this picture is not contained in a collection anymore!
 				}
-				return loaded;
+				return null;
 			}
 		};
 	}

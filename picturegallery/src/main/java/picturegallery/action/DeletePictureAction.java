@@ -6,7 +6,6 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
-import picturegallery.state.TempCollectionState;
 
 public class DeletePictureAction extends Action {
 	private boolean askUser;

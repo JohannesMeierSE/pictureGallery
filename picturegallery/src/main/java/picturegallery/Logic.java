@@ -27,9 +27,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import javafx.application.Platform;
@@ -101,6 +105,7 @@ public class Logic {
 			}
 		}
 	}
+	@SuppressWarnings("unused")
 	private static void findByNamePut(Picture newPicture) {
 		Map<String, Picture> map = findByNameMap.get(newPicture.getCollection().getRelativePath());
 		if (map == null) {
@@ -196,6 +201,7 @@ public class Logic {
 		System.out.println("init time: " + (completeTime / 1000) + " seconds, " + (completeTime % 1000) + " ms");
 		// init time: 130 seconds, 275 ms
 		// init time: 126 seconds, 355 ms (Map-Größe vorher gesetzt)
+		// init time: 124 seconds, 752 ms
 	}
 
 	private static void loadDirectoryLogic(RealPictureCollection currentCollection,
@@ -1133,6 +1139,7 @@ public class Logic {
 			e.printStackTrace();
 			setHashLogic(real, NO_HASH, fast);
 		} catch (Throwable e) {
+			// as example, sometime, exceptions like "java.lang.IllegalArgumentException: Can't work with this type of byte image: 13" occur
 			e.printStackTrace();
 			setHashLogic(real, NO_HASH, fast);
 		}
@@ -1548,6 +1555,96 @@ public class Logic {
 			}
 		}
 		return null;
+	}
+
+	public static Iterator<RealPicture> iteratorPictures(RealPictureCollection baseCollection) {
+		return new RealPictureIterator(baseCollection);
+	}
+
+	public static class RealPictureIterator implements Iterator<RealPicture> {
+		private final Iterator<RealPictureCollection> collections;
+		private Iterator<Picture> pictures;
+		private RealPicture nextPicture;
+		public RealPictureIterator(RealPictureCollection base) {
+			collections = iteratorCollection(base);
+			if (collections.hasNext()) {
+				pictures = collections.next().getPictures().iterator();
+			}
+			nextPicture = null;
+
+			/*
+			 * 1..* x hasNext()
+			 * 1 next()
+			 * ...
+			 */
+		}
+		@Override
+		public boolean hasNext() {
+			if (nextPicture != null) {
+				return true;
+			}
+			Picture next = null;
+			while (true) {
+				while (pictures.hasNext() && !(next instanceof RealPicture)) {
+					next = pictures.next();
+				}
+				if (next instanceof RealPicture) {
+					// found next within the current collection
+					nextPicture = (RealPicture) next;
+					return true;
+				}
+	
+				// check the next collection
+				if (collections.hasNext()) {
+					pictures = collections.next().getPictures().iterator();
+				} else {
+					return false;
+				}
+			}
+		}
+
+		@Override
+		public RealPicture next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			if (nextPicture == null) {
+				throw new IllegalStateException();
+			}
+			RealPicture result = nextPicture;
+			nextPicture = null;
+			return result;
+		}
+	}
+
+	public static Iterator<RealPictureCollection> iteratorCollection(RealPictureCollection baseCollection) {
+		return new RealPictureCollectionIterator(baseCollection);
+	}
+
+	public static class RealPictureCollectionIterator implements Iterator<RealPictureCollection> {
+		// https://stackoverflow.com/questions/30779515/recursive-iterator-for-composite-pattern
+		private final Deque<RealPictureCollection> stack;
+		public RealPictureCollectionIterator(RealPictureCollection base) {
+			stack = new LinkedList<>();
+			stack.push(base);
+		}
+		@Override
+		public boolean hasNext() {
+			return !stack.isEmpty();
+		}
+		@Override
+		public RealPictureCollection next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			RealPictureCollection result = stack.pop();
+			for (PictureCollection sub : result.getSubCollections()) {
+				if (sub instanceof RealPictureCollection) {
+					stack.push((RealPictureCollection) sub);
+				}
+			}
+			return result;
+		}
 	}
 
 	public static void runOnUiThread(Runnable run) {

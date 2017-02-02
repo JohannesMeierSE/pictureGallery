@@ -17,8 +17,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 // https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
+	/**
+	 * Will be used for listeners which want to be notified if the loading finished.
+	 * @author Johannes Meier
+	 *
+	 * @param <K>
+	 * @param <V>
+	 */
 	public interface CallBack<K, V> {
 		public void loaded(K key, V value);
+	}
+
+	public interface AlternativeWorker {
+		public boolean hasStillWork();
+		public void doSomeWork();
 	}
 
 	class Tripel {
@@ -65,10 +77,11 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	protected final List<Tripel> loading; // order is not relevant
 	protected final List<Tripel> requested; // first element will be loaded next
 	protected final int maxSize;
-	protected final boolean freezeSize;
 
 	private Thread thread;
 	private final AtomicBoolean stopped;
+
+	protected AlternativeWorker alternativeWorker;
 
 	public ObjectCache() {
 		this(20, false);
@@ -78,7 +91,6 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	}
 	private ObjectCache(int size, boolean freezeSize) {
 		super();
-		this.freezeSize = freezeSize;
 		maxSize = size;
 		content = new HashMap<>(maxSize * 2);
 		contentSorted = new LinkedList<>();
@@ -90,20 +102,29 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 			@Override
 			public void run() {
 				while (!isInterrupted() && !stopped.get()) {
-					Tripel next = null;
-					synchronized (sync) {
-						while (requested.isEmpty() && !stopped.get()) {
+					// wait, until there are requested pictures to load
+					while (isRequestedEmpty() && !stopped.get()) {
+						if (alternativeWorker != null && alternativeWorker.hasStillWork()) {
+							// instead of "waiting", do some other work!
+							alternativeWorker.doSomeWork();
+						} else {
 							try {
-								sync.wait();
+								synchronized (sync) {
+									sync.wait();
+								}
 							} catch (InterruptedException e) {
 							}
 						}
-						// loading was stopped (currently, no requests available)
-						if (stopped.get()) {
-							System.out.println("Loading thread: ready and stopped");
-							return;
-						}
-						// load the next element
+					}
+					// loading was stopped (currently, no requests available)
+					if (stopped.get()) {
+						System.out.println("Loading thread: ready and stopped");
+						return;
+					}
+
+					// load the next element
+					Tripel next = null;
+					synchronized (sync) {
 						next = requested.remove(0);
 						loading.add(0, next);
 					}
@@ -111,6 +132,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 					if (loadedValue == null) {
 						// try it again!
 					} else {
+						// handle the loaded value
 						synchronized (sync) {
 							// Grenze berücksichtigen!! und Elemente wieder rauslöschen!
 							while (freezeSize && content.size() >= maxSize) {
@@ -123,6 +145,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 							// key is not loading anymore
 							loading.remove(next);
 						}
+						// notification for the listeners, that this picture was loaded successfully
 						for (CallBack<K, V> call : next.callbacks) {
 							call.loaded(next.key, loadedValue);
 						}
@@ -151,6 +174,18 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	}
 
 	protected abstract V load(K key);
+
+	/**
+	 * Checks, if there are requested pictures to load in a synchronized way!
+	 * @return
+	 */
+	private boolean isRequestedEmpty() {
+		boolean result = true;
+		synchronized (sync) {
+			result = requested.isEmpty();
+		}
+		return result;
+	}
 
 	public boolean isLoaded(K key) {
 		synchronized (sync) {
@@ -259,5 +294,9 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 				callback.loaded(key, value.value);
 			}
 		}
+	}
+
+	public void setAlternativeWorker(AlternativeWorker alternativeWorker) {
+		this.alternativeWorker = alternativeWorker;
 	}
 }
