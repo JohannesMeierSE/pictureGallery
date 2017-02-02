@@ -261,6 +261,9 @@ public class MainApp extends Application {
 		if (imageCache != null) {
 			imageCache.stop();
 		}
+		if (imageCacheSmall != null) {
+			imageCacheSmall.stop();
+		}
 	}
 
 	private void initCache() {
@@ -283,6 +286,9 @@ public class MainApp extends Application {
 					e.printStackTrace();
 				} catch (OutOfMemoryError e) {
 					e.printStackTrace();
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+					// it seems, that this picture is not contained in a collection anymore!
 				}
 				return loaded;
 			}
