@@ -293,7 +293,7 @@ public class MainApp extends Application {
 				return loaded;
 			}
 		};
-		imageCacheSmall = new ObjectCache<RealPicture, Image>(SPACE) {
+		imageCacheSmall = new ObjectCache<RealPicture, Image>() {
 			@Override
 			protected Image load(RealPicture key) {
 				// löst anscheinend selbstständig SymLinks auf !!
