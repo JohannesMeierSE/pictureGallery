@@ -350,8 +350,8 @@ public class MainApp extends Application {
 
 	/**
 	 * Removes the given picture in file system and in the EMF model completely.
-	 * This method do not uses threads.
-	 * Therefore, the caller of this method has to ensure, that the thread handling is correct.
+	 * This method removes the file in the file system NOT on the UI thread,
+	 * but all the other stuff is executed on the same thread which called this method.
 	 * @param picture
 	 * @param saveDeletedInformation
 	 */
@@ -383,24 +383,29 @@ public class MainApp extends Application {
 			}
 		}
 
-		// delete file in file system
-		try {
-			Files.delete(Paths.get(picture.getFullPath()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Logic.runNotOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				// delete file in file system
+				try {
+					Files.delete(Paths.get(picture.getFullPath()));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
 		// update the EMF model
 		EditingDomain domain = MainApp.get().getModelDomain();
 		RealPictureCollection parentCollection = picture.getCollection();
 
-		domain.getCommandStack().execute(SetCommand.create(domain,
-				picture, GalleryPackage.eINSTANCE.getPicture_Collection(), null));
-//		picture.setCollection(null);
-
 		domain.getCommandStack().execute(RemoveCommand.create(domain,
 				parentCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), picture));
 //		parentCollection.getPictures().remove(picture);
+
+		domain.getCommandStack().execute(SetCommand.create(domain,
+				picture, GalleryPackage.eINSTANCE.getPicture_Collection(), null));
+//		picture.setCollection(null);
 
 		if (picture instanceof LinkedPicture) {
 			LinkedPicture lp = (LinkedPicture) picture;

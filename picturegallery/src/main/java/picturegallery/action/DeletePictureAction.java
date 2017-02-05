@@ -45,12 +45,7 @@ public class DeletePictureAction extends Action {
 		}
 
 		// delete the picture
-		Logic.runNotOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				MainApp.get().deletePicture(pictureToDelete, saveDeletedInformation);
-			}
-		});
+		MainApp.get().deletePicture(pictureToDelete, saveDeletedInformation);
 
 		// ask always or never?
 		if (!initiallyAsked) {

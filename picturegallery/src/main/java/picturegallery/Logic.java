@@ -1565,6 +1565,7 @@ public class Logic {
 		private final Iterator<RealPictureCollection> collections;
 		private Iterator<Picture> pictures;
 		private RealPicture nextPicture;
+
 		public RealPictureIterator(RealPictureCollection base) {
 			collections = iteratorCollection(base);
 			if (collections.hasNext()) {
@@ -1578,6 +1579,7 @@ public class Logic {
 			 * ...
 			 */
 		}
+
 		@Override
 		public boolean hasNext() {
 			if (nextPicture != null) {
@@ -1624,14 +1626,17 @@ public class Logic {
 	public static class RealPictureCollectionIterator implements Iterator<RealPictureCollection> {
 		// https://stackoverflow.com/questions/30779515/recursive-iterator-for-composite-pattern
 		private final Deque<RealPictureCollection> stack;
+
 		public RealPictureCollectionIterator(RealPictureCollection base) {
 			stack = new LinkedList<>();
 			stack.push(base);
 		}
+
 		@Override
 		public boolean hasNext() {
 			return !stack.isEmpty();
 		}
+
 		@Override
 		public RealPictureCollection next() {
 			if (!hasNext()) {

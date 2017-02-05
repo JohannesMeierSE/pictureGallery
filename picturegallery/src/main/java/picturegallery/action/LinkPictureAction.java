@@ -3,7 +3,6 @@ package picturegallery.action;
 import gallery.GalleryFactory;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
-import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
@@ -84,13 +83,7 @@ public class LinkPictureAction extends Action {
 			if (Logic.askForConfirmation("Link current picture", "The current picture is already linked into the selected collection:",
 					"Confirm to remove the link from the collection.")) {
 				// ask before removing the link
-				Picture pictureToRemove = existingLink;
-				Logic.runNotOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						MainApp.get().deletePicture(pictureToRemove, false);
-					}
-				});
+				MainApp.get().deletePicture(existingLink, false);
 			}
 		}
 	}
