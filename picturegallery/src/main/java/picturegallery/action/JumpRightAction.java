@@ -22,6 +22,11 @@ public class JumpRightAction extends Action {
 	}
 
 	@Override
+	public boolean allowKeyPressed() {
+		return true;
+	}
+
+	@Override
 	public KeyCode getKey() {
 		return KeyCode.PAGE_DOWN;
 	}

@@ -88,7 +88,34 @@ public class MainApp extends Application {
         launch(args);
     }
 
-    /*
+	// https://stackoverflow.com/questions/23163189/keylistener-javafx
+	// https://stackoverflow.com/questions/16834997/cannot-listen-to-keyevent-in-javafx
+	class AdvancedKeyHandler implements EventHandler<KeyEvent> {
+		private final boolean keyPressed;
+		public AdvancedKeyHandler(boolean keyPressed) {
+			super();
+			this.keyPressed = keyPressed;
+		}
+		@Override
+		public void handle(KeyEvent event) {
+			// will be called from the UI-Thread => no nesting (while handling one key, another key appears) of KeyEvents is possible!
+			int numberListeners = 0;
+			for (Action action : getAllCurrentActions()) {
+				if (action.getKey().equals(event.getCode()) && keyPressed == action.allowKeyPressed()) {
+					if (action.requiresShift() == event.isShiftDown() && action.requiresCtrl() == event.isControlDown()) {
+						numberListeners++;
+						action.run(getCurrentState());
+					}
+				}
+			}
+
+			if (numberListeners > 1) {
+				throw new IllegalStateException();
+			}
+		}
+	}
+
+	/*
      * generate JavaFX project:
      * https://github.com/javafx-maven-plugin/javafx-basic-archetype
      * https://github.com/javafx-maven-plugin/javafx-maven-plugin
@@ -135,27 +162,6 @@ public class MainApp extends Application {
     	root.minHeightProperty().bind(scene.heightProperty());
     	root.minWidthProperty().bind(scene.widthProperty());
 
-    	// https://stackoverflow.com/questions/23163189/keylistener-javafx
-    	// https://stackoverflow.com/questions/16834997/cannot-listen-to-keyevent-in-javafx
-    	EventHandler<KeyEvent> keyHandler = new EventHandler<KeyEvent>() {
-    		@Override
-    		public void handle(KeyEvent event) {
-    			// will be called from the UI-Thread => no nesting (while handling one key, another key appears) of KeyEvents is possible!
-    			int numberListeners = 0;
-    			for (Action action : getAllCurrentActions()) {
-    				if (action.getKey().equals(event.getCode())) {
-    					if (action.requiresShift() == event.isShiftDown() && action.requiresCtrl() == event.isControlDown()) {
-    						numberListeners++;
-    						action.run(getCurrentState());
-    					}
-    				}
-    			}
-
-    			if (numberListeners > 1) {
-    				throw new IllegalStateException();
-    			}
-    		}
-    	};
     	/*
     	 * general information about event pprocessing: https://docs.oracle.com/javafx/2/events/processing.htm
     	 * handling vs. filtering: does not make a difference here!
@@ -164,7 +170,8 @@ public class MainApp extends Application {
     	 * as described here: https://stackoverflow.com/questions/32300028/javafx-prevent-enter-key-propogating-from-default-button-action
     	 * scene.setOnKeyReleased(keyHandler);
     	 */
-		scene.setOnKeyPressed(keyHandler);
+		scene.setOnKeyReleased(new AdvancedKeyHandler(false));
+		scene.setOnKeyPressed(new AdvancedKeyHandler(true));
 
     	stage.setFullScreenExitHint("Press F11 or ESC to exit full-screen mode.");
         stage.setTitle("Picture Gallery");

@@ -32,6 +32,10 @@ public abstract class Action {
 		return false;
 	}
 
+	public boolean allowKeyPressed() {
+		return false;
+	}
+
 	public String getKeyDescription() {
 		return getKey().toString();
 	}
