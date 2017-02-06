@@ -78,6 +78,7 @@ public abstract class PictureSwitchingState extends State {
 		picturesToShow = FXCollections.observableArrayList();
 
 		picturesSorted = new SpecialSortedList<Picture>(picturesToShow, Logic.createComparatorPictures()) {
+			// map for caching the value => is important for removing listeners
 			private Map<Picture, ObservableValue<Picture>> map = new HashMap<>();
 
 			@Override
@@ -255,6 +256,10 @@ public abstract class PictureSwitchingState extends State {
 		}
 
 		indexCurrentCollection = newIndex;
+		if (!isVisible()) {
+			// if this state is not visible, do not update the GUI!
+			return;
+		}
 		updateIndexLabel();
 
 		Picture newPicture = getPictureAtIndex(indexCurrentCollection);
@@ -421,14 +426,18 @@ public abstract class PictureSwitchingState extends State {
 	@Override
 	public void onClose() {
 		super.onClose();
-		picturesToShow.clear();
-		currentPicture.set(null);
+
+		// closes the temp state
 		if (tempState != null && !tempState.wasClosed()) {
 			if (tempState.isVisible()) {
 				tempState.onExit(null);
 			}
 			tempState.onClose();
 		}
+
+		// clear this state
+		picturesToShow.clear();
+		currentPicture.set(null);
 	}
 
 	@Override
