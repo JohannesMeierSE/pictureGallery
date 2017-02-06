@@ -298,5 +298,12 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 
 	public void setAlternativeWorker(AlternativeWorker alternativeWorker) {
 		this.alternativeWorker = alternativeWorker;
+
+		/* wakes the loading thread up to use this worker!
+		 * If the loading thread is currently loading, than nothing will happen!
+		 */
+		synchronized (sync) {
+			sync.notifyAll();
+		}
 	}
 }
