@@ -93,12 +93,25 @@ public abstract class PictureSwitchingState extends State {
 		picturesSorted.addListener(new ListChangeListener<Picture>() {
 			@Override
 			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
+				// handle the temp state, if available
+				if (tempState != null) {
+					while (c.next()) {
+						for (Picture removed : c.getRemoved()) {
+							tempState.removePicture(removed);
+						}
+						for (Picture added : c.getAddedSubList()) {
+							tempState.addPicture(added);
+						}
+					}
+				}
+
+				// handle this state!
 				Picture current = getCurrentPicture();
 				if (current == null) {
 					return;
 				}
 				if (containsPicture(current)) {
-					// show is picture furthermore => update index
+					// show this picture furthermore => update index
 					jumpedBefore();
 					changeIndex(picturesSorted.indexOf(current), true);
 				} else {
@@ -314,12 +327,13 @@ public abstract class PictureSwitchingState extends State {
 		}
 
 		// inform, weather the current picture is in the temp collection
-		if (getTempState() != null && getTempState().containsPicture(currentPicture.get())) {
+		if (tempState != null && tempState.containsPicture(currentPicture.get())) {
 			pictureText = pictureText + "  (in next temp collection)";
 		}
 
 		if (currentPicture.get() instanceof LinkedPicture) {
-			pictureText = pictureText + "\n    =>  " + ((LinkedPicture) currentPicture.get()).getRealPicture().getRelativePath();
+			RealPicture realPicture = ((LinkedPicture) currentPicture.get()).getRealPicture();
+			pictureText = pictureText + "\n    =>  " + realPicture.getRelativePath();
 		}
 		if (currentPicture.get() != null) {
 			RealPicture realCurrentPicture = Logic.getRealPicture(currentPicture.get());
