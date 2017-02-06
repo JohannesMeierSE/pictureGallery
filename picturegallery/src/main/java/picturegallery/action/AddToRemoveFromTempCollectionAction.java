@@ -12,7 +12,7 @@ public class AddToRemoveFromTempCollectionAction extends Action {
 		if (!(currentState instanceof PictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		final PictureSwitchingState state = (PictureSwitchingState) currentState;
 
 		Picture currentPicture = state.getCurrentPicture();
 		if (currentPicture == null) {

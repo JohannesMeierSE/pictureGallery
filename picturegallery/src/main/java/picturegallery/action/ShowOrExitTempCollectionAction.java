@@ -12,7 +12,7 @@ public class ShowOrExitTempCollectionAction extends Action {
 		if (!(currentState instanceof PictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		final PictureSwitchingState state = (PictureSwitchingState) currentState;
 
 		if (state.getTempState().getSize() > 0) {
 

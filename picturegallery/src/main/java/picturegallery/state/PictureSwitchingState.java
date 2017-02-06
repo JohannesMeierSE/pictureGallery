@@ -94,14 +94,11 @@ public abstract class PictureSwitchingState extends State {
 		picturesSorted.addListener(new ListChangeListener<Picture>() {
 			@Override
 			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
-				// handle the temp state, if available
+				// handle the temp state, if available: remove all removed pictures!
 				if (tempState != null) {
 					while (c.next()) {
 						for (Picture removed : c.getRemoved()) {
 							tempState.removePicture(removed);
-						}
-						for (Picture added : c.getAddedSubList()) {
-							tempState.addPicture(added);
 						}
 					}
 				}
