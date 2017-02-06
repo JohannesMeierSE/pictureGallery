@@ -383,12 +383,13 @@ public class MainApp extends Application {
 			}
 		}
 
+		String pathToDelete = picture.getFullPath();
 		Logic.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				// delete file in file system
 				try {
-					Files.delete(Paths.get(picture.getFullPath()));
+					Files.delete(Paths.get(pathToDelete));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
