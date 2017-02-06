@@ -383,6 +383,9 @@ public class MainApp extends Application {
 			}
 		}
 
+		/* the following line is important, because the deleting itself will be done later
+		 * when the path information of the picture was already deleted => error / failing remove operation in file system!
+		 */
 		String pathToDelete = picture.getFullPath();
 		Logic.runNotOnUiThread(new Runnable() {
 			@Override
@@ -578,7 +581,6 @@ public class MainApp extends Application {
 
 		// switch state
 		stateStack.add(stateStack.size(), newState);
-		newState.onEntry(newState);
 
 		// update GUI: keys
 		String newKeys = "";
@@ -601,14 +603,25 @@ public class MainApp extends Application {
     	newNode.minHeightProperty().bind(root.minHeightProperty());
     	newNode.minWidthProperty().bind(root.minWidthProperty());
 		newNode.requestFocus();
+
+		newState.onEntry(newState);
 	}
 
 	public void switchToPreviousState() {
+		// check the input
 		State current = getCurrentState();
-		if (current == null || current.getNextAfterClosed() == null) {
+		if (current == null) {
 			throw new IllegalStateException();
 		}
-		switchState(current.getNextAfterClosed());
+		State nextState = current.getNextAfterClosed();
+		if (nextState == null) {
+			throw new IllegalStateException();
+		}
+
+		// switch
+		switchState(nextState);
+
+		// fix the stack
 		stateStack.remove(stateStack.size() - 2); // the "current" state should be ignored from now on
 		stateStack.remove(stateStack.size() - 2); // the "previous" state should not added twice
 	}
