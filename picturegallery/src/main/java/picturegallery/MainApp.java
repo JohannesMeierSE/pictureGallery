@@ -17,11 +17,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -50,6 +52,7 @@ import org.eclipse.emf.edit.domain.EditingDomain;
 import picturegallery.action.Action;
 import picturegallery.action.FullScreenAction;
 import picturegallery.action.HideInformationAction;
+import picturegallery.action.SwitchPictureSortingAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.AlternativeWorker;
 import picturegallery.persistency.Settings;
@@ -75,7 +78,10 @@ public class MainApp extends Application {
 
 	private final List<State> stateStack = new ArrayList<>();
 	private final List<Action> globalActions = new ArrayList<>();
+
 	public SimpleBooleanProperty labelsVisible = new SimpleBooleanProperty(true);
+	public SimpleObjectProperty<Comparator<Picture>> pictureComparator
+		= new SimpleObjectProperty<Comparator<Picture>>(Logic.createComparatorPicturesName());
 
 	private static MainApp instance;
 
@@ -246,6 +252,7 @@ public class MainApp extends Application {
 
             	globalActions.add(new FullScreenAction());
         		globalActions.add(new HideInformationAction());
+        		globalActions.add(new SwitchPictureSortingAction());
 
         		// start with the first/initial state:
         		CollectionState newState = new CollectionState();

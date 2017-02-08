@@ -23,10 +23,12 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -417,10 +419,10 @@ public class Logic {
 	 */
 	public static void sortPicturesInCollection(PictureCollection collectionToSort) {
 		// http://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/common/util/ECollections.html#sort(org.eclipse.emf.common.util.EList)
-		ECollections.sort(collectionToSort.getPictures(), createComparatorPictures());
+		ECollections.sort(collectionToSort.getPictures(), createComparatorPicturesName());
 	}
 
-	public static Comparator<Picture> createComparatorPictures() {
+	public static Comparator<Picture> createComparatorPicturesName() {
 		return new Comparator<Picture>() {
 			@Override
 			public int compare(Picture o1, Picture o2) {
@@ -432,12 +434,59 @@ public class Logic {
 		};
 	}
 
+	public static Comparator<Picture> createComparatorPicturesMonth() {
+		return new Comparator<Picture>() {
+			@Override
+			public int compare(Picture o1, Picture o2) {
+				if (o1 == o2) {
+					return 0;
+				}
+
+				// check, if meta data are available
+				if (o1.getMetadata() == null && o2.getMetadata() == null) {
+					return 0;
+				}
+				if (o1.getMetadata() == null && o2.getMetadata() != null) {
+					return 1;
+				}
+				if (o1.getMetadata() != null && o2.getMetadata() == null) {
+					return -1;
+				}
+
+				// check, if the date is available
+				Date date1 = o1.getMetadata().getCreated();
+				Date date2 = o2.getMetadata().getCreated();
+				if (date1 == null && date2 == null) {
+					return 0;
+				}
+				if (date1 == null && date2 != null) {
+					return 1;
+				}
+				if (date1 != null && date2 == null) {
+					return -1;
+				}
+
+				int month1 = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().getMonthValue();
+				int month2 = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().getMonthValue();
+
+				int monthCompare = Integer.compare(month1, month2);
+				// 1. compare the month
+				if (monthCompare != 0) {
+					return monthCompare;
+				}
+
+				// 2. compare year and date
+				return Long.compare(date1.getTime(), date2.getTime());
+			}
+		};
+	}
+
 	/**
 	 * Changes the order of the pictures in the list (ascending names) => works in-place!
 	 * @param picturesToSort
 	 */
 	public static void sortPictures(List<Picture> picturesToSort) {
-		Collections.sort(picturesToSort, createComparatorPictures());
+		Collections.sort(picturesToSort, createComparatorPicturesName());
 	}
 
 	public static void sortSubCollections(PictureCollection base, boolean recursive, boolean sortPictureToo) {

@@ -6,6 +6,7 @@ import java.util.List;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -15,16 +16,38 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 	private final InvalidationListener elementListener;
 	private final List<T> sortedList;
 	private final ObservableList<? extends T> wrappedList;
-	private final Comparator<T> comparator;
+	public final ObservableValue<Comparator<T>> comparator;
 
-	protected SpecialSortedList(ObservableList<? extends T> source, Comparator<T> comparator) {
+	protected SpecialSortedList(ObservableList<? extends T> source, ObservableValue<Comparator<T>> comparator) {
 		super(source);
 		if (comparator == null || source == null) {
 			throw new IllegalArgumentException();
 		}
 		wrappedList = source;
 		sortedList = new ArrayList<>(source.size());
+
 		this.comparator = comparator;
+		this.comparator.addListener(new ChangeListener<Comparator<T>>() {
+			@Override
+			public void changed(ObservableValue<? extends Comparator<T>> observable,
+					Comparator<T> oldValue, Comparator<T> newValue) {
+				if (oldValue == null) {
+					throw new IllegalStateException();
+				}
+				if (newValue == null) {
+					throw new IllegalStateException();
+				}
+
+				List<T> newSorted = new ArrayList<>(sortedList);
+				newSorted.sort(newValue);
+				// check the position of each element in the newly sorted list
+				beginChange();
+				for (T element : wrappedList) {
+					permutateElement(element, newSorted);
+				}
+				endChange();
+			}
+		});
 
 		elementListener = new InvalidationListener() {
 			@SuppressWarnings("unchecked")
@@ -36,7 +59,7 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 				// die nächste Zeile funktioniert nicht, dafür aber die darauf folgende Alternativ-Zeile (warum?)
 				// nextUpdate(wrappedList.indexOf(changedElement));
 
-				permutateElement(changedElement);
+				permutateElement(changedElement, null);
 
 				endChange();
 			}
@@ -66,7 +89,7 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 				for (int i = change.getFrom(); i < change.getTo(); i++) {
 					// for each changed element:
 					T changedElement = change.getList().get(i);
-					permutateElement(changedElement);
+					permutateElement(changedElement, null);
 				}
 			} else {
 				for (T added : change.getAddedSubList()) {
@@ -86,9 +109,14 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 		endChange();
 	}
 
-	private void permutateElement(T changedElement) {
+	private void permutateElement(T changedElement, List<T> newSorted) {
 		int oldSortedIndex = sortedList.indexOf(changedElement);
-		int newSortedIndex = getIndexForItemAtWrongPositionMove(sortedList, changedElement);
+		final int newSortedIndex;
+		if (newSorted == null) {
+			newSortedIndex = getIndexForItemAtWrongPositionMove(sortedList, changedElement);
+		} else {
+			newSortedIndex = newSorted.indexOf(changedElement);
+		}
 		if (oldSortedIndex == newSortedIndex) {
 			// nothing to do!
 			return;
@@ -125,7 +153,7 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 	private int getIndexForPictureInsertion(List<? extends T> pictureList, T picture) {
 		int result = 0;
 		while (result < pictureList.size()
-				&& comparator.compare(picture, pictureList.get(result)) > 0) {
+				&& comparator.getValue().compare(picture, pictureList.get(result)) > 0) {
 			result++;
 		}
 		return result;
@@ -138,12 +166,12 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 		}
 		// move to the right?
 		while (result < (pictureList.size() - 1)
-				&& comparator.compare(picture, pictureList.get(result + 1)) > 0) {
+				&& comparator.getValue().compare(picture, pictureList.get(result + 1)) > 0) {
 			result++;
 		}
 		// move to the left?
 		while (result > 0
-				&& comparator.compare(pictureList.get(result - 1), picture) > 0) {
+				&& comparator.getValue().compare(pictureList.get(result - 1), picture) > 0) {
 			result--;
 		}
 		return result;

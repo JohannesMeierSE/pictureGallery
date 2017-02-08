@@ -77,7 +77,7 @@ public abstract class PictureSwitchingState extends State {
 		indexCurrentCollection = -1;
 		picturesToShow = FXCollections.observableArrayList();
 
-		picturesSorted = new SpecialSortedList<Picture>(picturesToShow, Logic.createComparatorPictures()) {
+		picturesSorted = new SpecialSortedList<Picture>(picturesToShow, MainApp.get().pictureComparator) {
 			// map for caching the value => is important for removing listeners
 			private Map<Picture, ObservableValue<Picture>> map = new HashMap<>();
 
