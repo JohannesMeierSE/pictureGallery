@@ -33,7 +33,6 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -55,7 +54,6 @@ import picturegallery.action.HideInformationAction;
 import picturegallery.action.SwitchPictureSortingAction;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.AlternativeWorker;
-import picturegallery.persistency.Settings;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
@@ -142,17 +140,7 @@ public class MainApp extends Application {
     	root = new StackPane();
     	root.setStyle("-fx-background-color: #000000;");
 
-    	// https://docs.oracle.com/javafx/2/ui_controls/file-chooser.htm
-		DirectoryChooser dialog = new DirectoryChooser();
-		dialog.setTitle("Choose the base directory of the library to work with!");
-		dialog.setInitialDirectory(new File(Settings.getBasePath()));
-		File choosenLibrary = dialog.showDialog(stage);
-    	final String baseDir;
-    	if (choosenLibrary != null) {
-    		baseDir = choosenLibrary.getAbsolutePath();
-    	} else {
-    		baseDir = Settings.getBasePath();
-    	}
+    	final String baseDir = Logic.askForDirectory(stage, "Choose the base directory of the library to work with!", false);
 
     	labelKeys = new Label("keys");
     	labelKeys.visibleProperty().bind(labelsVisible);

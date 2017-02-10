@@ -59,6 +59,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Window;
 import javafx.util.Callback;
 import javafx.util.Pair;
 
@@ -81,6 +83,7 @@ import org.xml.sax.SAXException;
 
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
+import picturegallery.persistency.Settings;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 
@@ -792,6 +795,25 @@ public class Logic {
 		    // ... user chose CANCEL or closed the dialog
 			return false;
 		}
+	}
+
+	public static String askForDirectory(Window window, String title, boolean allowNull) {
+    	// https://docs.oracle.com/javafx/2/ui_controls/file-chooser.htm
+		String baseDir = null;
+		while (baseDir == null) {
+			DirectoryChooser dialog = new DirectoryChooser();
+			dialog.setTitle(title);
+			dialog.setInitialDirectory(new File(Settings.getBasePath()));
+			File choosenLibrary = dialog.showDialog(window);
+	    	if (choosenLibrary != null) {
+	    		baseDir = choosenLibrary.getAbsolutePath();
+	    	} else if (allowNull) {
+	    		break;
+	    	} else {
+	    		// ask the user again
+	    	}
+		}
+		return baseDir;
 	}
 
 	public static PictureCollection selectCollection(
