@@ -2,11 +2,13 @@ package picturegallery.action;
 
 import gallery.LinkedPicture;
 import gallery.PictureCollection;
+import gallery.RealPicture;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.input.KeyCode;
@@ -25,13 +27,29 @@ public class ExportLinkedPicturesAction extends Action {
 		CollectionState state = (CollectionState) currentState;
 		// get the real collection for export
 		PictureCollection exportedCollection = state.getSelection();
-		if (exportedCollection == null) {
+		if (exportedCollection == null || exportedCollection.getPictures().isEmpty()) {
 			return;
 		}
-		// TODO: vorher auswählen: nur Linked oder nur Real oder beides!
+
 		List<LinkedPicture> linked = Logic.getLinkedPicturesOf(exportedCollection);
-		if (linked.isEmpty()) {
-			return;
+		List<RealPicture> real = Logic.getRealPicturesOf(exportedCollection);
+
+		// real and linked pictures together in the same collection => ask the user whether real and/or linked pictures should be exported
+		if (!linked.isEmpty() && !real.isEmpty()) {
+			List<String> options = new ArrayList<>();
+			options.add(0, "real and linked pictures");
+			options.add(1, "only linked pictures");
+			options.add(2, "only real pictures");
+			int answer = Logic.askForChoice(options, true, "Export pictures",
+					"Which kind of pictures do you want to export?", "Select the kind of exported pictures:");
+			answer = Math.max(0, answer);
+			if (answer == 1) {
+				// only linked
+				real.clear();
+			} else if (answer == 2) {
+				// only real
+				linked.clear();
+			}
 		}
 
 		String path = Logic.askForDirectory("Select a directory to export the linked pictures", true);
@@ -39,12 +57,24 @@ public class ExportLinkedPicturesAction extends Action {
 			return;
 		}
 
-		// copy each picture
+		// copy each linked picture
 		for (LinkedPicture link : linked) {
 			try {
 				Files.copy(
-						new File(link.getFullPath()).toPath(),
-						new File(path + File.separator + link.getName() + "." + link.getFileExtension()).toPath(),
+						new File(link.getRealPicture().getFullPath()).toPath(),
+						new File(path + File.separator + link.getName() + "." + link.getRealPicture().getFileExtension()).toPath(),
+						StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// copy each real picture
+		for (RealPicture realPicture : real) {
+			try {
+				Files.copy(
+						new File(realPicture.getFullPath()).toPath(),
+						new File(path + File.separator + realPicture.getName() + "." + realPicture.getFileExtension()).toPath(),
 						StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
 				e.printStackTrace();

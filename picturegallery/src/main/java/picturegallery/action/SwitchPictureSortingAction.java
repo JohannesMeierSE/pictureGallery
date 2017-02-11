@@ -2,7 +2,9 @@ package picturegallery.action;
 
 import gallery.Picture;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.input.KeyCode;
@@ -23,11 +25,20 @@ public class SwitchPictureSortingAction extends Action {
 	@Override
 	public void run(State currentState) {
 		SimpleObjectProperty<Comparator<Picture>> comp = MainApp.get().pictureComparator;
-		// TODO: sollte schöner mit einem Dialog und mehr Optionen realisiert werden!
-		if (comp.get() == byName) {
-			comp.set(byMonth);
-		} else {
+		List<String> options = new ArrayList<>();
+		options.add(0, "Sort by name ascending");
+		options.add(1, "Sort by 1. month, 2. date ascending");
+		int answer = Logic.askForChoice(options, true, "Order of shown pictures",
+				"Select and change the order of the shown pictures", "Select one of the order options:");
+		if (answer < 0) {
+			return;
+		}
+
+		// set the matching comparator
+		if (answer == 0) {
 			comp.set(byName);
+		} else if (answer == 1) {
+			comp.set(byMonth);
 		}
 	}
 

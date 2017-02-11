@@ -48,6 +48,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
@@ -60,7 +61,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Window;
 import javafx.util.Callback;
 import javafx.util.Pair;
 
@@ -814,6 +814,27 @@ public class Logic {
 	    	}
 		}
 		return baseDir;
+	}
+
+	public static int askForChoice(List<String> options, boolean allowNull,
+			String title, String header, String content) {
+		int result = -1;
+		while (result < 0) {
+			ChoiceDialog<String> dialog = new ChoiceDialog<>(options.get(0), options);
+			dialog.setTitle(title);
+			dialog.setHeaderText(header);
+			dialog.setContentText(content);
+
+			Optional<String> answer = dialog.showAndWait();
+			if (answer.isPresent()){
+				result = options.indexOf(answer.get());
+			} else if (allowNull) {
+				break;
+			} else {
+				// next iteration
+			}
+		}
+		return result;
 	}
 
 	public static PictureCollection selectCollection(
