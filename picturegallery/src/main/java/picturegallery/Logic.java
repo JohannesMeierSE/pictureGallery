@@ -797,14 +797,14 @@ public class Logic {
 		}
 	}
 
-	public static String askForDirectory(Window window, String title, boolean allowNull) {
+	public static String askForDirectory(String title, boolean allowNull) {
     	// https://docs.oracle.com/javafx/2/ui_controls/file-chooser.htm
 		String baseDir = null;
 		while (baseDir == null) {
 			DirectoryChooser dialog = new DirectoryChooser();
 			dialog.setTitle(title);
 			dialog.setInitialDirectory(new File(Settings.getBasePath()));
-			File choosenLibrary = dialog.showDialog(window);
+			File choosenLibrary = dialog.showDialog(MainApp.get().getStage());
 	    	if (choosenLibrary != null) {
 	    		baseDir = choosenLibrary.getAbsolutePath();
 	    	} else if (allowNull) {
@@ -1164,6 +1164,16 @@ public class Logic {
 		for (Picture pic : collection.getPictures()) {
 			if (pic instanceof RealPicture) {
 				result.add((RealPicture) pic);
+			}
+		}
+		return result;
+	}
+
+	public static List<LinkedPicture> getLinkedPicturesOf(PictureCollection collection) {
+		List<LinkedPicture> result = new ArrayList<>(collection.getPictures().size());
+		for (Picture pic : collection.getPictures()) {
+			if (pic instanceof LinkedPicture) {
+				result.add((LinkedPicture) pic);
 			}
 		}
 		return result;

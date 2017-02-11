@@ -140,7 +140,7 @@ public class MainApp extends Application {
     	root = new StackPane();
     	root.setStyle("-fx-background-color: #000000;");
 
-    	final String baseDir = Logic.askForDirectory(stage, "Choose the base directory of the library to work with!", false);
+    	final String baseDir = Logic.askForDirectory("Choose the base directory of the library to work with!", false);
 
     	labelKeys = new Label("keys");
     	labelKeys.visibleProperty().bind(labelsVisible);
