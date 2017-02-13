@@ -562,8 +562,11 @@ public class Logic {
 	public static void extractMetadata(RealPicture picture)
 			throws FileNotFoundException, IOException, SAXException, TikaException {
 		// check input
-		if (picture == null || picture.getMetadata() != null) {
+		if (picture == null) {
 			throw new IllegalArgumentException();
+		}
+		if (picture.getMetadata() != null) {
+			return;
 		}
 
 		/*

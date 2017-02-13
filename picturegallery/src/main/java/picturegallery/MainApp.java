@@ -36,6 +36,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import org.apache.tika.exception.TikaException;
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -47,6 +48,7 @@ import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
+import org.xml.sax.SAXException;
 
 import picturegallery.action.Action;
 import picturegallery.action.FullScreenAction;
@@ -299,16 +301,51 @@ public class MainApp extends Application {
 		};
 		imageCache.setAlternativeWorker(new AlternativeWorker() {
 			private Iterator<RealPicture> pictures = Logic.iteratorPictures(baseCollection);
+			private int iteration = 0;
 
 			@Override
 			public boolean hasStillWork() {
-				return pictures.hasNext();
+				if (pictures.hasNext()) {
+					return true;
+				}
+
+				// next iteration
+				if (iteration < 2) {
+					iteration++;
+					pictures = Logic.iteratorPictures(baseCollection);
+					return hasStillWork();
+				} else {
+					return false;
+				}
 			}
 
 			@Override
 			public void doSomeWork() {
 				RealPicture next = pictures.next();
-				Logic.getOrLoadHashOfPicture(next, false);
+				if (next == null) {
+					// null??
+					return;
+				}
+				switch (iteration) {
+				case 0:
+					// 1. fast hash
+					Logic.getOrLoadHashOfPicture(next, true);
+					break;
+				case 1:
+					// 2. slow hash
+					Logic.getOrLoadHashOfPicture(next, false);
+					break;
+				case 2:
+					// 3. meta data
+					try {
+						Logic.extractMetadata(next);
+					} catch (IOException | SAXException | TikaException e) {
+						// ignore
+					}
+					break;
+				default:
+					return;
+				}
 			}
 		});
 		imageCacheSmall = new ObjectCache<RealPicture, Image>() {
