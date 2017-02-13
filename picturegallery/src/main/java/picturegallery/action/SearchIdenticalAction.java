@@ -7,6 +7,7 @@ import gallery.RealPicture;
 import gallery.RealPictureCollection;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -66,19 +67,35 @@ public class SearchIdenticalAction extends Action {
 				nextState.onInit();
 
 				List<Picture> picturesToDelete = new ArrayList<>();
+				List<Picture> picturesToShow = new ArrayList<>();
+
+				Comparator<Picture> comp = Logic.createComparatorPicturesSize(false);
 				for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
-					picturesToDelete.addAll(e.getValue());
+					// use the biggest picture as key!
+					e.getValue().sort(comp);
+					if (comp.compare(e.getValue().get(0), e.getKey()) < 0) {
+						// biggest item is in value
+						picturesToDelete.add(e.getKey());
+						picturesToShow.add(e.getValue().get(0));
+						picturesToShow.add(e.getKey());
+						for (int i = 1; i < e.getValue().size(); i++) {
+							picturesToDelete.add(e.getValue().get(i));
+							picturesToShow.add(e.getValue().get(i));
+						}
+					} else {
+						// biggest item is the key
+						picturesToDelete.addAll(e.getValue());
+
+						picturesToShow.add(e.getKey());
+						picturesToShow.addAll(e.getValue());
+					}
 				}
+
 				nextState.registerAction(new DeleteSelectedPicturesAction(picturesToDelete,
 						"Delete duplicated identical pictures",
 						"In the collection " + selection.getRelativePath()
 						+ ", there are " + result.size() + " pictures with duplicates!"));
 
-				List<Picture> picturesToShow = new ArrayList<>();
-				for (Entry<RealPicture, List<RealPicture>> e : result.entrySet()) {
-					picturesToShow.add(e.getKey());
-					picturesToShow.addAll(e.getValue());
-				}
 				nextState.pictures.addAll(picturesToShow);
 				MainApp.get().switchState(nextState);
 			}

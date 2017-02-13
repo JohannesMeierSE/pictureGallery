@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -445,7 +446,7 @@ public class Logic {
 					return 0;
 				}
 
-				// check, if meta data are available
+				// check, if meta data are available (elements without meta data will be put at the end)
 				if (o1.getMetadata() == null && o2.getMetadata() == null) {
 					return 0;
 				}
@@ -469,19 +470,73 @@ public class Logic {
 					return -1;
 				}
 
-				int month1 = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().getMonthValue();
-				int month2 = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().getMonthValue();
+				LocalDate localDate1 = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				LocalDate localDate2 = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-				int monthCompare = Integer.compare(month1, month2);
-				// 1. compare the month
+				int monthCompare = Integer.compare(localDate1.getMonthValue(), localDate2.getMonthValue());
+				// 1. month
 				if (monthCompare != 0) {
 					return monthCompare;
 				}
 
-				// 2. compare year and date
+				// 2. day
+				int dayCompare = Integer.compare(localDate1.getDayOfMonth(), localDate2.getDayOfMonth());
+				if (dayCompare != 0) {
+					return dayCompare;
+				}
+
+				// 3. compare year and so on...
 				return Long.compare(date1.getTime(), date2.getTime());
 			}
 		};
+	}
+
+	public static Comparator<Picture> createComparatorPicturesSize(boolean ascending) {
+		if (ascending) {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+	
+					// check, if meta data are available (elements without meta data will be put at the end)
+					if (o1.getMetadata() == null && o2.getMetadata() == null) {
+						return 0;
+					}
+					if (o1.getMetadata() == null && o2.getMetadata() != null) {
+						return 1;
+					}
+					if (o1.getMetadata() != null && o2.getMetadata() == null) {
+						return -1;
+					}
+	
+					return Integer.compare(o1.getMetadata().getSize(), o2.getMetadata().getSize());
+				}
+			};
+		} else {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+	
+					// check, if meta data are available (elements without meta data will be put at the end)
+					if (o1.getMetadata() == null && o2.getMetadata() == null) {
+						return 0;
+					}
+					if (o1.getMetadata() == null && o2.getMetadata() != null) {
+						return 1;
+					}
+					if (o1.getMetadata() != null && o2.getMetadata() == null) {
+						return -1;
+					}
+	
+					return Integer.compare(o2.getMetadata().getSize(), o1.getMetadata().getSize());
+				}
+			};
+		}
 	}
 
 	/**
