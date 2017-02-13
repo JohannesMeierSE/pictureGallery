@@ -580,14 +580,21 @@ public class Logic {
 		BodyContentHandler handler = new BodyContentHandler();
 		FileInputStream in = new FileInputStream(new File(picture.getFullPath()));
 		String ext = picture.getFileExtension().toLowerCase();
-		if (ext.equals("jpeg") || ext.equals("jpg")) {
-			JpegParser JpegParser = new JpegParser();
-			JpegParser.parse(in, handler, metadata, pcontext);
-		} else {
-			ImageParser parser = new ImageParser();
-			parser.parse(in, handler, metadata, pcontext);
+		try {
+			if (ext.equals("jpeg") || ext.equals("jpg")) {
+				JpegParser JpegParser = new JpegParser();
+				JpegParser.parse(in, handler, metadata, pcontext);
+			} else {
+				ImageParser parser = new ImageParser();
+				parser.parse(in, handler, metadata, pcontext);
+			}
+		} catch (Throwable e) {
+			System.err.println("error while reading the meta-data of " + picture.getFullPath());
+			e.printStackTrace();
+			return;
+		} finally {
+			in.close();
 		}
-		in.close();
 //		System.out.println("");
 //		System.out.println(picture.getFullPath());
 
