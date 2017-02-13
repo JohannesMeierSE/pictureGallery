@@ -58,6 +58,7 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 					MainApp.get().movePicture(e.getKey(), movetoCollection);
 				}
 
+				// close the waiting state!
 				Logic.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
