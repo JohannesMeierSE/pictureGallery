@@ -29,12 +29,23 @@ public class SearchIdenticalDeletedAction extends Action {
 		if (selection == null || selection instanceof LinkedPictureCollection) {
 			return;
 		}
+		RealPictureCollection targetCollection = (RealPictureCollection) selection;
+
+		boolean recursive = targetCollection.getSubCollections().isEmpty() == false;
+		if (recursive) {
+			if (!Logic.askForConfirmation("Search for deleted pictures",
+					"The selected collections has sub-collection:",
+					"Confirm, to search in recursive sub-collections, too!")) {
+				recursive = false;
+			}
+		}
+		final boolean recursiveFinal = recursive;
 
 		Task<List<RealPicture>> task = new Task<List<RealPicture>>() {
 			@Override
 			protected List<RealPicture> call() throws Exception {
 				return Logic.findIdenticalDeletedPictures(
-						MainApp.get().getBaseCollection().getLibrary(), (RealPictureCollection) selection);
+						MainApp.get().getBaseCollection().getLibrary(), targetCollection, recursiveFinal);
 			}
 		};
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {

@@ -1547,18 +1547,18 @@ public class Logic {
 		}
 	}
 
-	public static List<RealPicture> findIdenticalDeletedPictures(PictureLibrary library, RealPictureCollection baseCollection) {
+	public static List<RealPicture> findIdenticalDeletedPictures(PictureLibrary library, RealPictureCollection baseCollection, boolean recursive) {
 		Map<String, DeletedPicture> deletedMap = new HashMap<>(library.getDeletedPictures().size());
 		for (DeletedPicture del : library.getDeletedPictures()) {
 			deletedMap.put(del.getHashFast(), del);
 		}
 		List<RealPicture> result = new ArrayList<>();
-		findIdenticalDeletedPicturesLogic(baseCollection, deletedMap, result);
+		findIdenticalDeletedPicturesLogic(baseCollection, deletedMap, result, recursive);
 		return result;
 	}
 
 	private static void findIdenticalDeletedPicturesLogic(RealPictureCollection baseCollection,
-			Map<String, DeletedPicture> deletedMap, List<RealPicture> result) {
+			Map<String, DeletedPicture> deletedMap, List<RealPicture> result, boolean recursive) {
 		// search for "deleted" pictures
 		for (Picture pic : baseCollection.getPictures()) {
 			if (pic instanceof RealPicture) {
@@ -1568,10 +1568,12 @@ public class Logic {
 			}
 		}
 
-		// handle the sub-collections
-		for (PictureCollection sub : baseCollection.getSubCollections()) {
-			if (sub instanceof RealPictureCollection) {
-				findIdenticalDeletedPicturesLogic((RealPictureCollection) sub, deletedMap, result);
+		// handle the sub-collections, too
+		if (recursive) {
+			for (PictureCollection sub : baseCollection.getSubCollections()) {
+				if (sub instanceof RealPictureCollection) {
+					findIdenticalDeletedPicturesLogic((RealPictureCollection) sub, deletedMap, result, recursive);
+				}
 			}
 		}
 	}
