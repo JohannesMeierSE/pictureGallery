@@ -1579,6 +1579,48 @@ public class Logic {
 	}
 
 	/**
+	 * Finds pictures of the second collection by the fast hash
+	 * which are not in the first collection.
+	 * @param keep
+	 * @param remove
+	 * @return
+	 */
+	public static List<RealPicture> findSinglePictures(RealPictureCollection keep, RealPictureCollection remove) {
+		// collect the real pictures
+		List<RealPicture> realMapped = getRealPicturesOf(keep);
+		List<RealPicture> realLoop = getRealPicturesOf(remove);
+		if (realMapped.isEmpty() || realLoop.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// put the elements into a map
+		Map<String, RealPicture> map = new HashMap<>(realMapped.size());
+		for (RealPicture real : realMapped) {
+			String hash = Logic.getOrLoadHashOfPicture(real, true);
+			if (hash == null || hash.isEmpty() || hash.equals(NO_HASH)) {
+				// bad hash => ignore this picture => will not deleted!
+				continue;
+			}
+			map.put(hash, real);
+		}
+
+		// search for single pictures
+		realMapped.clear(); // reuse memory (?)
+		for (RealPicture real : realLoop) {
+			String hash = Logic.getOrLoadHashOfPicture(real, true);
+			if (hash == null || hash.isEmpty() || hash.equals(NO_HASH)) {
+				// bad hash => delete this picture
+				realMapped.add(real);
+			} else if (! map.containsKey(hash)) {
+				// picture not available in the other list => delete it!
+				realMapped.add(real);
+			}
+		}
+
+		return realMapped;
+	}
+
+	/**
 	 * Computes the index at which the given picture should be inserted into the given list of pictures.
 	 * Does not have side-effects (read-only, no changes)!
 	 * @param pictureList

@@ -24,6 +24,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ClearLinkCollectionsAction;
 import picturegallery.action.CreateNewCollection;
+import picturegallery.action.DiffCollectionDeleteAction;
 import picturegallery.action.ExportLinkedPicturesAction;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.RenameCollectionAction;
@@ -232,6 +233,7 @@ public class CollectionState extends State {
 		registerAction(new SearchIdenticalAndReplaceAction());
 		registerAction(new SearchIdenticalAndCollectAction());
 		registerAction(new SearchIdenticalDeletedAction());
+		registerAction(new DiffCollectionDeleteAction());
 		registerAction(new ExportLinkedPicturesAction());
 	}
 
