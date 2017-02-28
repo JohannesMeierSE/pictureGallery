@@ -42,16 +42,17 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 	public interface PositionCalculator<T> {
 		public int calculate(List<TreeItem<T>> items, T itemToAdd);
 	}
-	private PositionCalculator<T> positionFactory;
+	private final PositionCalculator<T> positionFactory;
 
-	public RecursiveTreeItem(final T value, Callback<T, ObservableList<T>> func) {
-		this(value, (Node) null, func);
+	public RecursiveTreeItem(final T value, Callback<T, ObservableList<T>> func, PositionCalculator<T> positionFactory) {
+		this(value, (Node) null, func, positionFactory);
 	}
 
-	public RecursiveTreeItem(final T value, Node graphic, Callback<T, ObservableList<T>> func) {
+	public RecursiveTreeItem(final T value, Node graphic, Callback<T, ObservableList<T>> func, PositionCalculator<T> positionFactory) {
 		super(value, graphic);
 
 		this.childrenFactory = func;
+		this.positionFactory = positionFactory;
 
 		// required for new children of the current value
 		if (value != null) {
@@ -83,9 +84,8 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 
 		// initialization of the currently available children
 		children.forEach(child -> {
-				RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(child, getGraphic(), childrenFactory);
-				newElement.setPositionFactory(positionFactory);
-				getChildren().add(getAddPosition(value), newElement);
+				RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(child, getGraphic(), childrenFactory, positionFactory);
+				getChildren().add(getAddPosition(child), newElement);
 			});
 
 		children.addListener((ListChangeListener<T>) change -> {
@@ -126,8 +126,7 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 									.collect(Collectors.toList());
 
 							if (itemsAlreadyAvailable.isEmpty()) {
-								RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(t, getGraphic(), childrenFactory);
-								newElement.setPositionFactory(positionFactory);
+								RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(t, getGraphic(), childrenFactory, positionFactory);
 								getChildren().add(getAddPosition(t), newElement);
 							}
 						});
@@ -143,9 +142,5 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 		} else {
 			return positionFactory.calculate(getChildren(), valueToAdd);
 		}
-	}
-
-	public void setPositionFactory(PositionCalculator<T> positionFactory) {
-		this.positionFactory = positionFactory;
 	}
 }

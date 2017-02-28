@@ -29,14 +29,19 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 
 	@Override
 	public ObservableList<PictureCollection> call(PictureCollection param) {
+		// 1. check the cache
 		if (cache.containsKey(param)) {
 			return cache.get(param);
 		}
+
+		// 2. empty list for linked collections
 		if (param instanceof LinkedPictureCollection) {
 			final ObservableList<PictureCollection> result = FXCollections.emptyObservableList();
 			cache.put(param, result);
 			return result;
 		}
+
+		// 3. new list for real collections
 		final ObservableList<PictureCollection> result = FXCollections.observableArrayList();
 		cache.put(param, result);
 

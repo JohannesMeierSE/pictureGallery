@@ -1708,8 +1708,8 @@ public class Logic {
 		return result;
 	}
 
-	public static String getComparable(PathElement picture) {
-		return picture.getName().toUpperCase().toLowerCase();
+	public static String getComparable(PathElement element) {
+		return element.getName().toUpperCase().toLowerCase();
 	}
 
 	public interface PictureProvider {

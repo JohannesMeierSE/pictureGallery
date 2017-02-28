@@ -194,18 +194,21 @@ public class CollectionState extends State {
 		table.getColumns().add(linkCol);
 
 		RecursiveTreeItem<PictureCollection> rootItem =
-				new RecursiveTreeItem<PictureCollection>(MainApp.get().getBaseCollection(), new SubCollectionCallback());
-		rootItem.setPositionFactory(new PositionCalculator<PictureCollection>() {
-			@Override
-			public int calculate(List<TreeItem<PictureCollection>> items, PictureCollection itemToAdd) {
-				int result = 0;
-				while (result < items.size()
-						&& Logic.getComparable(items.get(result).getValue()).compareTo(Logic.getComparable(itemToAdd)) < 0) {
-					result++;
-				}
-				return result;
-			}
-		});
+				new RecursiveTreeItem<PictureCollection>(
+						MainApp.get().getBaseCollection(),
+						new SubCollectionCallback(),
+						new PositionCalculator<PictureCollection>() {
+							@Override
+							public int calculate(List<TreeItem<PictureCollection>> items, PictureCollection itemToAdd) {
+								int result = 0;
+								while (result < items.size()
+										&& Logic.getComparable(items.get(result).getValue()).compareTo(Logic.getComparable(itemToAdd)) < 0) {
+									// TODO: hier scheint bei neuen Werten ein Fehler zu sein ?!
+									result++;
+								}
+								return result;
+							}
+						});
 		rootItem.setExpanded(true);
 		table.setShowRoot(true);
 		table.setRoot(rootItem);
