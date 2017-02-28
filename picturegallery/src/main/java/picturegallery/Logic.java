@@ -1361,13 +1361,20 @@ public class Logic {
 			return true;
 		}
 
-		// check which values are available: if the slower==complexer==better is available for both pictures => use the slower hash!
+		// 1. if the FAST hash is available => use it
+		if (p1.getHashFast() != null && !p1.getHashFast().equals(NO_HASH)
+				&& p2.getHashFast() != null && !p2.getHashFast().equals(NO_HASH)) {
+			return getSimilarity(p1, p2, true) >= 1.0;
+		}
+
+		// 2. if the SLOW hash is available => use it
 		if (p1.getHash() != null && !p1.getHash().equals(NO_HASH)
 				&& p2.getHash() != null && !p2.getHash().equals(NO_HASH)) {
 			return getSimilarity(p1, p2, false) >= 1.0;
-		} else {
-			return getSimilarity(p1, p2, true) >= 1.0;
 		}
+
+		// hashes are not comparable => different pictures
+		return false;
 	}
 
 	public static Map<RealPicture, List<RealPicture>> findIdenticalInOneCollection(
@@ -1548,11 +1555,18 @@ public class Logic {
 	}
 
 	public static List<RealPicture> findIdenticalDeletedPictures(PictureLibrary library, RealPictureCollection baseCollection, boolean recursive) {
-		Map<String, DeletedPicture> deletedMap = new HashMap<>(library.getDeletedPictures().size());
+		List<RealPicture> result = new ArrayList<>();
+		int size = library.getDeletedPictures().size();
+		if (size <= 0) {
+			return result;
+		}
+
+		// put all deleted pictures into a map => much faster comparison possible!
+		Map<String, DeletedPicture> deletedMap = new HashMap<>(size);
 		for (DeletedPicture del : library.getDeletedPictures()) {
 			deletedMap.put(del.getHashFast(), del);
 		}
-		List<RealPicture> result = new ArrayList<>();
+
 		findIdenticalDeletedPicturesLogic(baseCollection, deletedMap, result, recursive);
 		return result;
 	}
