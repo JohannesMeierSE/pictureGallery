@@ -66,16 +66,12 @@ public class MultiPictureState extends State {
 							}
 							Label labelText = new Label(text.trim());
 							labelText.visibleProperty().bind(MainApp.get().labelsVisible);
-							labelText.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
-									+ "-fx-text-fill: white;");
-							labelText.setWrapText(true);
+							MainApp.styleLabel(labelText);
 
 							Label labelPath = new Label(Logic.getShortRelativePath(item));
 							labelPath.visibleProperty().bind(Bindings.and(
 									MainApp.get().labelsVisible, pathVisible));
-							labelPath.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
-									+ "-fx-text-fill: white;");
-							labelPath.setWrapText(true);
+							MainApp.styleLabel(labelPath);
 
 							VBox labelBox = new VBox(labelText, labelPath);
 							StackPane stack = new StackPane(imageView, labelBox);

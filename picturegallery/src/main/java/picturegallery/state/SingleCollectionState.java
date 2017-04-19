@@ -129,9 +129,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 	}
 
     private void handleLabel(Label label) {
-    	// https://assylias.wordpress.com/2013/12/08/383/
-		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
-				+ "-fx-text-fill: white;");
+		MainApp.styleLabel(label);
     	vBox.getChildren().add(label);
 	}
 

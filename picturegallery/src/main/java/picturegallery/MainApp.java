@@ -140,16 +140,12 @@ public class MainApp extends Application {
     	this.stage = stage;
 
     	root = new StackPane();
-    	root.setStyle("-fx-background-color: #000000;");
 
     	final String baseDir = Logic.askForDirectory("Choose the base directory of the library to work with!", false);
 
     	labelKeys = new Label("keys");
     	labelKeys.visibleProperty().bind(labelsVisible);
-    	labelKeys.setWrapText(true);
-    	// https://assylias.wordpress.com/2013/12/08/383/
-		labelKeys.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
-				+ "-fx-text-fill: white;");
+    	styleLabel(labelKeys);
     	root.getChildren().add(labelKeys);
 
     	Scene scene = new Scene(root, 800, 600);
@@ -252,6 +248,14 @@ public class MainApp extends Application {
         });
         new Thread(task).start();
     }
+
+	public static void styleLabel(Label label) {
+		// https://assylias.wordpress.com/2013/12/08/383/
+//		label.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"
+//				+ "-fx-text-fill: white;");
+    	label.getStyleClass().add("label-overlay");
+    	label.setWrapText(true);
+	}
 
     private List<Action> getAllCurrentActions() {
     	List<Action> newList = new ArrayList<>();

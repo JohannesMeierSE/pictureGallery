@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -14,24 +16,37 @@ import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
 import picturegallery.Logic;
+import picturegallery.filter.CollectionFilter;
 
 public class ObservablePictureCollection extends ObservableBase<PictureCollection> {
 	private final Adapter adapter;
 	private final List<ObservableValue<? extends PictureCollection>> otherValues;
 	private final ChangeListener<PictureCollection> otherValuesListener;
+	private final CollectionFilter filter;
 
 	public ObservablePictureCollection(PictureCollection collection) {
-		this(collection, Collections.emptyList());
+		this(collection, Collections.emptyList(), null);
 	}
-	public ObservablePictureCollection(PictureCollection collection, ObservableValue<? extends PictureCollection> otherValue) {
-		this(collection, Collections.singletonList(otherValue));
+	public ObservablePictureCollection(PictureCollection collection, ObservableValue<? extends PictureCollection> otherValue, CollectionFilter filter) {
+		this(collection, Collections.singletonList(otherValue), filter);
 	}
-	public ObservablePictureCollection(PictureCollection collection, List<ObservableValue<? extends PictureCollection>> otherValues) {
+	public ObservablePictureCollection(PictureCollection collection, List<ObservableValue<? extends PictureCollection>> otherValues, CollectionFilter filter) {
 		super();
 		if (collection == null) {
 			throw new IllegalArgumentException();
 		}
 		setValue(collection);
+
+		// use the filter!
+		this.filter = filter;
+		if (this.filter != null) {
+			this.filter.addListener(new InvalidationListener() {
+				@Override
+				public void invalidated(Observable observable) {
+					updateAll();
+				}
+			});
+		}
 
 		this.adapter = new AdapterImpl() {
 			@Override
