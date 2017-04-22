@@ -86,14 +86,19 @@ public class SingleCollectionState extends PictureSwitchingState {
 			@Override
 			public void changed(ObservableValue<? extends PictureCollection> observable,
 					PictureCollection oldValue, PictureCollection newValue) {
-				if (oldValue != null) {
-					oldValue.eAdapters().remove(adapterCurrentCollection);
-					picturesToShow.removeAll(oldValue.getPictures());
+				// check the real collection, not the linked collection (because only real collections detect new/removed pictures)!
+				RealPictureCollection oldRealValue = Logic.getRealCollection(oldValue);
+				RealPictureCollection newRealValue = Logic.getRealCollection(newValue);
+
+				if (oldRealValue != null) {
+					oldRealValue.eAdapters().remove(adapterCurrentCollection);
+					picturesToShow.removeAll(oldRealValue.getPictures());
 				}
-				if (newValue != null) {
-					newValue.eAdapters().add(adapterCurrentCollection);
-					picturesToShow.addAll(newValue.getPictures());
+				if (newRealValue != null) {
+					newRealValue.eAdapters().add(adapterCurrentCollection);
+					picturesToShow.addAll(newRealValue.getPictures());
 				}
+
 				updateCollectionLabel();
 			}
 		});

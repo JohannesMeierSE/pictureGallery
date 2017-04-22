@@ -16,6 +16,7 @@ public class ShowSingleCollectionAction extends Action {
 		}
 		CollectionState state = (CollectionState) currentState;
 		PictureCollection collection = state.getSelection();
+		// could be a LINKED collection, too!
 		if (collection == null || collection.getPictures().isEmpty()) {
 			return;
 		}

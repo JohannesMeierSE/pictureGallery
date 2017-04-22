@@ -1243,6 +1243,9 @@ public class Logic {
 	}
 
 	public static RealPictureCollection getRealCollection(PictureCollection collection) {
+		if (collection == null) {
+			return null;
+		}
 		if (collection instanceof RealPictureCollection) {
 			return (RealPictureCollection) collection;
 		} else {
