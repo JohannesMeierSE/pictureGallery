@@ -12,13 +12,16 @@ import java.util.List;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import picturegallery.Logic;
 import picturegallery.MainApp;
@@ -33,6 +36,7 @@ import picturegallery.action.SearchIdenticalAndCollectAction;
 import picturegallery.action.SearchIdenticalAndReplaceAction;
 import picturegallery.action.SearchIdenticalDeletedAction;
 import picturegallery.action.ShowSingleCollectionAction;
+import picturegallery.filter.CompositeCollectionFilter;
 import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
 import picturegallery.persistency.SubCollectionCallback;
@@ -40,8 +44,11 @@ import picturegallery.ui.RecursiveTreeItem;
 import picturegallery.ui.RecursiveTreeItem.PositionCalculator;
 
 public class CollectionState extends State {
+	private final VBox vbox;
 	protected final TreeTableView<PictureCollection> table;
 	private SimpleObjectProperty<RealPictureCollection> collectionWithNewLinks = new SimpleObjectProperty<>();
+	private final CompositeCollectionFilter collectionFilter;
+
 	private final SingleCollectionState singleState;
 	private final WaitingState waitingState; // TODO: move as singleton into MainApp??
 
@@ -55,8 +62,16 @@ public class CollectionState extends State {
 		waitingState.setNextAfterClosed(this);
 		waitingState.onInit();
 
+		collectionFilter = new CompositeCollectionFilter(this, null); // no parent filter available!
+		collectionFilter.setAcceptMinimum(0);
+
 		table = new TreeTableView<>();
 		table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+		Node filterNode = collectionFilter.getUI();
+		vbox = new VBox(10.0, filterNode, table);
+		VBox.setVgrow(table, Priority.ALWAYS);
+		VBox.setVgrow(filterNode, Priority.NEVER);
 
 		TreeTableColumn<PictureCollection, PictureCollection> nameCol = new TreeTableColumn<>("Collection name");
 		setupColumn(nameCol);
@@ -70,13 +85,13 @@ public class CollectionState extends State {
 				otherValues.add(singleState.currentCollection);
 				otherValues.add(singleState.movetoCollection);
 				otherValues.add(singleState.linktoCollection);
-				return new ObservablePictureCollection(param.getValue().getValue(), otherValues);
+				return new ObservablePictureCollection(param.getValue().getValue(), otherValues, collectionFilter);
 			}
 		});
 		nameCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
 			@Override
 			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
-				return new PictureCollectionTreeTableCell() {
+				return new PictureCollectionTreeTableCell(CollectionState.this) {
 					@Override
 					protected String toText(PictureCollection item) {
 						String textToShow = item.getName();
@@ -110,7 +125,7 @@ public class CollectionState extends State {
 		sizeRealPicturesCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
 			@Override
 			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
-				return new PictureCollectionTreeTableCell() {
+				return new PictureCollectionTreeTableCell(CollectionState.this) {
 					@Override
 					protected String toText(PictureCollection item) {
 						int count = 0;
@@ -144,7 +159,7 @@ public class CollectionState extends State {
 		sizeLinkedPicturesCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
 			@Override
 			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
-				return new PictureCollectionTreeTableCell() {
+				return new PictureCollectionTreeTableCell(CollectionState.this) {
 					@Override
 					protected String toText(PictureCollection item) {
 						int count = 0;
@@ -175,7 +190,7 @@ public class CollectionState extends State {
 		linkCol.setCellFactory(new Callback<TreeTableColumn<PictureCollection, PictureCollection>, TreeTableCell<PictureCollection, PictureCollection>>() {
 			@Override
 			public TreeTableCell<PictureCollection, PictureCollection> call(TreeTableColumn<PictureCollection, PictureCollection> param) {
-				return new PictureCollectionTreeTableCell() {
+				return new PictureCollectionTreeTableCell(CollectionState.this) {
 					@Override
 					protected String toText(PictureCollection item) {
 						if (item instanceof LinkedPictureCollection) {
@@ -221,7 +236,7 @@ public class CollectionState extends State {
 
 	@Override
 	public Region getRootNode() {
-		return table;
+		return vbox;
 	}
 
 	@Override
@@ -246,6 +261,12 @@ public class CollectionState extends State {
 		table.setRoot(null);
 	}
 
+	@Override
+	public void onEntry(State previousState) {
+		super.onEntry(previousState);
+		table.requestFocus();
+	}
+
 	/**
 	 * Returns the currently selected picture collection (or null).
 	 * @return
@@ -255,7 +276,15 @@ public class CollectionState extends State {
 		if (selectedItem == null) {
 			return null;
 		}
-		return selectedItem.getValue();
+		PictureCollection collection = selectedItem.getValue();
+		if (collection == null) {
+			return null;
+		}
+		if (isCollectionEnabled(collection)) {
+			return collection;
+		} else {
+			return null;
+		}
 	}
 
 	public RealPictureCollection getCollectionWithNewLinks() {
@@ -272,5 +301,14 @@ public class CollectionState extends State {
 
 	public WaitingState getWaitingState() {
 		return waitingState;
+	}
+
+	public boolean isCollectionEnabled(PictureCollection collection) {
+		if (collection == null) {
+			return false;
+		}
+
+		// use the collection filter!
+		return collectionFilter.isUsable(collection);
 	}
 }

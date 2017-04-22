@@ -1899,4 +1899,15 @@ public class Logic {
 			run.run();
 		}
 	}
+
+	public static boolean isCollectionRecursiveInCollection(RealPictureCollection parent, PictureCollection contained) {
+		RealPictureCollection currentContained = contained.getSuperCollection();
+		while (currentContained != null) {
+			if (currentContained == parent) {
+				return true;
+			}
+			currentContained = currentContained.getSuperCollection();
+		}
+		return false;
+	}
 }

@@ -30,7 +30,8 @@ public class ObservablePictureCollection extends ObservableBase<PictureCollectio
 	public ObservablePictureCollection(PictureCollection collection, ObservableValue<? extends PictureCollection> otherValue, CollectionFilter filter) {
 		this(collection, Collections.singletonList(otherValue), filter);
 	}
-	public ObservablePictureCollection(PictureCollection collection, List<ObservableValue<? extends PictureCollection>> otherValues, CollectionFilter filter) {
+	public ObservablePictureCollection(PictureCollection collection,
+			List<ObservableValue<? extends PictureCollection>> otherValues, CollectionFilter filter) {
 		super();
 		if (collection == null) {
 			throw new IllegalArgumentException();
