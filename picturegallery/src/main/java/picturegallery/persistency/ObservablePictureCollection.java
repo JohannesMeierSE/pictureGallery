@@ -33,6 +33,7 @@ public class ObservablePictureCollection extends ObservableBase<PictureCollectio
 	public ObservablePictureCollection(PictureCollection collection,
 			List<ObservableValue<? extends PictureCollection>> otherValues, CollectionFilter filter) {
 		super();
+
 		if (collection == null) {
 			throw new IllegalArgumentException();
 		}
@@ -74,7 +75,7 @@ public class ObservablePictureCollection extends ObservableBase<PictureCollectio
 					// http://download.eclipse.org/modeling/emf/emf/javadoc/2.4.3/org/eclipse/emf/common/notify/Notification.html
 					return;
 				}
-				if (msg.getNotifier() == collection || msg.getNewValue() == collection || msg.getOldValue() == collection) {
+				if (isColEqual(msg.getNotifier()) || isColEqual(msg.getNewValue()) || isColEqual(msg.getOldValue())) {
 					Logic.runOnUiThread(new Runnable() {
 						// I am not sure, if the UI thread is really required ...
 						@Override
@@ -92,15 +93,22 @@ public class ObservablePictureCollection extends ObservableBase<PictureCollectio
 			@Override
 			public void changed(ObservableValue<? extends PictureCollection> observable,
 					PictureCollection oldValue, PictureCollection newValue) {
-				if (oldValue != null && oldValue == collection) {
+				if (oldValue != null && isColEqual(oldValue)) {
 					updateAll();
 				}
-				if (newValue != null && newValue == collection) {
+				if (newValue != null && isColEqual(newValue)) {
 					updateAll();
 				}
 				// both cases at the same time can not be happen, because than it would not be a change!
 			}
 		};
+	}
+
+	private boolean isColEqual(Object otherObject) {
+		/* 1. calculate always the real picture collection, too => the real one is required to check for new/removed pictures!!
+		 * 2. uses the value of the observed property (before (which was a bug!): the initial input "collection" of the constructor!)
+		 */
+		return otherObject == getValue() || otherObject == Logic.getRealCollection(getValue());
 	}
 
 	@Override
