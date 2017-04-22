@@ -30,6 +30,7 @@ import picturegallery.action.CreateNewCollection;
 import picturegallery.action.DiffCollectionDeleteAction;
 import picturegallery.action.ExportLinkedPicturesAction;
 import picturegallery.action.LinkCollectionsAction;
+import picturegallery.action.MoveCollectionAction;
 import picturegallery.action.RenameCollectionAction;
 import picturegallery.action.SearchIdenticalAction;
 import picturegallery.action.SearchIdenticalAndCollectAction;
@@ -245,6 +246,7 @@ public class CollectionState extends State {
 		registerAction(new ShowSingleCollectionAction());
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());
+		registerAction(new MoveCollectionAction());
 		registerAction(new LinkCollectionsAction());
 		registerAction(new ClearLinkCollectionsAction());
 		registerAction(new SearchIdenticalAction());

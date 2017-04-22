@@ -1119,11 +1119,13 @@ public class Logic {
 		deletePath(link.getFullPath());
 	}
 
-	private static void deletePath(String linkFullPath) {
+	private static boolean deletePath(String linkFullPath) { // TODO: Fehlschläge müssen berücksichtigt werden!!
 		try {
 			Files.delete(Paths.get(linkFullPath));
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -1135,12 +1137,24 @@ public class Logic {
 		deletePath(real.getFullPath());
 	}
 
-	public static void moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
+	public static boolean moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
 		// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
 		try {
 			FileUtils.moveFileToDirectory(new File(previousFullPath), new File(newDirectoryFullPath), false);
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean moveDirectory(String previousFullPath, String newDirectoryFullPath) {
+		try {
+			FileUtils.moveDirectoryToDirectory(new File(previousFullPath), new File(newDirectoryFullPath), false);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -1245,6 +1259,11 @@ public class Logic {
 		}
 	}
 
+	/**
+	 * Returns all {@link RealPicture}s within the given collection.
+	 * @param collection
+	 * @return
+	 */
 	public static List<RealPicture> getRealPicturesOf(PictureCollection collection) {
 		List<RealPicture> result = new ArrayList<>(collection.getPictures().size());
 		for (Picture pic : collection.getPictures()) {
@@ -1255,6 +1274,11 @@ public class Logic {
 		return result;
 	}
 
+	/**
+	 * Returns all {@link LinkedPicture}s within the given collection.
+	 * @param collection
+	 * @return
+	 */
 	public static List<LinkedPicture> getLinkedPicturesOf(PictureCollection collection) {
 		List<LinkedPicture> result = new ArrayList<>(collection.getPictures().size());
 		for (Picture pic : collection.getPictures()) {
@@ -1265,6 +1289,48 @@ public class Logic {
 		return result;
 	}
 
+	/**
+	 * Returns all direct and indirect sub-{@link RealPictureCollection}s of the given collection.
+	 * The given collection itself is NOT contained in the resulting list.
+	 * @param baseCollection
+	 * @return
+	 */
+	public static List<RealPictureCollection> getAllSubCollections(RealPictureCollection baseCollection) {
+		List<RealPictureCollection> result = new ArrayList<>();
+		getAllSubCollectionsLogic(baseCollection, result, null);
+		return result;
+	}
+	/**
+	 * Collects recursively all direct and indirect sub-{@link RealPictureCollection}s and sub-{@link LinkedPictureCollection}s
+	 * of the given collection.
+	 * The given collection itself is NOT used/part of the filled lists.
+	 * @param baseCollection
+	 * @param resultReal list to store the found real sub-collections
+	 * @param resultLink list to store the found linked sub-collections
+	 */
+	public static void getAllSubCollectionsLogic(RealPictureCollection baseCollection,
+			List<RealPictureCollection> resultReal, List<LinkedPictureCollection> resultLink) {
+		for (PictureCollection sub : baseCollection.getSubCollections()) {
+			if (sub instanceof RealPictureCollection) {
+				RealPictureCollection subReal = (RealPictureCollection) sub;
+				resultReal.add(subReal);
+				getAllSubCollectionsLogic(subReal, resultReal, resultLink);
+			} else if (resultLink != null) {
+				resultLink.add((LinkedPictureCollection) sub);
+			}
+		}
+	}
+
+	public static boolean isCollectionRecursiveInCollection(RealPictureCollection parent, PictureCollection contained) {
+		RealPictureCollection currentContained = contained.getSuperCollection();
+		while (currentContained != null) {
+			if (currentContained == parent) {
+				return true;
+			}
+			currentContained = currentContained.getSuperCollection();
+		}
+		return false;
+	}
 	/**
 	 * !fast: requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
 	 * @param picture
@@ -1898,16 +1964,5 @@ public class Logic {
 		} else {
 			run.run();
 		}
-	}
-
-	public static boolean isCollectionRecursiveInCollection(RealPictureCollection parent, PictureCollection contained) {
-		RealPictureCollection currentContained = contained.getSuperCollection();
-		while (currentContained != null) {
-			if (currentContained == parent) {
-				return true;
-			}
-			currentContained = currentContained.getSuperCollection();
-		}
-		return false;
 	}
 }

@@ -4,6 +4,7 @@ import gallery.DeletedPicture;
 import gallery.GalleryFactory;
 import gallery.GalleryPackage;
 import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
 import gallery.Picture;
 import gallery.PictureLibrary;
 import gallery.RealPicture;
@@ -297,8 +298,9 @@ public class MainApp extends Application {
 				} catch (OutOfMemoryError e) {
 					e.printStackTrace();
 				} catch (NullPointerException e) {
+					System.out.println("It seems, that this picture is not contained in a collection anymore: "
+							+ key.getName() + "." + key.getFileExtension());
 					e.printStackTrace();
-					// it seems, that this picture is not contained in a collection anymore!
 				}
 				return null;
 			}
@@ -509,7 +511,10 @@ public class MainApp extends Application {
 			public void run() {
 				if (picture instanceof RealPicture) {
 					// move the file in the file system
-					Logic.moveFileIntoDirectory(picture.getFullPath(), newCollection.getFullPath());
+					boolean success = Logic.moveFileIntoDirectory(picture.getFullPath(), newCollection.getFullPath());
+					if (!success) {
+						return;
+					}
 
 					RealPicture pictureToMove = (RealPicture) picture;
 
@@ -557,6 +562,112 @@ public class MainApp extends Application {
 //		    	picture.setCollection(newCollection);
 
 //				Logic.sortPicturesInCollection(newCollection);
+			}
+		});
+	}
+
+	public void moveCollection(RealPictureCollection collectionToMove, RealPictureCollection target) {
+		// check input
+		if (collectionToMove == null || target == null || collectionToMove.equals(target)) {
+			throw new IllegalArgumentException();
+		}
+		if (collectionToMove.getSuperCollection() == null) {
+			throw new IllegalArgumentException("The base collection must no be moved!");
+		}
+		if (collectionToMove.getSuperCollection().equals(target)) {
+			throw new IllegalArgumentException("Nothing to do!");
+		}
+		if (Logic.isCollectionRecursiveInCollection(collectionToMove, target)) {
+			throw new IllegalArgumentException("The collection must not be moved into one of its sub-collection!");
+		}
+		if (!Logic.isCollectionNameUnique(target, collectionToMove.getName())) {
+			throw new IllegalArgumentException("Moving is not possible: uniqueness is hurt!");
+		}
+		/* Real- und LinkedCollection (mit Bezug zueinander) dürfen NICHT im selben Ordner/Collection landen
+		 * TODO: relevant??
+		 * ist aber eigentlich egal, oder??
+		 */
+		
+
+		// do the long-running moving in another thread!
+		Logic.runNotOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				// do the changes in the file system
+				boolean success = Logic.moveDirectory(collectionToMove.getFullPath(), target.getFullPath());
+				if (!success) {
+					return;
+				}
+
+				/* collect problematic links:
+				 * - pictures vs. collections
+				 * - link contained vs. link to
+				 * - adding found links: already-found-check is required,
+				 * because links can be found by containment (in RealPictureCollection) or by checking the real element!!
+				 * (link and target could be both within the moved folder!)
+				 */
+				List<RealPictureCollection> realCollections = new ArrayList<>();
+
+				List<LinkedPicture> linkedPictures = new ArrayList<>();
+				List<LinkedPictureCollection> linkedCollections = new ArrayList<>();
+
+				Logic.getAllSubCollectionsLogic(collectionToMove, realCollections, linkedCollections); // contained linked collections
+				realCollections.add(collectionToMove);
+
+				for (RealPictureCollection real : realCollections) {
+					// linked collections to
+					for (LinkedPictureCollection link : real.getLinkedBy()) {
+						if (!linkedCollections.contains(link)) {
+							linkedCollections.add(link);
+						}
+					}
+
+					for (Picture pic : real.getPictures()) {
+						if (pic instanceof LinkedPicture) {
+							// contained linked pictures
+							if (!linkedPictures.contains(pic)) {
+								linkedPictures.add((LinkedPicture) pic);
+							}
+						} else {
+							// linked pictures to
+							for (LinkedPicture link : ((RealPicture) pic).getLinkedBy()) {
+								if (!linkedPictures.contains(link)) {
+									linkedPictures.add(link);
+								}
+							}
+						}
+					}
+				}
+
+
+				// remove the links
+				for (LinkedPicture link : linkedPictures) {
+					Logic.deleteSymlinkPicture(link);
+				}
+				for (LinkedPictureCollection link : linkedCollections) {
+					Logic.deleteSymlinkCollection(link);
+				}
+				
+				// do the changes in the EMF model
+		    	EditingDomain domain = MainApp.get().getModelDomain();
+
+		    	domain.getCommandStack().execute(RemoveCommand.create(domain,
+						collectionToMove.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove));
+
+				domain.getCommandStack().execute(AddCommand.create(domain,
+						target, GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove,
+						Logic.getIndexForCollectionInsertion(target.getSubCollections(), collectionToMove)));
+
+				domain.getCommandStack().execute(SetCommand.create(domain,
+						collectionToMove, GalleryPackage.eINSTANCE.getPictureCollection_SuperCollection(), target));
+
+				// re-create the links
+				for (LinkedPicture link : linkedPictures) {
+					Logic.createSymlinkPicture(link);
+				}
+				for (LinkedPictureCollection link : linkedCollections) {
+					Logic.createSymlinkCollection(link);
+				}
 			}
 		});
 	}
