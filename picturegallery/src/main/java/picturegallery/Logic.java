@@ -748,7 +748,9 @@ public class Logic {
 				model = valueReal;
 			}
 		}
-		md.setCamera(make + " " + model);
+		String cameraValue = make + " " + model;
+		cameraValue = cameraValue.trim(); // for the case, when both, make + model are both empty!
+		md.setCamera(cameraValue);
 
 		// meine RX100
 		/*
