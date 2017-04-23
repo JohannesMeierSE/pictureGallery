@@ -130,7 +130,10 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 					}
 					V loadedValue = load(next.key);
 					if (loadedValue == null) {
-						// try it again!
+						// ignore this picture:
+						synchronized (sync) {
+							loading.remove(next);
+						}
 					} else {
 						// handle the loaded value
 						synchronized (sync) {
