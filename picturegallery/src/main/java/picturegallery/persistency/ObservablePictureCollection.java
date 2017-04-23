@@ -1,6 +1,7 @@
 package picturegallery.persistency;
 
 import gallery.PictureCollection;
+import gallery.RealPictureCollection;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -127,11 +128,23 @@ public class ObservablePictureCollection extends ObservableBase<PictureCollectio
 	protected void addAdditionalObserver(PictureCollection value) {
 		super.addAdditionalObserver(value);
 		value.eAdapters().add(adapter);
+
+		// if the observed collection is a linked one => observe the real collection, too!
+		RealPictureCollection realCollection = Logic.getRealCollection(value);
+		if (realCollection != value) {
+			realCollection.eAdapters().add(adapter);
+		}
 	}
 
 	@Override
 	protected void removeAdditionalObserver(PictureCollection value) {
 		super.removeAdditionalObserver(value);
 		value.eAdapters().remove(adapter);
+
+		// if the observed collection is a linked one => observe the real collection, too!
+		RealPictureCollection realCollection = Logic.getRealCollection(value);
+		if (realCollection != value) {
+			realCollection.eAdapters().remove(adapter);
+		}
 	}
 }
