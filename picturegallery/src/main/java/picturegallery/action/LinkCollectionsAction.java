@@ -67,7 +67,10 @@ public class LinkCollectionsAction extends Action {
 		String newName = target.getRelativePath().replaceAll(File.separator, "-");
 		newName = Logic.askForString("Select name of linked collection",
 				"Select a name for the new collection linking on " + target.getRelativePath(),
-				"New name:", true, newName);
+				"New name:", false, newName);
+		if (newName == null || newName.isEmpty()) {
+			return; // => allows to cancel this operation!
+		}
 
 		// check for uniqueness
 	    if (Logic.isCollectionNameUnique(collectionWithNewLinks, newName)) {
