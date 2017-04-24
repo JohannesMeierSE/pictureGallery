@@ -424,7 +424,8 @@ public class MainApp extends Application {
 		/* the following line is important, because the deleting itself will be done later
 		 * when the path information of the picture was already deleted => error / failing remove operation in file system!
 		 */
-		String pathToDelete = picture.getFullPath();
+		String pathToDelete = new String(picture.getFullPath());
+
 		Logic.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -445,7 +446,7 @@ public class MainApp extends Application {
 				parentCollection, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), picture));
 //		parentCollection.getPictures().remove(picture);
 
-		domain.getCommandStack().execute(SetCommand.create(domain,
+		domain.getCommandStack().execute(SetCommand.create(domain, // TODO: is not required!
 				picture, GalleryPackage.eINSTANCE.getPicture_Collection(), null));
 //		picture.setCollection(null);
 
