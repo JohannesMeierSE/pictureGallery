@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -1153,6 +1154,25 @@ public class Logic {
 	public static boolean moveDirectory(String previousFullPath, String newDirectoryFullPath) {
 		try {
 			FileUtils.moveDirectoryToDirectory(new File(previousFullPath), new File(newDirectoryFullPath), false);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * Copies the given (real or linked) picture into the specified folder.
+	 * @param path path of the folder
+	 * @param pictureToCopy picture to copy (real or linked)
+	 * @return
+	 */
+	public static boolean copyPicture(String path, Picture pictureToCopy) {
+		try {
+			Files.copy(
+					new File(getRealPicture(pictureToCopy).getFullPath()).toPath(),
+					new File(path + File.separator + pictureToCopy.getName() + "." + pictureToCopy.getFileExtension()).toPath(),
+					StandardCopyOption.REPLACE_EXISTING);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

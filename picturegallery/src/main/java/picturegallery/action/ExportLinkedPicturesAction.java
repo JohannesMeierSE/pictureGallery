@@ -4,10 +4,6 @@ import gallery.LinkedPicture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,26 +55,12 @@ public class ExportLinkedPicturesAction extends Action {
 
 		// copy each linked picture
 		for (LinkedPicture link : linked) {
-			try {
-				Files.copy(
-						new File(link.getRealPicture().getFullPath()).toPath(),
-						new File(path + File.separator + link.getName() + "." + link.getRealPicture().getFileExtension()).toPath(),
-						StandardCopyOption.REPLACE_EXISTING);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			Logic.copyPicture(path, link);
 		}
 
 		// copy each real picture
 		for (RealPicture realPicture : real) {
-			try {
-				Files.copy(
-						new File(realPicture.getFullPath()).toPath(),
-						new File(path + File.separator + realPicture.getName() + "." + realPicture.getFileExtension()).toPath(),
-						StandardCopyOption.REPLACE_EXISTING);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			Logic.copyPicture(path, realPicture);
 		}
 	}
 
