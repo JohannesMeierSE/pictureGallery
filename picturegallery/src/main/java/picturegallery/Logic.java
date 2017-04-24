@@ -1496,7 +1496,7 @@ public class Logic {
 
 			// calculate the hash for the current RealPicture
 			String currentHash = getOrLoadHashOfPicture(currentReal, true);
-			if (currentHash == null || currentHash.isEmpty() || currentHash == NO_HASH) {
+			if (currentHash == null || currentHash.isEmpty() || currentHash.equals(NO_HASH)) {
 				continue;
 			}
 
@@ -1560,7 +1560,8 @@ public class Logic {
 	}
 
 	/**
-	 * Searches in two for duplicated real picture of one (ignoring all {@link LinkedPicture}s!).
+	 * Searches in "two" for duplicated real picture of "one" (ignoring all {@link LinkedPicture}s!).
+	 * Works only in proper/expected way, if the "one" list does NOT contain identical pictures within itself!
 	 * @param one
 	 * @param two
 	 * @return
@@ -1570,20 +1571,40 @@ public class Logic {
 		if (one.isEmpty() || two.isEmpty()) {
 			return result;
 		}
+
+		// put all usable hashes of the pictures of the first list into a Map:
+		Map<String, RealPicture> hashesOne = new HashMap<>(one.size());
+		for (Picture onePic : one) {
+			if (onePic instanceof LinkedPicture) {
+				continue;
+			}
+
+			String hashOne = getOrLoadHashOfPicture(onePic, true);
+			if (hashOne == null || hashOne.isEmpty() || hashOne.equals(NO_HASH)) {
+				continue;
+			}
+
+			hashesOne.put(hashOne, (RealPicture) onePic); // ignores/hides identical pictures within list "one"
+		}
+
+		// check the second list ...
 		for (Picture twoPic : two) {
 			if (twoPic instanceof LinkedPicture) {
 				continue;
 			}
-			for (Picture onePic : one) {
-				if (onePic instanceof LinkedPicture) {
-					continue;
-				}
-				if (arePicturesIdentical(onePic, twoPic)) {
-					System.out.println(onePic.getRelativePath() + " == " + twoPic.getRelativePath());
-					result.add(new Pair<>((RealPicture) onePic, (RealPicture) twoPic));
-				}
+
+			String hashTwo = getOrLoadHashOfPicture(twoPic, true);
+			if (hashTwo == null || hashTwo.isEmpty() || hashTwo.equals(NO_HASH)) {
+				continue;
+			}
+
+			RealPicture onePic = hashesOne.get(hashTwo);
+			if (onePic != null) {
+				System.out.println(onePic.getRelativePath() + " == " + twoPic.getRelativePath());
+				result.add(new Pair<>(onePic, (RealPicture) twoPic));
 			}
 		}
+
 		return result;
 	}
 
