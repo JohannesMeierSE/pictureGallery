@@ -48,6 +48,7 @@ public class FindSimilarPicturesAction extends Action {
 		final double valueToUse = value;
 		// TODO: sort (only comparison with first picture!)
 		// TODO: print the similarity value!
+		// TODO: evtl. waiting state nutzen??
 
 		Task<List<Picture>> task = new Task<List<Picture>>() {
         	@Override

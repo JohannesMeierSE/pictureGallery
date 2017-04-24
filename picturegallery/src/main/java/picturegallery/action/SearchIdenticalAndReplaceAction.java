@@ -34,7 +34,9 @@ public class SearchIdenticalAndReplaceAction extends Action {
 			return;
 		}
 
-        Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
+		MainApp.get().switchToWaitingState();
+
+		Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
         	protected Map<RealPicture, List<RealPicture>> call() throws Exception {
     			return Logic.findIdenticalInSubcollectionsRecursive((RealPictureCollection) selection);
@@ -45,6 +47,7 @@ public class SearchIdenticalAndReplaceAction extends Action {
 			public void handle(WorkerStateEvent event) {
 				Map<RealPicture, List<RealPicture>> result = task.getValue();
 				if (result.isEmpty()) {
+					MainApp.get().switchCloseWaitingState();
 					return;
 				}
 

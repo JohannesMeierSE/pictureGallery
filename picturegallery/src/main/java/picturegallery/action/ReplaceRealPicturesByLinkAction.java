@@ -19,6 +19,9 @@ public class ReplaceRealPicturesByLinkAction extends Action {
 	public ReplaceRealPicturesByLinkAction(Map<RealPicture, List<RealPicture>> replaceMap,
 			String title, String description) {
 		super();
+		if (replaceMap.isEmpty()) {
+			throw new IllegalArgumentException();
+		}
 		this.replaceMap = replaceMap;
 		this.title = title;
 		this.description = description;
@@ -32,9 +35,8 @@ public class ReplaceRealPicturesByLinkAction extends Action {
 			return;
 		}
 
-		// close the state => prevents loading removed pictures again!
-		MainApp.get().switchToPreviousState();
-		currentState.onClose();
+		// the user has to wait and must not do other things (long running process)
+		MainApp.get().switchToWaitingState();
 
 		Logic.runNotOnUiThread(new Runnable() {
 			@Override
@@ -44,6 +46,9 @@ public class ReplaceRealPicturesByLinkAction extends Action {
 						Logic.replaceRealByLinkedPicture(picToDelete, e.getKey());
 					}
 				}
+
+				// close the waiting state!
+				MainApp.get().switchCloseWaitingState();
 			}
 		});
 	}

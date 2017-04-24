@@ -34,6 +34,8 @@ public class SearchIdenticalAndCollectAction extends Action {
 			return;
 		}
 
+		MainApp.get().switchToWaitingState();
+
         Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
         	protected Map<RealPicture, List<RealPicture>> call() throws Exception {
@@ -45,6 +47,7 @@ public class SearchIdenticalAndCollectAction extends Action {
 			public void handle(WorkerStateEvent event) {
 				Map<RealPicture, List<RealPicture>> result = task.getValue();
 				if (result.isEmpty()) {
+					MainApp.get().switchCloseWaitingState();
 					return;
 				}
 

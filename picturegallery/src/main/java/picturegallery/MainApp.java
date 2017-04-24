@@ -595,7 +595,8 @@ public class MainApp extends Application {
 		 * TODO: relevant??
 		 * ist aber eigentlich egal, oder??
 		 */
-		
+
+		switchToWaitingState();
 
 		// do the long-running moving in another thread!
 		Logic.runNotOnUiThread(new Runnable() {
@@ -676,6 +677,8 @@ public class MainApp extends Application {
 				for (LinkedPictureCollection link : linkedCollections) {
 					Logic.createSymlinkCollection(link);
 				}
+
+				switchCloseWaitingState();
 			}
 		});
 	}

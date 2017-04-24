@@ -41,6 +41,8 @@ public class SearchIdenticalDeletedAction extends Action {
 		}
 		final boolean recursiveFinal = recursive;
 
+		MainApp.get().switchToWaitingState();
+
 		Task<List<RealPicture>> task = new Task<List<RealPicture>>() {
 			@Override
 			protected List<RealPicture> call() throws Exception {
@@ -54,6 +56,7 @@ public class SearchIdenticalDeletedAction extends Action {
 				List<RealPicture> result = task.getValue();
 				if (result.isEmpty()) {
 					System.out.println("found no identical deleted pictures!");
+					MainApp.get().switchCloseWaitingState();
 					return;
 				}
 
