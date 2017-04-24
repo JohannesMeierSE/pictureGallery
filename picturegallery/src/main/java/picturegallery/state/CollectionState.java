@@ -311,6 +311,10 @@ public class CollectionState extends State {
 		}
 
 		// use the collection filter!
+		if (collectionFilter.ignore.get()) {
+			// handle the case, when the filter shpuld be ignored
+			return true;
+		}
 		return collectionFilter.isUsable(collection);
 	}
 }

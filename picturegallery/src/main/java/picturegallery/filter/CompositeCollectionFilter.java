@@ -165,6 +165,10 @@ public class CompositeCollectionFilter extends CollectionFilter {
 	protected boolean isUsableLogic(PictureCollection collection) {
 		int accepted = 0;
 		for (CollectionFilter cf : filters) {
+			if (cf.ignore.get()) {
+				// ignore filters which should be ignored!
+				continue;
+			}
 			if (cf.isUsable(collection)) {
 				accepted++;
 			}

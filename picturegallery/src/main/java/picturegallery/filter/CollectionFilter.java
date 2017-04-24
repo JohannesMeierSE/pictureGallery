@@ -21,10 +21,13 @@ public abstract class CollectionFilter implements Observable {
 	protected final CompositeCollectionFilter parentFilter;
 
 	public final SimpleBooleanProperty not;
+	public final SimpleBooleanProperty ignore;
+
 	private final List<InvalidationListener> invalidationListener;
 	protected final InvalidationListener listenerForNotification;
 
 	protected final HBox hbox;
+	private final CheckBox ignoreCheckbox;
 	private final CheckBox notCheckbox;
 	private final Button deleteFilterButton;
 
@@ -32,6 +35,7 @@ public abstract class CollectionFilter implements Observable {
 		super();
 		this.parentFilter = parentFilter;
 		not = new SimpleBooleanProperty(false);
+		ignore = new SimpleBooleanProperty(false);
 		invalidationListener = new ArrayList<>();
 
 		listenerForNotification = new InvalidationListener() {
@@ -41,12 +45,14 @@ public abstract class CollectionFilter implements Observable {
 			}
 		};
 		not.addListener(listenerForNotification);
+		ignore.addListener(listenerForNotification);
 
 		// init the UI
 		hbox = new HBox(20.0); // spacing
 		hbox.setAlignment(Pos.CENTER_LEFT);
 		hbox.setPadding(new Insets(5.0));
 
+		ignoreCheckbox = new CheckBox("ignore");
 		notCheckbox = new CheckBox("not");
 		deleteFilterButton = new Button("Delete");
 		deleteFilterButton.setDisable(parentFilter == null);
@@ -60,10 +66,11 @@ public abstract class CollectionFilter implements Observable {
 			}
 		});
 
-		hbox.getChildren().addAll(deleteFilterButton, notCheckbox);
+		hbox.getChildren().addAll(ignoreCheckbox, deleteFilterButton, notCheckbox);
 
 		// handle the values and logic
 		notCheckbox.selectedProperty().bindBidirectional(not);
+		ignoreCheckbox.selectedProperty().bindBidirectional(ignore);
 	}
 
 	public final boolean isUsable(PictureCollection collection) {
