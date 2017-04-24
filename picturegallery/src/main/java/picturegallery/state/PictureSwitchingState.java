@@ -31,6 +31,7 @@ import picturegallery.action.AddToRemoveFromTempCollectionAction;
 import picturegallery.action.ClearLinktoCollectionAction;
 import picturegallery.action.ClearMovetoCollectionAction;
 import picturegallery.action.DeletePictureAction;
+import picturegallery.action.FindSimilarPicturesAction;
 import picturegallery.action.JumpFirstAction;
 import picturegallery.action.LinkPictureAction;
 import picturegallery.action.MovePictureAction;
@@ -413,6 +414,7 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new JumpFirstAction());
 		registerAction(new AddToRemoveFromTempCollectionAction());
 		registerAction(new ShowOrExitTempCollectionAction());
+		registerAction(new FindSimilarPicturesAction());
 		registerAction(new LinkPictureAction());
 		registerAction(new ClearLinktoCollectionAction());
 		registerAction(new MovePictureAction());
