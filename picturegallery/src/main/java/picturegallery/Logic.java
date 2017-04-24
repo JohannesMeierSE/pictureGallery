@@ -1212,7 +1212,7 @@ public class Logic {
 		}
     	EditingDomain domain = MainApp.get().getModelDomain();
 
-		// fix the symlinks onto the old real picture
+		// fix the symlinks onto the old real picture (which will become a linked picture, too!)
 		List<LinkedPicture> links = new ArrayList<>(oldReal.getLinkedBy());
 		for (LinkedPicture link : links) {
 			deleteSymlinkPicture(link);
@@ -1468,6 +1468,14 @@ public class Logic {
 		return false;
 	}
 
+	/**
+	 * Collects identical pictures within one collection.
+	 * Ignores linked pictures!
+	 * No comparison of pictures which are contained in different collections. 
+	 * @param collection
+	 * @param recursive
+	 * @return
+	 */
 	public static Map<RealPicture, List<RealPicture>> findIdenticalInOneCollection(
 			RealPictureCollection collection, boolean recursive) {
 		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
@@ -1476,27 +1484,41 @@ public class Logic {
 	}
 	private static void findIdenticalInOneCollectionLogic(RealPictureCollection collection,
 			boolean recursive, Map<RealPicture, List<RealPicture>> result) {
+		Map<String, RealPicture> hashMap = new HashMap<>(collection.getPictures().size());
+
 		System.out.println("beginning with " + collection.getRelativePath() + "!");
 
-		List<RealPicture> list = new ArrayList<>(getRealPicturesOf(collection));
-		for (int i = 0; i < list.size() - 1; i++) {
-			List<RealPicture> items = new ArrayList<>();
-			RealPicture p1 = list.get(i);
-			int j = i + 1;
-			while (j < list.size()) {
-				RealPicture p2 = list.get(j);
-				if (Logic.arePicturesIdentical(p1, p2)) {
-					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
-					items.add(p2);
-					list.remove(j); // => do not use it for other purpose!
-				} else {
-					j++;
-				}
+		for (Picture pic : collection.getPictures()) {
+			if (!(pic instanceof RealPicture)) {
+				continue;
 			}
-			if (!items.isEmpty()) {
-				result.put(p1, items);
+			RealPicture currentReal = (RealPicture) pic;
+
+			// calculate the hash for the current RealPicture
+			String currentHash = getOrLoadHashOfPicture(currentReal, true);
+			if (currentHash == null || currentHash.isEmpty() || currentHash == NO_HASH) {
+				continue;
+			}
+
+			RealPicture duplicated = hashMap.get(currentHash);
+			if (duplicated == null) {
+				// new hash:
+				hashMap.put(currentHash, currentReal);
+			} else {
+				// already available hash: => duplicate!
+
+				// 1. get the result list to store duplicate values
+				List<RealPicture> res = result.get(duplicated);
+				if (res == null) {
+					res = new ArrayList<>();
+					result.put(duplicated, res);
+				}
+
+				// 2. save the current picture as duplicated!
+				res.add(currentReal);
 			}
 		}
+
 		System.out.println("ready! found " + result.size() + " pictures with duplicates");
 
 		if (recursive) {
