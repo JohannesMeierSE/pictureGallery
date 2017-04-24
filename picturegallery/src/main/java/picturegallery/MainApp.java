@@ -60,6 +60,7 @@ import picturegallery.persistency.ObjectCache.AlternativeWorker;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
+import picturegallery.state.WaitingState;
 
 public class MainApp extends Application {
 	public final static int SPACE = 25;
@@ -77,6 +78,7 @@ public class MainApp extends Application {
 	private ObjectCache<RealPicture, Image> imageCache;
 	private ObjectCache<RealPicture, Image> imageCacheSmall;
 
+	private WaitingState waitingState;
 	private final List<State> stateStack = new ArrayList<>();
 	private final List<Action> globalActions = new ArrayList<>();
 
@@ -244,6 +246,11 @@ public class MainApp extends Application {
         		// start with the first/initial state:
         		CollectionState newState = new CollectionState();
         		newState.onInit();
+
+        		waitingState = new WaitingState();
+        		waitingState.setNextAfterClosed(newState);
+        		waitingState.onInit();
+
 				switchState(newState);
         	}
         });
@@ -706,6 +713,14 @@ public class MainApp extends Application {
 			return null;
 		}
 		return stateStack.get(stateStack.size() - 2);
+	}
+
+	public WaitingState getWaitingState() {
+		return waitingState;
+	}
+
+	public void switchToWaitingState() {
+		switchState(waitingState);
 	}
 
 	public void switchState(State newState) {

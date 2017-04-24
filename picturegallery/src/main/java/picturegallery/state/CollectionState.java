@@ -51,17 +51,12 @@ public class CollectionState extends State {
 	private final CompositeCollectionFilter collectionFilter;
 
 	private final SingleCollectionState singleState;
-	private final WaitingState waitingState; // TODO: move as singleton into MainApp??
 
 	public CollectionState() {
 		super();
 		singleState = new SingleCollectionState();
 		singleState.setNextAfterClosed(this);
 		singleState.onInit();
-
-		waitingState = new WaitingState();
-		waitingState.setNextAfterClosed(this);
-		waitingState.onInit();
 
 		collectionFilter = new CompositeCollectionFilter(this, null); // no parent filter available!
 		collectionFilter.setAcceptMinimum(0);
@@ -299,10 +294,6 @@ public class CollectionState extends State {
 
 	public SingleCollectionState getSingleState() {
 		return singleState;
-	}
-
-	public WaitingState getWaitingState() {
-		return waitingState;
 	}
 
 	public boolean isCollectionEnabled(PictureCollection collection) {

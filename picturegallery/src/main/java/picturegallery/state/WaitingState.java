@@ -9,6 +9,7 @@ public class WaitingState extends State {
 	public WaitingState() {
 		super();
 		label = new Label("please wait!");
+		// TODO: rotate!
 	}
 
 	@Override

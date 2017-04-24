@@ -7,7 +7,6 @@ import java.util.List;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
-import picturegallery.state.CollectionState;
 import picturegallery.state.State;
 
 public class DeleteSelectedPicturesAction extends Action {
@@ -31,7 +30,7 @@ public class DeleteSelectedPicturesAction extends Action {
 		}
 
 		// close the state => prevents loading removed pictures again!
-		MainApp.get().switchState(((CollectionState) currentState.getNextAfterClosed()).getWaitingState());
+		MainApp.get().switchToWaitingState();
 		currentState.onClose();
 
 		Logic.runNotOnUiThread(new Runnable() {
