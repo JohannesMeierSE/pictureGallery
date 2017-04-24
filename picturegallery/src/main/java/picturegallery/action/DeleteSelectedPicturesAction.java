@@ -42,12 +42,7 @@ public class DeleteSelectedPicturesAction extends Action {
 				}
 
 				// close the waiting state!
-				Logic.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						MainApp.get().switchToPreviousState();
-					}
-				});
+				MainApp.get().switchCloseWaitingState();
 			}
 		});
 	}

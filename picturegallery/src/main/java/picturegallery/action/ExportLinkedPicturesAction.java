@@ -53,15 +53,26 @@ public class ExportLinkedPicturesAction extends Action {
 			return;
 		}
 
-		// copy each linked picture
-		for (LinkedPicture link : linked) {
-			Logic.copyPicture(path, link);
-		}
+		// the user has to wait and must not do other things (long running process)
+		MainApp.get().switchToWaitingState();
 
-		// copy each real picture
-		for (RealPicture realPicture : real) {
-			Logic.copyPicture(path, realPicture);
-		}
+		Logic.runNotOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				// copy each linked picture
+				for (LinkedPicture link : linked) {
+					Logic.copyPicture(path, link);
+				}
+
+				// copy each real picture
+				for (RealPicture realPicture : real) {
+					Logic.copyPicture(path, realPicture);
+				}
+
+				// close the waiting state!
+				MainApp.get().switchCloseWaitingState();
+			}
+		});
 	}
 
 	@Override

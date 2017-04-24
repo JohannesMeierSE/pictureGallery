@@ -723,6 +723,16 @@ public class MainApp extends Application {
 		switchState(waitingState);
 	}
 
+	public void switchCloseWaitingState() {
+		// close the waiting state!
+		Logic.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				switchToPreviousState();
+			}
+		});
+	}
+
 	public void switchState(State newState) {
 		if (newState == null) {
 			throw new IllegalArgumentException();
