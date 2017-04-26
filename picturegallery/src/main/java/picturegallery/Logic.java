@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -96,12 +95,15 @@ import com.pragone.jphash.image.radial.RadialHash;
 public class Logic {
 	public static final String NO_HASH = "nohash!";
 
-	// (collection.relative path -> (picture.name -> Picture))
-	private static Map<String, Map<String, Picture>> findByNameMap = new HashMap<>();
+	/** (real collection -> (picture.name -> Picture)) */
+	private static Map<RealPictureCollection, Map<String, Picture>> findByNameMap = new HashMap<>();
+	/** (absolute path -> real collection) */
+	private static Map<String, RealPictureCollection> findByPathMap = new HashMap<>();
 
 	private static void findByNameInit(RealPictureCollection currentCollection) {
 		Map<String, Picture> map = new HashMap<>(currentCollection.getPictures().size());
-		findByNameMap.put(currentCollection.getRelativePath(), map);
+		findByNameMap.put(currentCollection, map);
+		findByPathMap.put(currentCollection.getFullPath(), currentCollection);
 
 		for (Picture pic : currentCollection.getPictures()) {
 			map.put(pic.getName(), pic);
@@ -116,31 +118,45 @@ public class Logic {
 	}
 	@SuppressWarnings("unused")
 	private static void findByNamePut(Picture newPicture) {
-		Map<String, Picture> map = findByNameMap.get(newPicture.getCollection().getRelativePath());
+		Map<String, Picture> map = findByNameMap.get(newPicture.getCollection());
 		if (map == null) {
 			map = new HashMap<>();
-			findByNameMap.put(newPicture.getCollection().getRelativePath(), map);
+			findByNameMap.put(newPicture.getCollection(), map);
 		}
 		map.put(newPicture.getName(), newPicture);
 	}
 	private static Picture findByNameGet(RealPictureCollection parent, String pictureName) {
-		Map<String, Picture> map = findByNameMap.get(parent.getRelativePath());
+		Map<String, Picture> map = findByNameMap.get(parent);
 		if (map == null) {
 			return null;
 		}
 		return map.get(pictureName);
+	}
+	private static Picture findByNameGet(String absolutePicturePath) {
+		RealPictureCollection col = findByPathGet(absolutePicturePath, true);
+		if (col == null) {
+			return null;
+		}
+		return findByNameGet(col, absolutePicturePath.substring(absolutePicturePath.lastIndexOf(File.separator) + 1, absolutePicturePath.lastIndexOf(".")));
+	}
+
+	private static RealPictureCollection findByPathGet(String absolutePath, boolean containsPicturePath) {
+		final String path;
+		if (containsPicturePath) {
+			path = absolutePath.substring(0, absolutePath.lastIndexOf(File.separator));
+		} else {
+			path = new String(absolutePath);
+		}
+		return findByPathMap.get(path);
 	}
 
 	public static void loadDirectory(RealPictureCollection baseCollection) {
 		long startTime = System.currentTimeMillis();
 		findByNameMap = new HashMap<>(baseCollection.getSubCollections().size());
 		findByNameInit(baseCollection);
-    	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
-    	// TODO: mapPictures und die globale Map sind doppelt => reduzieren!
-    	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>(); // Path -> Collection in which the Path was found
 
-    	loadDirectoryLogic(baseCollection, mapPictures, mapCollections, symlinks);
+    	loadDirectoryLogic(baseCollection, symlinks);
 
     	String baseFullPath = baseCollection.getFullPath();
 
@@ -166,11 +182,10 @@ public class Logic {
 			String name = symlink.getKey().toString();
 			if (Files.isDirectory(real)) {
 				// found symlink onto a directory in the file system
-				RealPictureCollection ref = mapCollections.get(realPath);
+				RealPictureCollection ref = findByPathGet(realPath, false);
 				if (ref == null) {
 					String message = "missing link on directory: " + realPath + " of " + symlink.toString();
 					System.err.println(message);
-//					throw new IllegalArgumentException(message);
 				} else {
 					String linkedCollectionName = name.substring(name.lastIndexOf(File.separator) + 1, name.length());
 					LinkedPictureCollection linkedCollection = (LinkedPictureCollection) getCollectionByName(symlink.getValue(),
@@ -189,11 +204,10 @@ public class Logic {
 				}
 			} else {
 				// found symlink onto a picture in the file system
-				RealPicture ref = mapPictures.get(realPath);
+				RealPicture ref = (RealPicture) findByNameGet(realPath);
 				if (ref == null) {
 					String message = "missing link: " + realPath + " of " + symlink.toString();
 					System.err.println(message);
-//					throw new IllegalArgumentException(message);
 				} else {
 					String linkedPictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")); // TODO: "." als regulärer Namensbestandteil ohne Endung??
 					LinkedPicture linkedPicture = (LinkedPicture) findByNameGet(symlink.getValue(), linkedPictureName);
@@ -211,6 +225,7 @@ public class Logic {
 		}
 
 		findByNameMap.clear();
+		findByPathMap.clear();
 
 		// sort all recursive sub-collections: order of collections AND pictures!
 		sortSubCollections(baseCollection, true, true);
@@ -223,7 +238,6 @@ public class Logic {
 	}
 
 	private static void loadDirectoryLogic(RealPictureCollection currentCollection,
-			Map<String, RealPicture> mapPictures, Map<String, RealPictureCollection> mapCollections,
 			List<Pair<Path, RealPictureCollection>> symlinks) {
 		String baseDir = currentCollection.getFullPath();
         try {
@@ -249,7 +263,6 @@ public class Logic {
 		    		} else {
 		    			// folder is in file system AND in model.xmi
 		    		}
-		    		mapCollections.put(sub.getFullPath(), sub);
 
 			    	return FileVisitResult.SKIP_SUBTREE;
 				}
@@ -279,8 +292,6 @@ public class Logic {
 		        		} else {
 		        			// found real picture, both in file system and model.xmi
 		        		}
-
-		        		mapPictures.put(pic.getFullPath(), pic);
 			        } else {
 			        	// file with different file extension => ignore it
 			        	System.err.println("ignored: " + file.toString());
@@ -295,30 +306,29 @@ public class Logic {
         // handle all sub-collections
     	List<PictureCollection> collectionsToRemove = new ArrayList<>();
     	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
-    		if (!new File(newSubCollection.getFullPath()).exists()) {
+    		if (!new File(newSubCollection.getFullPath()).exists()) { // detect removed real and linked collections!
     			collectionsToRemove.add(newSubCollection);
     			continue;
     		}
     		if (newSubCollection instanceof LinkedPictureCollection) {
     			continue;
     		}
-    		loadDirectoryLogic((RealPictureCollection) newSubCollection, mapPictures, mapCollections, symlinks);
+    		loadDirectoryLogic((RealPictureCollection) newSubCollection, symlinks);
     	}
 
     	// remove collections with all its children which do not exist anymore
     	while (!collectionsToRemove.isEmpty()) {
-    		deleteCollectionSimple(collectionsToRemove.remove(0));
+    		PictureCollection removed = collectionsToRemove.remove(0);
+
+    		findByPathMap.remove(removed.getFullPath());
+    		findByNameMap.remove(removed);
+			deleteCollectionSimple(removed);
        	}
 
     	// remove all deleted pictures of this collection
     	List<Picture> picturesToRemove = new ArrayList<>();
-    	Collection<RealPicture> availablePictures = mapPictures.values(); // TODO: wird nur hier benötigt, um fehlende RealPictures zu finden => besser aufgebaut Map draus entfernen (?)
     	for (Picture pic : currentCollection.getPictures()) {
-    		if (pic instanceof LinkedPicture) {
-    			// TODO: wie alte/tote Links (auf Pictures oder Collections) identifizieren?
-    			continue;
-    		}
-    		if (!availablePictures.contains(pic)) {
+    		if (!new File(pic.getFullPath()).exists()) {
     			picturesToRemove.add(pic);
     		}
     	}
