@@ -220,6 +220,7 @@ public class MainApp extends Application {
         			modelResource = rset.createResource(uri);
         		}
 
+        		// load or create library and base collection
         		if (modelResource.getContents().isEmpty()) {
         			baseCollection = Logic.createEmptyLibrary(baseDir);
         			modelResource.getContents().add(baseCollection.getLibrary());
@@ -227,6 +228,7 @@ public class MainApp extends Application {
         			baseCollection = ((PictureLibrary) modelResource.getContents().get(0)).getBaseCollection();
         		}
 
+        		// fill the base collection using the selected folder in the file system
         		Logic.loadDirectory(baseCollection);
 
         		modelDomain = new AdapterFactoryEditingDomain(new GalleryAdapterFactory(), new BasicCommandStack(), rset);

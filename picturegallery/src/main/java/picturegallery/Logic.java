@@ -75,6 +75,7 @@ import org.apache.tika.parser.jpeg.JpegParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.ECollections;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.command.MoveCommand;
@@ -106,6 +107,7 @@ public class Logic {
 			map.put(pic.getName(), pic);
 		}
 
+		// handle all sub-collections
 		for (PictureCollection sub : currentCollection.getSubCollections()) {
 			if (sub instanceof RealPictureCollection) {
 				findByNameInit((RealPictureCollection) sub);
@@ -230,12 +232,13 @@ public class Logic {
 					String childName = name.substring(name.lastIndexOf(File.separator) + 1);
 		    		RealPictureCollection sub = (RealPictureCollection) getCollectionByName(currentCollection, childName, true, false);
 		    		if (sub == null) {
+		    			// folder is in file system, but not in model.xmi:
 		    			sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
 		    			sub.setSuperCollection(currentCollection);
 		    			currentCollection.getSubCollections().add(sub);
 		    			sub.setName(childName);
 		    		} else {
-//	        			System.out.println("already available: " + sub.getRelativePath());
+		    			// folder is in file system AND in model.xmi
 		    		}
 		    		mapCollections.put(sub.getFullPath(), sub);
 
@@ -247,6 +250,7 @@ public class Logic {
 					String name = file.toAbsolutePath().toString();
 					String nameLower = name.toLowerCase();
 		        	if (FileUtils.isSymlink(new File(name))) {
+		        		// found symlink in file system: both, picture or collection!
 		        		symlinks.add(new Pair<Path, RealPictureCollection>(file, currentCollection));
 		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg") || nameLower.endsWith(".gif")) {
 			        	/*
@@ -259,17 +263,17 @@ public class Logic {
 		        		// 138.202 = 38.6 GB
 		        		String pictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
 		        		RealPicture pic = (RealPicture) findByNameGet(currentCollection, pictureName);
-//		        				(RealPicture) getPictureByName(currentCollection, pictureName, true, false);
 		        		if (pic == null) {
+		        			// found real picture in file system, but not in model.xmi
 		        			pic = GalleryFactory.eINSTANCE.createRealPicture();
 		        			initPicture(currentCollection, name, pic);
-//		        			findByNamePut(pic);
 		        		} else {
-//		        			System.out.println("already available: " + pic.getRelativePath());
+		        			// found real picture, both in file system and model.xmi
 		        		}
 
 		        		mapPictures.put(pic.getFullPath(), pic);
 			        } else {
+			        	// file with different file extension => ignore it
 			        	System.err.println("ignored: " + file.toString());
 			        }
 			        return FileVisitResult.CONTINUE;
@@ -299,7 +303,7 @@ public class Logic {
 
     	// remove all deleted pictures of this collection
     	List<Picture> picturesToRemove = new ArrayList<>();
-    	Collection<RealPicture> availablePictures = mapPictures.values();
+    	Collection<RealPicture> availablePictures = mapPictures.values(); // TODO: wird nur hier benötigt, um fehlende RealPictures zu finden => besser aufgebaut Map draus entfernen (?)
     	for (Picture pic : currentCollection.getPictures()) {
     		if (pic instanceof LinkedPicture) {
     			// TODO: wie alte/tote Links (auf Pictures oder Collections) identifizieren?
@@ -317,7 +321,14 @@ public class Logic {
 
 	private static void deleteCollectionSimple(PictureCollection collectionToRemove) {
 		if (collectionToRemove instanceof RealPictureCollection) {
-			// delete contained pictures
+			RealPictureCollection real = (RealPictureCollection) collectionToRemove;
+			// delete all linked picture collections
+			EList<LinkedPictureCollection> linkedCollections = real.getLinkedBy();
+			while (! linkedCollections.isEmpty()) {
+				deleteCollectionSimple(linkedCollections.get(0));
+			}
+
+			// delete contained pictures => this is required to delete linked pictures, too!
 			List<Picture> pictures = collectionToRemove.getPictures();
 			while (!pictures.isEmpty()) {
 				deletePictureSimple(pictures.get(0));
@@ -328,7 +339,10 @@ public class Logic {
 			while (!subs.isEmpty()) {
 				deleteCollectionSimple(subs.get(0));
 			}
+		} else {
+			// nothing special is required
 		}
+
 		// http://eclipsesource.com/blogs/2015/05/26/emf-dos-and-donts-11/
 		EcoreUtil.delete(collectionToRemove, true);
 	}
@@ -340,7 +354,10 @@ public class Logic {
 			while (!linked.isEmpty()) {
 				deletePictureSimple(linked.get(0));
 			}
+		} else {
+			// nothing special is required for LinkedPictures
 		}
+
 		// removes also possible Metadata!
 		EcoreUtil.delete(pictureToDelete, true);
 	}
@@ -1899,6 +1916,7 @@ public class Logic {
 
 	public static PictureCollection getCollectionByName(RealPictureCollection parent, String collectionName,
 			boolean searchReal, boolean searchLinked) {
+		// TODO: diese Methode könnte theoretisch auch durch eine Map beschleunigt werden, dürfte aber nur bei sehr vielen Unterordnern relevant sein!
 		if (!searchReal && !searchLinked) {
 			throw new IllegalArgumentException();
 		}
