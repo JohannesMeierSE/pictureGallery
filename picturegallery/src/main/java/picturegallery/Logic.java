@@ -138,7 +138,7 @@ public class Logic {
     	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
     	// TODO: mapPictures und die globale Map sind doppelt => reduzieren!
     	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
-    	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>();
+    	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>(); // Path -> Collection in which the Path was found
 
     	loadDirectoryLogic(baseCollection, mapPictures, mapCollections, symlinks);
 
@@ -151,51 +151,60 @@ public class Logic {
 			try {
 				real = symlink.getKey().toRealPath();
 			} catch (IOException e) {
+				System.out.println("error with a symlink:");
 				e.printStackTrace();
+				continue;
 			}
-			String r = real.toAbsolutePath().toString();
+			String realPath = real.toAbsolutePath().toString();
+
 			// prüfen, ob die Datei überhaupt in dieser Library liegt!
-			if (!r.startsWith(baseFullPath)) {
-				System.err.println("Found symlink to a picture which is not part of this library!");
+			if (!realPath.startsWith(baseFullPath)) {
+				System.err.println("Found symlink to something which is not part of this library!");
 				continue; // => ignore it!
 			}
+
 			String name = symlink.getKey().toString();
 			if (Files.isDirectory(real)) {
-				// symlink onto a directory
-				RealPictureCollection ref = mapCollections.get(r);
+				// found symlink onto a directory in the file system
+				RealPictureCollection ref = mapCollections.get(realPath);
 				if (ref == null) {
-					String message = "missing link on directory: " + r + " of " + symlink.toString();
-					throw new IllegalArgumentException(message);
+					String message = "missing link on directory: " + realPath + " of " + symlink.toString();
+					System.err.println(message);
+//					throw new IllegalArgumentException(message);
 				} else {
 					String linkedCollectionName = name.substring(name.lastIndexOf(File.separator) + 1, name.length());
 					LinkedPictureCollection linkedCollection = (LinkedPictureCollection) getCollectionByName(symlink.getValue(),
 							linkedCollectionName, false, true);
 					if (linkedCollection == null) {
+						// linked collection is in file system, but not in model.xmi
 						linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
 						ref.getLinkedBy().add(linkedCollection);
 						linkedCollection.setRealCollection(ref);
 						symlink.getValue().getSubCollections().add(linkedCollection);
 						linkedCollection.setSuperCollection(symlink.getValue());
 						linkedCollection.setName(linkedCollectionName);
+					} else {
+						// linked collection is both in file system and model.xmi
 					}
 				}
 			} else {
-				// symlink onto a picture
-				RealPicture ref = mapPictures.get(r);
+				// found symlink onto a picture in the file system
+				RealPicture ref = mapPictures.get(realPath);
 				if (ref == null) {
-					String message = "missing link: " + r + " of " + symlink.toString();
+					String message = "missing link: " + realPath + " of " + symlink.toString();
 					System.err.println(message);
-					throw new IllegalArgumentException(message);
+//					throw new IllegalArgumentException(message);
 				} else {
-					String linkedPictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
+					String linkedPictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")); // TODO: "." als regulärer Namensbestandteil ohne Endung??
 					LinkedPicture linkedPicture = (LinkedPicture) findByNameGet(symlink.getValue(), linkedPictureName);
-//							(LinkedPicture) getPictureByName(symlink.getValue(), linkedPictureName, false, true);
 					if (linkedPicture == null) {
+						// found linked picture in file system, but not in model.xmi
 						linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
 						ref.getLinkedBy().add(linkedPicture);
 						linkedPicture.setRealPicture(ref);
 						initPicture(symlink.getValue(), name, linkedPicture);
-//						findByNamePut(linkedPicture);
+					} else {
+						// found linked picture both in file system and in model.xmi
 					}
 				}
 			}
