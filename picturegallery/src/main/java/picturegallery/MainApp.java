@@ -354,7 +354,7 @@ public class MainApp extends Application {
 					break;
 				case 1:
 					// 2. slow hash
-					Logic.getOrLoadHashOfPicture(next, false);
+//					Logic.getOrLoadHashOfPicture(next, false);
 					break;
 				case 2:
 					// 3. meta data
@@ -419,8 +419,7 @@ public class MainApp extends Application {
 
 			// remove the pictures from the image cache!
 			RealPicture real = (RealPicture) picture;
-			imageCache.remove(real);
-			imageCacheSmall.remove(real);
+			removeFromCache(real);
 
 			// save deleted information
 			if (saveDeletedInformation) {
@@ -476,6 +475,11 @@ public class MainApp extends Application {
 					lp, GalleryPackage.eINSTANCE.getLinkedPicture_RealPicture(), null));
 //			lp.setRealPicture(null);
 		}
+	}
+
+	public void removeFromCache(RealPicture real) {
+		imageCache.remove(real);
+		imageCacheSmall.remove(real);
 	}
 
 	public void movePicture(Picture picture, RealPictureCollection newCollection) {

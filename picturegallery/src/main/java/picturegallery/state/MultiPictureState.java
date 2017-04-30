@@ -36,7 +36,7 @@ public class MultiPictureState extends State {
 		pictures = FXCollections.observableArrayList();
 		pathVisible = new SimpleBooleanProperty(true);
 
-		grid = new GridView<>(pictures);
+		grid = new GridView<>();
 		grid.cellHeightProperty().set(HEIGHT);
 		grid.cellWidthProperty().set(WIDTH);
 		grid.horizontalCellSpacingProperty().set(SPACING);
@@ -86,6 +86,7 @@ public class MultiPictureState extends State {
 	@Override
 	public void onEntry(State previousState) {
 		super.onEntry(previousState);
+		grid.setItems(pictures);
 		grid.requestFocus();
 	}
 
@@ -97,8 +98,17 @@ public class MultiPictureState extends State {
 	}
 
 	@Override
+	public void onExit(State nextState) {
+		super.onExit(nextState);
+		grid.setItems(null);
+	}
+
+	@Override
 	public void onClose() {
 		super.onClose();
+		for (Picture pic : pictures) {
+			MainApp.get().getImageCacheSmall().remove(Logic.getRealPicture(pic));
+		}
 		pictures.clear();
 	}
 

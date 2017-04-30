@@ -37,6 +37,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 		public final K key;
 		public final List<CallBack<K, V>> callbacks;
 		public final WrappedInteger count;
+
 		public Tripel(K key) {
 			super();
 			this.key = key;
@@ -47,6 +48,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	class Double {
 		public final V value;
 		public final WrappedInteger count;
+
 		public Double(V value, int count) {
 			super();
 			this.value = value;
@@ -55,6 +57,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	}
 	class WrappedInteger {
 		private int value;
+
 		public WrappedInteger(int value) {
 			super();
 			this.value = value;
@@ -300,12 +303,12 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	}
 
 	public void setAlternativeWorker(AlternativeWorker alternativeWorker) {
-		this.alternativeWorker = alternativeWorker;
-
-		/* wakes the loading thread up to use this worker!
-		 * If the loading thread is currently loading, than nothing will happen!
-		 */
 		synchronized (sync) {
+			this.alternativeWorker = alternativeWorker;
+
+			/* wakes the loading thread up to use this worker!
+			 * If the loading thread is currently loading, than nothing will happen!
+			 */
 			sync.notifyAll();
 		}
 	}

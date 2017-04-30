@@ -661,6 +661,7 @@ public class Logic {
 			return;
 		}
 
+		System.out.println("load meta data for " + picture.getRelativePath());
 		/*
 		 * https://wiki.apache.org/tika/
 		 * https://www.tutorialspoint.com/tika/
@@ -1267,6 +1268,9 @@ public class Logic {
 			createSymlinkPicture(link);
 		}
 
+		// remove this old picture from the loading cache
+		MainApp.get().removeFromCache(oldReal);
+
 		RealPictureCollection oldParent = oldReal.getCollection();
 		// create new link
 		LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
@@ -1652,19 +1656,18 @@ public class Logic {
 	public static Map<RealPicture, List<RealPicture>> findIdenticalInSubcollectionsRecursive(RealPictureCollection currentCollection) {
 		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
 
-		// current collection is empty => link to pictures of sub-collections
 		if (currentCollection.getPictures().isEmpty()) {
+			// current collection is empty => link to pictures of sub-collections
 			for (PictureCollection sub : currentCollection.getSubCollections()) {
 				if (sub instanceof RealPictureCollection) {
 					result.putAll(findIdenticalInSubcollectionsRecursive((RealPictureCollection) sub));
 				}
 			}
-			return result;
+		} else {
+			// current collection contains pictures:
+			Map<RealPicture, List<RealPicture>> resultLocal = Logic.findIdenticalInSubcollections(currentCollection);
+			result.putAll(resultLocal);
 		}
-
-		// current collection contains pictures:
-		Map<RealPicture, List<RealPicture>> resultLocal = Logic.findIdenticalInSubcollections(currentCollection);
-		result.putAll(resultLocal);
 
 		return result;
 	}
