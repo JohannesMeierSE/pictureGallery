@@ -226,6 +226,12 @@ public class MainApp extends Application {
         			modelResource.getContents().add(baseCollection.getLibrary());
         		} else {
         			baseCollection = ((PictureLibrary) modelResource.getContents().get(0)).getBaseCollection();
+
+        			/* the following lines allow to move the complete library (with symlinks), because
+        			 * the hard coded path of the library will changed to the currently used!
+        			 */
+        			String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
+        	        baseCollection.getLibrary().setBasePath(parentDir);
         		}
 
         		// fill the base collection using the selected folder in the file system
@@ -407,8 +413,8 @@ public class MainApp extends Application {
 		if (picture instanceof RealPicture) {
 			// => remove all linked pictures, too!
 			RealPicture realToDelete = (RealPicture) picture;
-			for (LinkedPicture linked : realToDelete.getLinkedBy()) {
-				deletePicture(linked, false);
+			while (!realToDelete.getLinkedBy().isEmpty()) {
+				deletePicture(realToDelete.getLinkedBy().get(0), false);
 			}
 
 			// remove the pictures from the image cache!
