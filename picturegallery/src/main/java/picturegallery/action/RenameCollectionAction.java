@@ -42,7 +42,10 @@ public class RenameCollectionAction extends Action {
 		}
 		String newName = Logic.askForString("Rename collection",
 				"Select a new name for the collection " + collectionToRename.getName() + "!",
-				"New name: ", true, collectionToRename.getName());
+				"New name: ", false, collectionToRename.getName());
+		if (newName == null || newName.isEmpty()) {
+			return;
+		}
 		if (newName.equals(collectionToRename.getName())) {
 			return; // same name like before => nothing to do!
 		}
