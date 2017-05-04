@@ -1,6 +1,7 @@
 package picturegallery.action;
 
 import gallery.Picture;
+import gallery.RealPicture;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
@@ -35,6 +36,15 @@ public class DeletePictureAction extends Action {
 			if (!Logic.askForConfirmation("Delete picture",
 					"You selected the picture " + pictureToDelete.getRelativePath() + " for deletion.",
 					"Do you really want to delete this file?")) {
+				return;
+			}
+		}
+
+		// ask the user (again), if this picture is linked by others!
+		if (pictureToDelete instanceof RealPicture && !((RealPicture) pictureToDelete).getLinkedBy().isEmpty()) {
+			if (!Logic.askForConfirmation("Delete picture",
+					"The selected picture " + pictureToDelete.getRelativePath() + " is linked by other pictures.",
+					"Do you really want to delete this picture with links?")) {
 				return;
 			}
 		}
