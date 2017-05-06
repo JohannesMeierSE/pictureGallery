@@ -29,6 +29,7 @@ import picturegallery.action.ClearLinkCollectionsAction;
 import picturegallery.action.CreateNewCollection;
 import picturegallery.action.DiffCollectionDeleteAction;
 import picturegallery.action.ExportLinkedPicturesAction;
+import picturegallery.action.FixPictureNumbersAction;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.MoveCollectionAction;
 import picturegallery.action.RenameCollectionAction;
@@ -71,7 +72,7 @@ public class CollectionState extends State {
 
 		TreeTableColumn<PictureCollection, PictureCollection> nameCol = new TreeTableColumn<>("Collection name");
 		setupColumn(nameCol);
-		nameCol.setPrefWidth(250.0);
+		nameCol.setPrefWidth(300.0);
 		nameCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
@@ -176,7 +177,7 @@ public class CollectionState extends State {
 
 		TreeTableColumn<PictureCollection, PictureCollection> linkCol = new TreeTableColumn<>("Links");
 		setupColumn(linkCol);
-		linkCol.setPrefWidth(300.0);
+		linkCol.setPrefWidth(400.0);
 		linkCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
@@ -250,6 +251,7 @@ public class CollectionState extends State {
 		registerAction(new SearchIdenticalDeletedAction());
 		registerAction(new DiffCollectionDeleteAction());
 		registerAction(new ExportLinkedPicturesAction());
+		registerAction(new FixPictureNumbersAction());
 	}
 
 	@Override

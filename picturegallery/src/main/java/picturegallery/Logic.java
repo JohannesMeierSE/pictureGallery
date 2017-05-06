@@ -1885,6 +1885,26 @@ public class Logic {
 		return element.getName().toUpperCase().toLowerCase();
 	}
 
+	public static String getLastNumberSubstring(String name) {
+		int digits = 0;
+
+		while (digits < name.length()) {
+			String sub = name.substring(name.length() - digits - 1);
+			try {
+				Integer.parseInt(sub);
+				digits++;
+			} catch (Throwable e) {
+				break;
+			}
+		}
+
+		if (digits <= 0) {
+			return "";
+		} else {
+			return name.substring(name.length() - digits);
+		}
+	}
+
 	public interface PictureProvider {
 		public RealPicture get();
 	}

@@ -39,12 +39,14 @@ import javafx.stage.WindowEvent;
 
 import org.apache.tika.exception.TikaException;
 import org.eclipse.emf.common.command.BasicCommandStack;
+import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.command.MoveCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
@@ -693,6 +695,62 @@ public class MainApp extends Application {
 				switchCloseWaitingState();
 			}
 		});
+	}
+
+	public void renamePicture(Picture pictureToRename, String newName) {
+		if (pictureToRename == null) {
+			throw new IllegalArgumentException();
+		}
+		if (newName == null || newName.isEmpty()) {
+			throw new IllegalArgumentException();
+		}
+		if (newName.equals(pictureToRename.getName())) {
+			return; // same name like before => nothing to do!
+		}
+		// check for uniqueness
+		if (!Logic.isPictureNameUnique(pictureToRename, newName)) {
+			throw new IllegalArgumentException("The new name " + newName + " is not unique!");
+		}
+
+		if (pictureToRename instanceof LinkedPicture) {
+
+			// rename in file system and EMF model
+			renamePictureLogic(pictureToRename, newName);
+
+		} else {
+
+			RealPicture realPicture = (RealPicture) pictureToRename;
+			// remove all links linking on the renamed real picture
+			for (LinkedPicture link : realPicture.getLinkedBy()) {
+				Logic.deleteSymlinkPicture(link);
+			}
+
+			// rename in file system and EMF model
+			renamePictureLogic(pictureToRename, newName);
+
+			// create all deleted links again
+			for (LinkedPicture link : realPicture.getLinkedBy()) {
+				Logic.createSymlinkPicture(link);
+			}
+		}
+	}
+
+	private void renamePictureLogic(Picture picture, String newName) {
+		// rename in file system
+		// http://www.java-examples.com/rename-file-or-directory
+		File oldFile = new File(picture.getFullPath());
+		oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName + "." + picture.getFileExtension()));
+
+		// rename in EMF model via commands
+		EditingDomain domain = MainApp.get().getModelDomain();
+		Command set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getPathElement_Name(), newName);
+		domain.getCommandStack().execute(set);
+
+		// sort the pictures within the parent collection => by moving the wrong element to the correct position
+		domain.getCommandStack().execute(MoveCommand.create(domain,
+				picture.getCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(),
+				picture, Logic.getIndexForPictureAtWrongPositionMove(
+						picture.getCollection().getPictures(), picture)));
 	}
 
 	public ObjectCache<RealPicture, Image> getImageCache() {
