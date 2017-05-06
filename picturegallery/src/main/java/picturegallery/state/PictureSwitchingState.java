@@ -18,7 +18,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.image.ImageView;
+import javafx.scene.canvas.Canvas;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
@@ -37,6 +37,7 @@ import picturegallery.action.LinkPictureAction;
 import picturegallery.action.MovePictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
+import picturegallery.action.PrintMetadataAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
 import picturegallery.persistency.ObservablePicture;
 import picturegallery.persistency.SpecialSortedList;
@@ -59,7 +60,7 @@ public abstract class PictureSwitchingState extends State {
 
 	public abstract PictureCollection getCurrentCollection();
 	protected abstract String getCollectionDescription();
-	protected abstract ImageView getImage();
+	protected abstract Canvas getImage();
 
 	protected abstract void setLabelIndex(String newText);
 	protected abstract void setLabelMeta(String newText);
@@ -420,6 +421,7 @@ public abstract class PictureSwitchingState extends State {
 		registerAction(new MovePictureAction());
 		registerAction(new ClearMovetoCollectionAction());
 		registerAction(new DeletePictureAction());
+		registerAction(new PrintMetadataAction());
 	}
 
 	@Override

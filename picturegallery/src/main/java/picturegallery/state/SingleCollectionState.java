@@ -7,8 +7,8 @@ import gallery.RealPictureCollection;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -32,7 +32,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
 	private final Adapter adapterCurrentCollection;
-	private final ImageView iv;
+	private final Canvas iv;
 	private final StackPane root;
 	private final VBox vBox;
 	private final Label labelCollectionPath;
@@ -108,14 +108,16 @@ public class SingleCollectionState extends PictureSwitchingState {
 		root.setStyle("-fx-background-color: #000000;");
 
 		// image
-		iv = new ImageView();
-		iv.setPreserveRatio(true);
-		iv.setSmooth(true);
+		iv = new Canvas();
+//		iv.setPreserveRatio(true);
+//		iv.setSmooth(true);
 		// https://stackoverflow.com/questions/15003897/is-there-any-way-to-force-javafx-to-release-video-memory
 		iv.setCache(false);
 		// https://stackoverflow.com/questions/12630296/resizing-images-to-fit-the-parent-node
-		iv.fitWidthProperty().bind(root.widthProperty());
-		iv.fitHeightProperty().bind(root.heightProperty());
+//		iv.fitWidthProperty().bind(root.widthProperty());
+//		iv.fitHeightProperty().bind(root.heightProperty());
+		iv.widthProperty().bind(root.widthProperty());
+		iv.heightProperty().bind(root.heightProperty());
 		root.getChildren().add(iv);
 
     	vBox = new VBox();
@@ -174,7 +176,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
-	protected ImageView getImage() {
+	protected Canvas getImage() {
 		return iv;
 	}
 

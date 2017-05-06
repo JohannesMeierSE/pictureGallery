@@ -44,6 +44,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -61,6 +63,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import javafx.util.Pair;
@@ -647,17 +652,17 @@ public class Logic {
 			if (pic.getMetadata() != null) {
 				continue;
 			}
-			extractMetadata(Logic.getRealPicture(pic));
+			extractMetadata(Logic.getRealPicture(pic), false, false);
 		}
 	}
 
-	public static void extractMetadata(RealPicture picture)
+	public static void extractMetadata(RealPicture picture, boolean forceReload, boolean printOnly)
 			throws FileNotFoundException, IOException, SAXException, TikaException {
 		// check input
 		if (picture == null) {
 			throw new IllegalArgumentException();
 		}
-		if (picture.getMetadata() != null) {
+		if (picture.getMetadata() != null && !printOnly && !forceReload) {
 			return;
 		}
 
@@ -702,14 +707,27 @@ public class Logic {
 			String valueReal = new String(metadata.get(name));
 			String key = keyReal.toLowerCase();
 			String value = valueReal.toLowerCase();
-//			System.out.println(name + ": " + value);
+			if (printOnly) {
+				System.out.println(name + ": " + value);
+			}
 
 			// orientation
+			/*
+			 * Sony RX 100:
+			 * Orientation: right side, top (rotate 90 cw)
+			 * tiff:Orientation: 6
+			 * vs.
+			 * Orientation: top, left side (horizontal / normal)
+			 * tiff:Orientation: 1
+			 */
 			if (key.contains("orientation")) {
 				if (value.contains("horizontal") || value.contains("landscape")) {
 					md.setLandscape(true);
 				}
 				if (value.contains("vertical") || value.contains("portrait")) {
+					md.setLandscape(false);
+				}
+				if (value.contains("rotate")) {
 					md.setLandscape(false);
 				}
 			}
@@ -803,10 +821,11 @@ public class Logic {
 		 * File Size: 2795458 bytes
 		 */
 
-    	EditingDomain domain = MainApp.get().getModelDomain();
-    	domain.getCommandStack().execute(SetCommand.create(domain,
-    			picture, GalleryPackage.eINSTANCE.getRealPicture_Metadata(), md));
-//		picture.setMetadata(md);
+		if (!printOnly || forceReload) {
+	    	EditingDomain domain = MainApp.get().getModelDomain();
+	    	domain.getCommandStack().execute(SetCommand.create(domain,
+	    			picture, GalleryPackage.eINSTANCE.getRealPicture_Metadata(), md));
+		}
 	}
 
 	public static String printMetadata(gallery.Metadata md) {
@@ -1922,6 +1941,14 @@ public class Logic {
 			}
 		}, image, cache);
 	}
+	public static void renderPicture(RealPicture pictureToRender, Canvas image, ObjectCache<RealPicture, Image> cache) {
+		renderPicture(new PictureProvider() {
+			@Override
+			public RealPicture get() {
+				return pictureToRender;
+			}
+		}, image, cache);
+	}
 	/**
 	 * 
 	 * @param provider for the feature, that this request is out-dated after loading the picture!
@@ -1944,13 +1971,13 @@ public class Logic {
 					// https://stackoverflow.com/questions/26554814/javafx-updating-gui
 					// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
 					if (Platform.isFxApplicationThread()) {
-						image.setImage(value);
+						renderImage(image, value, realCurrentPicture);
 					} else {
 						Platform.runLater(new Runnable() {
 							@Override
 							public void run() {
 								if (key.equals(provider.get())) {
-									image.setImage(value);
+									renderImage(image, value, realCurrentPicture);
 								} else {
 									// ignore the result, because another picture should be shown
 								}
@@ -1959,6 +1986,119 @@ public class Logic {
 					}
 				}
 			});
+		}
+	}
+	/**
+	 * 
+	 * @param provider for the feature, that this request is out-dated after loading the picture!
+	 * @param image
+	 */
+	public static void renderPicture(PictureProvider provider, Canvas image, ObjectCache<RealPicture, Image> cache) {
+		RealPicture realCurrentPicture = provider.get();
+		if (realCurrentPicture == null) {
+			// show no picture
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					renderImage(image, null, null);
+				}
+			});
+		} else {
+			cache.request(realCurrentPicture, new CallBack<RealPicture, Image>() {
+				@Override
+				public void loaded(RealPicture key, Image value) {
+					// https://stackoverflow.com/questions/26554814/javafx-updating-gui
+					// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
+					if (Platform.isFxApplicationThread()) {
+						renderImage(image, value, realCurrentPicture);
+					} else {
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								if (key.equals(provider.get())) {
+									renderImage(image, value, realCurrentPicture);
+								} else {
+									// ignore the result, because another picture should be shown
+								}
+							}
+						});
+					}
+				}
+			});
+		}
+	}
+
+	private static void renderImage(ImageView image, Image value, RealPicture picture) {
+		gallery.Metadata metadata = picture.getMetadata();
+		double rotate = 0.0;
+		if (metadata != null) {
+			if (!metadata.isLandscape()) {
+				rotate = 90.0;
+			}
+		}
+		image.setRotate(rotate);
+		image.setImage(value);
+	}
+
+	private static void renderImage(Canvas image, Image value, RealPicture picture) {
+		// draw the image in rotated way
+		// https://stackoverflow.com/questions/18260421/how-to-draw-image-rotated-on-javafx-canvas
+		GraphicsContext gc = image.getGraphicsContext2D();
+		double availableHeight = image.getHeight();
+		double availableWidth = image.getWidth();
+
+		// print black rectangle => clear previous picture
+		gc.setFill(Color.BLACK);
+		gc.fillRect(0, 0, availableWidth, availableHeight);
+
+		// print image (if available)
+		if (value != null) {
+			double imageHeight = value.getHeight();
+			double imageWidth = value.getWidth();
+
+			double factor = 1.0;
+			if (availableWidth / imageWidth * imageHeight > availableHeight) {
+				// height is the limit
+				factor = availableHeight / imageHeight;
+			} else {
+				// width is the limit
+				factor = availableWidth / imageWidth;
+			}
+			imageHeight = imageHeight * factor;
+			imageWidth = imageWidth * factor;
+
+			gc.save(); // saves the current state on stack, including the current transform
+
+			// get the rotation angle
+			if (picture != null && picture.getMetadata() != null && !picture.getMetadata().isLandscape()) {
+				double rotate = 90.0;
+
+				Rotate r = new Rotate(rotate, availableWidth / 2.0, availableHeight / 2.0);
+				gc.transform(r.getMxx(), r.getMyx(), r.getMxy(), r.getMyy(), r.getTx(), r.getTy());
+//				gc.rotate(rotate);
+
+				double scale = availableHeight / availableWidth;
+//				scale = 0.7; // Näherung
+//				scale = imageHeight / availableHeight; // eigentlich gedacht...
+				scale = imageHeight / imageWidth; // dies scheint korrekt zu sein!
+				Scale s = new Scale(scale, scale, availableWidth / 2.0, availableHeight / 2.0);
+				gc.transform(s.getMxx(), s.getMyx(), s.getMxy(), s.getMyy(), s.getTx(), s.getTy());
+//				gc.scale(scale, scale); // factors for x, y dimension
+
+//				double help = availableHeight;
+//				availableHeight = availableWidth;
+//				availableWidth = help;
+//
+//				double help2 = imageHeight;
+//				imageHeight = imageWidth;
+//				imageWidth = help2;
+				
+			}
+
+			gc.drawImage(value, (availableWidth - imageWidth) / 2.0, (availableHeight - imageHeight) / 2.0,
+					imageWidth, imageHeight); // top-left x, y, width, height
+			
+			gc.restore(); // back to original state (before rotation)
 		}
 	}
 

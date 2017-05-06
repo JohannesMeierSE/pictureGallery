@@ -3,7 +3,7 @@ package picturegallery.state;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
-import javafx.scene.image.ImageView;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.Region;
 
 public class TempCollectionState extends PictureSwitchingState {
@@ -50,7 +50,7 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
-	protected ImageView getImage() {
+	protected Canvas getImage() {
 		return getReal().getImage();
 	}
 

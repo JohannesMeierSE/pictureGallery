@@ -305,7 +305,7 @@ public class MainApp extends Application {
 
 					// load meta data directly with the image => improves the initial loading time!
 					try {
-						Logic.extractMetadata(key);
+						Logic.extractMetadata(key, false, false);
 					} catch (Throwable e) {
 						// ignore
 					}
@@ -361,7 +361,7 @@ public class MainApp extends Application {
 				case 2:
 					// 3. meta data
 					try {
-						Logic.extractMetadata(next);
+						Logic.extractMetadata(next, false, false);
 					} catch (IOException | SAXException | TikaException e) {
 						// ignore
 					}
@@ -382,13 +382,6 @@ public class MainApp extends Application {
 					 */
 					Image loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString(),
 							MultiPictureState.WIDTH, MultiPictureState.HEIGHT, true, true);
-
-					// load meta data directly with the image => improves the initial loading time!
-					try {
-						Logic.extractMetadata(key);
-					} catch (Throwable e) {
-						// ignore
-					}
 					return loaded;
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
