@@ -111,13 +111,17 @@ public class CompositeCollectionFilter extends CollectionFilter {
 			public void handle(ActionEvent event) {
 				List<String> options = new ArrayList<>();
 				options.add(0, "Single Collection Filter");
-				options.add(1, "Composite Filter");
+				options.add(1, "Picture Number Filter");
+				options.add(2, "Composite Filter");
 				int choice = Logic.askForChoice(options, true, "Add new Filter", "Which kind of filter do you want to add?", "Please select:");
 				if (choice == 0) {
 					SingleCollectionFilter filter = new SingleCollectionFilter(null,
 							CompositeCollectionFilter.this.state, CompositeCollectionFilter.this);
 					addFilter(filter);
 				} else if (choice == 1) {
+					PictureNumberFilter filter = new PictureNumberFilter(CompositeCollectionFilter.this);
+					addFilter(filter);
+				} else if (choice == 2) {
 					CompositeCollectionFilter filter = new CompositeCollectionFilter(
 							CompositeCollectionFilter.this.state, CompositeCollectionFilter.this);
 					addFilter(filter);
