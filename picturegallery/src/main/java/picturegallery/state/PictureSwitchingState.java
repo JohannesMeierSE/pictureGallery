@@ -56,7 +56,7 @@ public abstract class PictureSwitchingState extends State {
 	private final Adapter adapterCurrentPicture;
 
 	protected TempCollectionState tempState;
-	private final InvalidationListener currentPictureInvalidationListener;
+	protected final InvalidationListener currentPictureInvalidationListener;
 
 	public abstract PictureCollection getCurrentCollection();
 	protected abstract String getCollectionDescription();

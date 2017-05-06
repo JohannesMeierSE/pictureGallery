@@ -118,6 +118,8 @@ public class SingleCollectionState extends PictureSwitchingState {
 //		iv.fitHeightProperty().bind(root.heightProperty());
 		iv.widthProperty().bind(root.widthProperty());
 		iv.heightProperty().bind(root.heightProperty());
+		iv.widthProperty().addListener(currentPictureInvalidationListener); // repaint, if the size is changing!
+		iv.heightProperty().addListener(currentPictureInvalidationListener);
 		root.getChildren().add(iv);
 
     	vBox = new VBox();
