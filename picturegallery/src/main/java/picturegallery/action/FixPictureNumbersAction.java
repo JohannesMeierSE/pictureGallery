@@ -55,6 +55,9 @@ public class FixPictureNumbersAction extends Action {
 				toFix.add(pic);
 			}
 		}
+		if (toFix.isEmpty()) {
+			return;
+		}
 
 		if (!Logic.askForConfirmation("Fix picture names: running number",
 				"From the " + size + " pictures, " + (size - nothingTodo) + " have a number at the end of its name, "
@@ -63,6 +66,9 @@ public class FixPictureNumbersAction extends Action {
 				"Do you really want to add missing leading zeros (up to " + digits + " digits)?")) {
 			return;
 		}
+
+		// the user has to wait and must not do other things (long running process)
+		MainApp.get().switchToWaitingState();
 
 		final int finalDigits = digits;
 		Logic.runNotOnUiThread(new Runnable() {
@@ -78,8 +84,15 @@ public class FixPictureNumbersAction extends Action {
 					}
 					String newName = prefix + numberNew;
 
-					MainApp.get().renamePicture(pic, newName);
+					try {
+						MainApp.get().renamePicture(pic, newName);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
 				}
+
+				// close the waiting state!
+				MainApp.get().switchCloseWaitingState();
 			}
 		});
 	}

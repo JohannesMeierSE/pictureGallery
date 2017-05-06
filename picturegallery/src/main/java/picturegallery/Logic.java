@@ -1226,12 +1226,18 @@ public class Logic {
 		return true;
 	}
 
+	/**
+	 * Checks both the file name and the file extension!
+	 * @param picture
+	 * @param newName
+	 * @return
+	 */
 	public static boolean isPictureNameUnique(Picture picture, String newName) {
 		if (picture.getName().equals(newName)) {
 			return true;
 		}
 		for (Picture pic : picture.getCollection().getPictures()) {
-			if (pic.getName().equals(newName)) {
+			if (pic.getName().equals(newName) && pic.getFileExtension().equalsIgnoreCase(picture.getFileExtension())) {
 				return false;
 			}
 		}
