@@ -868,5 +868,3 @@ public class MainApp extends Application {
 		stateStack.remove(stateStack.size() - 2); // the "previous" state should not added twice
 	}
 }
-
-// -4091, 19675 => 19769

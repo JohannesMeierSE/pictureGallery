@@ -100,7 +100,7 @@ import com.pragone.jphash.image.radial.RadialHash;
 public class Logic {
 	public static final String NO_HASH = "nohash!";
 
-	/** (real collection -> (picture.name -> Picture)) */
+	/** (real collection -> ((picture.name + picture.extension) -> Picture)) */
 	private static Map<RealPictureCollection, Map<String, Picture>> findByNameMap = new HashMap<>();
 	/** (absolute path -> real collection) */
 	private static Map<String, RealPictureCollection> findByPathMap = new HashMap<>();
@@ -111,7 +111,7 @@ public class Logic {
 		findByPathMap.put(currentCollection.getFullPath(), currentCollection);
 
 		for (Picture pic : currentCollection.getPictures()) {
-			map.put(pic.getName(), pic);
+			map.put(pic.getName() + "." + pic.getFileExtension(), pic);
 		}
 
 		// handle all sub-collections
@@ -128,21 +128,21 @@ public class Logic {
 			map = new HashMap<>();
 			findByNameMap.put(newPicture.getCollection(), map);
 		}
-		map.put(newPicture.getName(), newPicture);
+		map.put(newPicture.getName() + "." + newPicture.getFileExtension(), newPicture);
 	}
-	private static Picture findByNameGet(RealPictureCollection parent, String pictureName) {
+	private static Picture findByNameGet(RealPictureCollection parent, String pictureNameWithExtension) {
 		Map<String, Picture> map = findByNameMap.get(parent);
 		if (map == null) {
 			return null;
 		}
-		return map.get(pictureName);
+		return map.get(pictureNameWithExtension);
 	}
 	private static Picture findByNameGet(String absolutePicturePath) {
 		RealPictureCollection col = findByPathGet(absolutePicturePath, true);
 		if (col == null) {
 			return null;
 		}
-		return findByNameGet(col, absolutePicturePath.substring(absolutePicturePath.lastIndexOf(File.separator) + 1, absolutePicturePath.lastIndexOf(".")));
+		return findByNameGet(col, absolutePicturePath.substring(absolutePicturePath.lastIndexOf(File.separator) + 1));
 	}
 
 	private static RealPictureCollection findByPathGet(String absolutePath, boolean containsPicturePath) {
@@ -214,8 +214,8 @@ public class Logic {
 					String message = "missing link: " + realPath + " of " + symlink.toString();
 					System.err.println(message);
 				} else {
-					String linkedPictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")); // TODO: "." als regulärer Namensbestandteil ohne Endung??
-					LinkedPicture linkedPicture = (LinkedPicture) findByNameGet(symlink.getValue(), linkedPictureName);
+					String linkedPictureNameWithExtension = name.substring(name.lastIndexOf(File.separator) + 1);
+					LinkedPicture linkedPicture = (LinkedPicture) findByNameGet(symlink.getValue(), linkedPictureNameWithExtension);
 					if (linkedPicture == null) {
 						// found linked picture in file system, but not in model.xmi
 						linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
@@ -288,8 +288,8 @@ public class Logic {
 		        		// 155.461 = 43.5 GB
 		        		// 138.258 = 38.6 GB
 		        		// 138.202 = 38.6 GB
-		        		String pictureName = name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf("."));
-		        		RealPicture pic = (RealPicture) findByNameGet(currentCollection, pictureName);
+		        		String pictureNameWithExtension = name.substring(name.lastIndexOf(File.separator) + 1);
+		        		RealPicture pic = (RealPicture) findByNameGet(currentCollection, pictureNameWithExtension);
 		        		if (pic == null) {
 		        			// found real picture in file system, but not in model.xmi
 		        			pic = GalleryFactory.eINSTANCE.createRealPicture();

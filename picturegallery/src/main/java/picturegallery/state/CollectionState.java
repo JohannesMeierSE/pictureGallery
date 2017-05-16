@@ -27,6 +27,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ClearLinkCollectionsAction;
 import picturegallery.action.CreateNewCollection;
+import picturegallery.action.DebuggerCollectionAction;
 import picturegallery.action.DiffCollectionDeleteAction;
 import picturegallery.action.ExportLinkedPicturesAction;
 import picturegallery.action.FixPictureNumbersAction;
@@ -252,6 +253,7 @@ public class CollectionState extends State {
 		registerAction(new DiffCollectionDeleteAction());
 		registerAction(new ExportLinkedPicturesAction());
 		registerAction(new FixPictureNumbersAction());
+		registerAction(new DebuggerCollectionAction());
 	}
 
 	@Override
