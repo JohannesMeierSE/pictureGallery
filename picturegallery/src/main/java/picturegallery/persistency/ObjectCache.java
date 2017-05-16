@@ -251,11 +251,16 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	}
 
 	public void request(K key, CallBack<K, V> callback) {
+		if (key == null) {
+			throw new IllegalArgumentException("key is null!");
+		}
+
 		Double value = null;
 		synchronized (sync) {
 			// already contained?
 			value = content.get(key);
 			if (value == null) {
+
 				// currently loading?
 				Tripel exist = contains(key, loading);
 				if (exist != null) {
@@ -264,6 +269,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 					}
 					return;
 				}
+
 				// request!
 				int oldIndex = indexOf(key, requested);
 				if (oldIndex >= 0) {
