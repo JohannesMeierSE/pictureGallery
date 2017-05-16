@@ -31,28 +31,31 @@ public class FixPictureNumbersAction extends Action {
 
 		// determine the maximum number of digits
 		int digits = 0;
-		int nothingTodo = 0;
+		int noNumberAtTheEnd = 0;
 		for (Picture pic : collectionToFix.getPictures()) {
 			String number = Logic.getLastNumberSubstring(pic.getName());
 			if (number == null || number.isEmpty()) {
-				nothingTodo++;
+				noNumberAtTheEnd++;
 			} else {
 				digits = Math.max(digits, number.length());
 			}
 		}
 
 		int size = collectionToFix.getPictures().size();
-		if (size == nothingTodo) {
+		if (noNumberAtTheEnd >= size) {
+			// all pictures do not have a number at the end of their names
 			return;
 		}
+
 		// determine the pictures to fix
-		List<Picture> toFix = new ArrayList<>(size - nothingTodo);
+		final List<Picture> toFix = new ArrayList<>(size - noNumberAtTheEnd);
 		for (Picture pic : collectionToFix.getPictures()) {
 			String number = Logic.getLastNumberSubstring(pic.getName());
 			if (number == null || number.isEmpty()) {
 				// do nothing
 			} else if (number.length() < digits) {
 				toFix.add(pic);
+				System.out.println(pic.getName() + "." + pic.getFileExtension());
 			}
 		}
 		if (toFix.isEmpty()) {
@@ -60,9 +63,9 @@ public class FixPictureNumbersAction extends Action {
 		}
 
 		if (!Logic.askForConfirmation("Fix picture names: running number",
-				"From the " + size + " pictures, " + (size - nothingTodo) + " have a number at the end of its name, "
+				"From the " + size + " pictures, " + (size - noNumberAtTheEnd) + " have a number at the end of its name, "
 						+ toFix.size() + " of them needs a fix, "
-						+ "and " + nothingTodo + " do not have any numbers.",
+						+ "and " + noNumberAtTheEnd + " do not have any numbers.",
 				"Do you really want to add missing leading zeros (up to " + digits + " digits)?")) {
 			return;
 		}
@@ -87,6 +90,7 @@ public class FixPictureNumbersAction extends Action {
 					try {
 						MainApp.get().renamePicture(pic, newName);
 					} catch (Throwable e) {
+						System.err.println("error while renaming " + pic.getFullPath() + " to " + newName);
 						e.printStackTrace();
 					}
 				}

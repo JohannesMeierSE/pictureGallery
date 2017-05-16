@@ -732,7 +732,10 @@ public class MainApp extends Application {
 		// rename in file system
 		// http://www.java-examples.com/rename-file-or-directory
 		File oldFile = new File(picture.getFullPath());
-		oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName + "." + picture.getFileExtension()));
+		boolean success = oldFile.renameTo(new File(oldFile.getParent() + File.separator + newName + "." + picture.getFileExtension()));
+		if (!success) {
+			throw new IllegalArgumentException("the renaming failed in the file system");
+		}
 
 		// rename in EMF model via commands
 		EditingDomain domain = MainApp.get().getModelDomain();
@@ -865,3 +868,5 @@ public class MainApp extends Application {
 		stateStack.remove(stateStack.size() - 2); // the "previous" state should not added twice
 	}
 }
+
+// -4091, 19675 => 19769

@@ -1910,6 +1910,11 @@ public class Logic {
 		return element.getName().toUpperCase().toLowerCase();
 	}
 
+	/**
+	 * Checks whether the end of the String is a number.
+	 * @param name
+	 * @return the end of the input string, if it is a number (than: biggest number of digits)
+	 */
 	public static String getLastNumberSubstring(String name) {
 		int digits = 0;
 
