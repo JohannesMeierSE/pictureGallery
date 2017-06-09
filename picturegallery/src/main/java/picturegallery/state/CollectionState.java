@@ -25,6 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.action.ClearAndSetLinkCollectionsAction;
 import picturegallery.action.ClearLinkCollectionsAction;
 import picturegallery.action.CreateNewCollection;
 import picturegallery.action.DebuggerCollectionAction;
@@ -246,6 +247,7 @@ public class CollectionState extends State {
 		registerAction(new MoveCollectionAction());
 		registerAction(new LinkCollectionsAction());
 		registerAction(new ClearLinkCollectionsAction());
+		registerAction(new ClearAndSetLinkCollectionsAction());
 		registerAction(new SearchIdenticalAction());
 		registerAction(new SearchIdenticalAndReplaceAction());
 		registerAction(new SearchIdenticalAndCollectAction());
