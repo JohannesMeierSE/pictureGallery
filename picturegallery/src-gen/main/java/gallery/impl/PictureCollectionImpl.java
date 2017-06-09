@@ -254,4 +254,21 @@ public abstract class PictureCollectionImpl extends PathElementImpl implements P
 		}
 	}
 
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getRelativePathWithoutBase() {
+		if (getSuperCollection() == null) {
+			return "";
+		} else {
+			String relativePath = getSuperCollection().getRelativePathWithoutBase();
+			if (relativePath == null || relativePath.isEmpty()) {
+				return getName();
+			} else {
+				return relativePath + File.separator + getName();
+			}
+		}
+	}
+
 } //PictureCollectionImpl

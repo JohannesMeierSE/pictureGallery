@@ -71,11 +71,14 @@
               <children xmi:type="notation:Node" xmi:id="_tGtxQK9VEea59-GiE2O_WA" type="3010" element="_tGfHwK9VEea59-GiE2O_WA">
                 <layoutConstraint xmi:type="notation:Location" xmi:id="_tGtxQa9VEea59-GiE2O_WA"/>
               </children>
+              <children xmi:type="notation:Node" xmi:id="_4lgZwE1LEeeeMerEQlRAxg" type="3010" element="_4jx7cE1LEeeeMerEQlRAxg">
+                <layoutConstraint xmi:type="notation:Location" xmi:id="_4lgZwU1LEeeeMerEQlRAxg"/>
+              </children>
               <styles xmi:type="notation:SortingStyle" xmi:id="_YA0LMaNEEeaAP-ADYMA6Jg"/>
               <styles xmi:type="notation:FilteringStyle" xmi:id="_YA0LMqNEEeaAP-ADYMA6Jg"/>
             </children>
             <styles xmi:type="notation:ShapeStyle" xmi:id="_YAy9EaNEEeaAP-ADYMA6Jg" fontName="Ubuntu" fontHeight="8"/>
-            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_YAy9EqNEEeaAP-ADYMA6Jg" x="276" y="-168" width="159" height="100"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_YAy9EqNEEeaAP-ADYMA6Jg" x="252" y="-168" width="231" height="100"/>
           </children>
           <children xmi:type="notation:Node" xmi:id="_FyrKUKNFEeapc6UW1Ar6Eg" type="2003" element="_Fx2q8KNFEeapc6UW1Ar6Eg">
             <children xmi:type="notation:Node" xmi:id="_Fywp4KNFEeapc6UW1Ar6Eg" type="5007"/>
@@ -752,6 +755,17 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='Operation']"/>
         </ownedElements>
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_4jx7cE1LEeeeMerEQlRAxg" name="getRelativePathWithoutBase() : EString" tooltipText="getRelativePathWithoutBase() : EString">
+          <target xmi:type="ecore:EOperation" href="model.ecore#//PathElement/getRelativePathWithoutBase"/>
+          <semanticElements xmi:type="ecore:EOperation" href="model.ecore#//PathElement/getRelativePathWithoutBase"/>
+          <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_4jzwoE1LEeeeMerEQlRAxg" labelAlignment="LEFT">
+            <labelColor xmi:type="viewpoint:RGBValues" xmi:id="_4jzwoU1LEeeeMerEQlRAxg"/>
+            <description xmi:type="style:BundledImageDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='Operation']/@style"/>
+            <borderColor xmi:type="viewpoint:RGBValues" xmi:id="_4jzwok1LEeeeMerEQlRAxg"/>
+            <color xmi:type="viewpoint:RGBValues" xmi:id="_4jzwo01LEeeeMerEQlRAxg"/>
+          </ownedStyle>
+          <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='Operation']"/>
+        </ownedElements>
       </ownedDiagramElements>
       <ownedDiagramElements xmi:type="diagram:DEdge" xmi:id="_bYJTYKNEEeaAP-ADYMA6Jg" sourceNode="_ZM7D4KNCEeaAP-ADYMA6Jg" targetNode="_YAieYKNEEeaAP-ADYMA6Jg">
         <target xmi:type="ecore:EClass" href="model.ecore#//Picture"/>
@@ -1050,7 +1064,7 @@
           <foregroundColor xmi:type="viewpoint:RGBValues" xmi:id="_vKJdlOi5EeasBu8L1ndcCw" red="255" green="252" blue="216"/>
         </ownedStyle>
         <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']"/>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_D1GfIOi5EeasBu8L1ndcCw" name="relativePath : EString" tooltipText="&#xA;ERROR : The required feature 'eAttributeType' of 'org.eclipse.emf.ecore.impl.EAttributeImpl@65b2582{platform:/resource/picturegallery/src/main/resources/model/model.ecore#//DeletedPicture/newAttribute}' must be set&#xA;ERROR : The typed element must have a type">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_D1GfIOi5EeasBu8L1ndcCw" name="relativePath : EString" tooltipText="">
           <target xmi:type="ecore:EAttribute" href="model.ecore#//DeletedPicture/relativePath"/>
           <semanticElements xmi:type="ecore:EAttribute" href="model.ecore#//DeletedPicture/relativePath"/>
           <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_vKQyUOi5EeasBu8L1ndcCw" labelAlignment="LEFT">

@@ -104,13 +104,22 @@ public interface GalleryPackage extends EPackage {
 	int PATH_ELEMENT___GET_RELATIVE_PATH = 1;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE = 2;
+
+	/**
 	 * The number of operations of the '<em>Path Element</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int PATH_ELEMENT_OPERATION_COUNT = 2;
+	int PATH_ELEMENT_OPERATION_COUNT = 3;
 
 	/**
 	 * The meta object id for the '{@link gallery.impl.PictureCollectionImpl <em>Picture Collection</em>}' class.
@@ -166,6 +175,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int PICTURE_COLLECTION___GET_RELATIVE_PATH = PATH_ELEMENT___GET_RELATIVE_PATH;
+
+	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE = PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE;
 
 	/**
 	 * The operation id for the '<em>Get Pictures</em>' operation.
@@ -257,6 +275,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int PICTURE___GET_RELATIVE_PATH = PATH_ELEMENT___GET_RELATIVE_PATH;
+
+	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE = PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE;
 
 	/**
 	 * The operation id for the '<em>Get Metadata</em>' operation.
@@ -395,6 +422,15 @@ public interface GalleryPackage extends EPackage {
 	int REAL_PICTURE___GET_RELATIVE_PATH = PICTURE___GET_RELATIVE_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE;
+
+	/**
 	 * The operation id for the '<em>Get Metadata</em>' operation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -502,6 +538,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int LINKED_PICTURE___GET_RELATIVE_PATH = PICTURE___GET_RELATIVE_PATH;
+
+	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int LINKED_PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE;
 
 	/**
 	 * The operation id for the '<em>Get Metadata</em>' operation.
@@ -788,6 +833,15 @@ public interface GalleryPackage extends EPackage {
 	int REAL_PICTURE_COLLECTION___GET_RELATIVE_PATH = PICTURE_COLLECTION___GET_RELATIVE_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE;
+
+	/**
 	 * The operation id for the '<em>Get Pictures</em>' operation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -877,6 +931,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int LINKED_PICTURE_COLLECTION___GET_RELATIVE_PATH = PICTURE_COLLECTION___GET_RELATIVE_PATH;
+
+	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int LINKED_PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE;
 
 	/**
 	 * The operation id for the '<em>Get Pictures</em>' operation.
@@ -1213,6 +1276,16 @@ public interface GalleryPackage extends EPackage {
 	 * @generated
 	 */
 	EOperation getPathElement__GetRelativePath();
+
+	/**
+	 * Returns the meta object for the '{@link gallery.PathElement#getRelativePathWithoutBase() <em>Get Relative Path Without Base</em>}' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the '<em>Get Relative Path Without Base</em>' operation.
+	 * @see gallery.PathElement#getRelativePathWithoutBase()
+	 * @generated
+	 */
+	EOperation getPathElement__GetRelativePathWithoutBase();
 
 	/**
 	 * Returns the meta object for class '{@link gallery.PictureLibrary <em>Picture Library</em>}'.
@@ -1678,6 +1751,14 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EOperation PATH_ELEMENT___GET_RELATIVE_PATH = eINSTANCE.getPathElement__GetRelativePath();
+
+		/**
+		 * The meta object literal for the '<em><b>Get Relative Path Without Base</b></em>' operation.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EOperation PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE = eINSTANCE.getPathElement__GetRelativePathWithoutBase();
 
 		/**
 		 * The meta object literal for the '{@link gallery.impl.PictureLibraryImpl <em>Picture Library</em>}' class.

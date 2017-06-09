@@ -345,6 +345,15 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EOperation getPathElement__GetRelativePathWithoutBase() {
+		return pathElementEClass.getEOperations().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getPictureLibrary() {
 		return pictureLibraryEClass;
 	}
@@ -625,6 +634,7 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 		createEAttribute(pathElementEClass, PATH_ELEMENT__NAME);
 		createEOperation(pathElementEClass, PATH_ELEMENT___GET_FULL_PATH);
 		createEOperation(pathElementEClass, PATH_ELEMENT___GET_RELATIVE_PATH);
+		createEOperation(pathElementEClass, PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE);
 
 		pictureLibraryEClass = createEClass(PICTURE_LIBRARY);
 		createEAttribute(pictureLibraryEClass, PICTURE_LIBRARY__BASE_PATH);
@@ -727,6 +737,8 @@ public class GalleryPackageImpl extends EPackageImpl implements GalleryPackage {
 		initEOperation(getPathElement__GetFullPath(), ecorePackage.getEString(), "getFullPath", 1, 1, IS_UNIQUE, IS_ORDERED);
 
 		initEOperation(getPathElement__GetRelativePath(), ecorePackage.getEString(), "getRelativePath", 1, 1, IS_UNIQUE, IS_ORDERED);
+
+		initEOperation(getPathElement__GetRelativePathWithoutBase(), ecorePackage.getEString(), "getRelativePathWithoutBase", 1, 1, IS_UNIQUE, IS_ORDERED);
 
 		initEClass(pictureLibraryEClass, PictureLibrary.class, "PictureLibrary", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getPictureLibrary_BasePath(), ecorePackage.getEString(), "basePath", null, 1, 1, PictureLibrary.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

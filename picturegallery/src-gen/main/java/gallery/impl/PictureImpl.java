@@ -140,6 +140,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * @generated
 	 */
 	public Metadata getMetadata() {
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
@@ -149,6 +151,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * @generated
 	 */
 	public String getHash() {
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
@@ -158,6 +162,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * @generated
 	 */
 	public String getHashFast() {
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
@@ -321,6 +327,14 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	@Override
 	public String getRelativePath() {
 		return getCollection().getRelativePath() + File.separator + getName() + "." + getFileExtension();
+	}
+
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getRelativePathWithoutBase() {
+		return getCollection().getRelativePathWithoutBase() + File.separator + getName() + "." + getFileExtension();
 	}
 
 } //PictureImpl
