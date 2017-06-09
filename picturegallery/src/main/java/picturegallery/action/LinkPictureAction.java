@@ -81,7 +81,7 @@ public class LinkPictureAction extends Action {
 		} else {
 			// => remove existing link
 			if (Logic.askForConfirmation("Link current picture", "The current picture is already linked into the selected collection:",
-					"Confirm to remove the link from the collection.")) {
+					"Confirm to remove the existing link from the collection.")) {
 				// ask before removing the link
 				MainApp.get().deletePicture(existingLink, false);
 			}

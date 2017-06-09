@@ -119,7 +119,12 @@ public class LinkCollectionsAction extends Action {
 		    	// TODO: show information to the user!
 		    }
 		} else {
-			// TODO: ask for deletion!
+			// ask for deletion of the existing link
+			if (Logic.askForConfirmation("Link current collection", "The current collection is already linked into the selected collection:",
+					"Confirm to remove the existing link from the collection.")) {
+				// => remove existing link
+				MainApp.get().deleteCollection(existingLink);
+			}
 		}
 	}
 

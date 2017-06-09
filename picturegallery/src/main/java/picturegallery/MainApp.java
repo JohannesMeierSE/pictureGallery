@@ -6,6 +6,7 @@ import gallery.GalleryPackage;
 import gallery.LinkedPicture;
 import gallery.LinkedPictureCollection;
 import gallery.Picture;
+import gallery.PictureCollection;
 import gallery.PictureLibrary;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
@@ -14,8 +15,6 @@ import gallery.util.GalleryAdapterFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -434,18 +433,10 @@ public class MainApp extends Application {
 		 * when the path information of the picture was already deleted => error / failing remove operation in file system!
 		 */
 		String pathToDelete = new String(picture.getFullPath());
-
-		Logic.runNotOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				// delete file in file system
-				try {
-					Files.delete(Paths.get(pathToDelete));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		boolean result = Logic.deletePath(pathToDelete);
+		if (!result) {
+			return;
+		}
 
 		// update the EMF model
 		EditingDomain domain = MainApp.get().getModelDomain();
@@ -470,6 +461,62 @@ public class MainApp extends Application {
 					lp, GalleryPackage.eINSTANCE.getLinkedPicture_RealPicture(), null));
 //			lp.setRealPicture(null);
 		}
+	}
+
+	public void deleteCollection(PictureCollection collectionToRemove) {
+		// do not remove the base collection
+		if (collectionToRemove.getSuperCollection() == null) {
+			throw new IllegalArgumentException();
+		}
+
+		if (collectionToRemove instanceof LinkedPictureCollection) {
+			// linked collection
+			deleteCollectionLogic(collectionToRemove, false);
+		} else {
+			// real collection
+			RealPictureCollection col = (RealPictureCollection) collectionToRemove;
+			if (col.getPictures().isEmpty() && col.getSubCollections().isEmpty()) {
+				deleteCollectionLogic(collectionToRemove, false);
+			} else {
+				throw new IllegalArgumentException();
+			}
+		}
+	}
+	private void deleteCollectionLogic(PictureCollection collectionToRemove, boolean saveDeletedInformation) {
+		/* the following line is important, because the deleting itself will be done later
+		 * when the path information of the picture was already deleted => error / failing remove operation in file system!
+		 */
+		String pathToDelete = new String(collectionToRemove.getFullPath());
+
+		// update the EMF model
+		EditingDomain domain = MainApp.get().getModelDomain();
+
+		if (collectionToRemove instanceof LinkedPictureCollection) {
+			LinkedPictureCollection link = (LinkedPictureCollection) collectionToRemove;
+			// remove the link between linked and real collection
+			domain.getCommandStack().execute(RemoveCommand.create(domain,
+					link.getRealCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_LinkedBy(), link));
+			// remove the collection from its container/parent collection
+			domain.getCommandStack().execute(RemoveCommand.create(domain,
+					link.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), link));
+		} else {
+			RealPictureCollection real = (RealPictureCollection) collectionToRemove;
+
+			// remove the linked collections
+			for (LinkedPictureCollection linked : real.getLinkedBy()) {
+				deleteCollectionLogic(linked, saveDeletedInformation);
+			}
+			// remove all its contained pictures
+			for (Picture pic : real.getPictures()) {
+				deletePicture(pic, saveDeletedInformation);
+			}
+			// remove its sub collections
+			for (PictureCollection sub : real.getSubCollections()) {
+				deleteCollectionLogic(sub, saveDeletedInformation);
+			}
+		}
+
+		boolean result = Logic.deletePath(pathToDelete);
 	}
 
 	public void removeFromCache(RealPicture real) {

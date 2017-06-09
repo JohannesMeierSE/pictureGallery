@@ -1178,9 +1178,9 @@ public class Logic {
 		deletePath(link.getFullPath());
 	}
 
-	private static boolean deletePath(String linkFullPath) { // TODO: Fehlschläge müssen berücksichtigt werden!!
+	public static boolean deletePath(String fullPath) { // TODO: Fehlschläge müssen berücksichtigt werden!!
 		try {
-			Files.delete(Paths.get(linkFullPath));
+			Files.delete(Paths.get(fullPath));
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
