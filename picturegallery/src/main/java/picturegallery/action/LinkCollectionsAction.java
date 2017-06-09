@@ -78,7 +78,7 @@ public class LinkCollectionsAction extends Action {
 			}
 	
 			// get name of new link
-			String newName = target.getRelativePath().replaceAll(File.separator, "-");
+			String newName = target.getRelativePathWithoutBase().replaceAll(File.separator, "-");
 			newName = Logic.askForString("Select name of linked collection",
 					"Select a name for the new collection linking on " + target.getRelativePath() + " within " + collectionWithNewLinks.getRelativePath(),
 					"New name:", false, newName);

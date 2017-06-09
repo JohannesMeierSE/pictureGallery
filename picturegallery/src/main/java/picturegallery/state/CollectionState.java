@@ -193,11 +193,11 @@ public class CollectionState extends State {
 					@Override
 					protected String toText(PictureCollection item) {
 						if (item instanceof LinkedPictureCollection) {
-							return "=> " + ((LinkedPictureCollection) item).getRealCollection().getRelativePath();
+							return "=> " + ((LinkedPictureCollection) item).getRealCollection().getRelativePathWithoutBase();
 						} else {
 							String message = "";
 							for (LinkedPictureCollection link : ((RealPictureCollection) item).getLinkedBy()) {
-								message = message + "<= " + link.getRelativePath() + "\n";
+								message = message + "<= " + link.getRelativePathWithoutBase() + "\n";
 							}
 							return message.trim();
 						}
