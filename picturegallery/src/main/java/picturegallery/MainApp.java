@@ -85,7 +85,7 @@ public class MainApp extends Application {
 
 	public SimpleBooleanProperty labelsVisible = new SimpleBooleanProperty(true);
 	public SimpleObjectProperty<Comparator<Picture>> pictureComparator
-		= new SimpleObjectProperty<Comparator<Picture>>(Logic.createComparatorPicturesName());
+		= new SimpleObjectProperty<Comparator<Picture>>(Logic.createComparatorPicturesName(true));
 
 	private static MainApp instance;
 

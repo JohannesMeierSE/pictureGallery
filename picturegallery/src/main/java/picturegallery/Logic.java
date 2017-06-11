@@ -465,19 +465,31 @@ public class Logic {
 	 */
 	public static void sortPicturesInCollection(PictureCollection collectionToSort) {
 		// http://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/common/util/ECollections.html#sort(org.eclipse.emf.common.util.EList)
-		ECollections.sort(collectionToSort.getPictures(), createComparatorPicturesName());
+		ECollections.sort(collectionToSort.getPictures(), createComparatorPicturesName(true));
 	}
 
-	public static Comparator<Picture> createComparatorPicturesName() {
-		return new Comparator<Picture>() {
-			@Override
-			public int compare(Picture o1, Picture o2) {
-				if (o1 == o2) {
-					return 0;
+	public static Comparator<Picture> createComparatorPicturesName(boolean ascending) {
+		if (ascending) {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+					return o1.getName().compareToIgnoreCase(o2.getName());
 				}
-				return o1.getName().compareToIgnoreCase(o2.getName());
-			}
-		};
+			};
+		} else {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+					return o2.getName().compareToIgnoreCase(o1.getName());
+				}
+			};
+		}
 	}
 
 	public static Comparator<Picture> createComparatorPicturesMonth() {
@@ -586,7 +598,7 @@ public class Logic {
 	 * @param picturesToSort
 	 */
 	public static void sortPictures(List<Picture> picturesToSort) {
-		Collections.sort(picturesToSort, createComparatorPicturesName());
+		Collections.sort(picturesToSort, createComparatorPicturesName(true));
 	}
 
 	public static void sortSubCollections(PictureCollection base, boolean recursive, boolean sortPictureToo) {
