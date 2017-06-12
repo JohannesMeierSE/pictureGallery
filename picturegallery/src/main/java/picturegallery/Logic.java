@@ -88,6 +88,7 @@ import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.xml.sax.SAXException;
 
+import picturegallery.persistency.MediaRenderBase;
 import picturegallery.persistency.ObjectCache;
 import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
@@ -279,7 +280,8 @@ public class Logic {
 		        	if (FileUtils.isSymlink(new File(name))) {
 		        		// found symlink in file system: both, picture or collection!
 		        		symlinks.add(new Pair<Path, RealPictureCollection>(file, currentCollection));
-		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg") || nameLower.endsWith(".gif")) {
+		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg")
+		        			|| nameLower.endsWith(".gif") || nameLower.endsWith(".mp4")) {
 			        	/*
 			        	 * scheinbar nicht funktionierende Gifs:
 			        	 * - https://www.tutorials.de/threads/animierte-gifs.180222/ => GIFs fehlerhaft, ohne entsprechend 100ms Delay zwischen den Bildern(?)
@@ -1950,6 +1952,25 @@ public class Logic {
 	public interface PictureProvider {
 		public RealPicture get();
 	}
+	public static void renderPicture(RealPicture pictureToRender, MediaRenderBase base, ObjectCache<RealPicture, Image> cache) {
+		if (pictureToRender == null) {
+			throw new IllegalArgumentException();
+		}
+		String extension = pictureToRender.getFileExtension();
+		if (extension == null || extension.isEmpty()) {
+			throw new IllegalArgumentException(pictureToRender.getFullPath());
+		}
+		extension = extension.toLowerCase();
+		if (extension.equals("gif")) {
+			// Gif
+			renderPicture(pictureToRender, base.getImageView(), cache);
+		} else if (extension.equals("mp4")) {
+			// video TODO
+		} else {
+			// image
+			renderPicture(pictureToRender, base.getCanvas(), cache);
+		}
+	}
 	public static void renderPicture(RealPicture pictureToRender, ImageView image, ObjectCache<RealPicture, Image> cache) {
 		renderPicture(new PictureProvider() {
 			@Override
@@ -1965,6 +1986,29 @@ public class Logic {
 				return pictureToRender;
 			}
 		}, image, cache);
+	}
+
+	public static void renderPicture(PictureProvider provider, MediaRenderBase base, ObjectCache<RealPicture, Image> cache) {
+		RealPicture realPicture = provider.get();
+		if (realPicture == null) {
+			renderPicture(realPicture, base.getImageView(), cache);
+			return;
+		}
+
+		String extension = realPicture.getFileExtension();
+		if (extension == null || extension.isEmpty()) {
+			throw new IllegalArgumentException(realPicture.getFullPath());
+		}
+		extension = extension.toLowerCase();
+		if (extension.equals("gif")) {
+			// Gif
+			renderPicture(provider, base.getImageView(), cache);
+		} else if (extension.equals("mp4")) {
+			// video TODO
+		} else {
+			// image
+			renderPicture(provider, base.getCanvas(), cache);
+		}
 	}
 	/**
 	 * 

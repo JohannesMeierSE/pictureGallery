@@ -7,7 +7,6 @@ import gallery.RealPictureCollection;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -25,6 +24,8 @@ import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.RenamePictureAction;
+import picturegallery.persistency.MediaRenderBase;
+import picturegallery.persistency.MediaRenderBaseImpl;
 
 public class SingleCollectionState extends PictureSwitchingState {
 	public final SimpleObjectProperty<PictureCollection> currentCollection;
@@ -32,7 +33,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
 	private final Adapter adapterCurrentCollection;
-	private final Canvas iv;
+	private final MediaRenderBase mediaBase;
 	private final StackPane root;
 	private final VBox vBox;
 	private final Label labelCollectionPath;
@@ -108,19 +109,9 @@ public class SingleCollectionState extends PictureSwitchingState {
 		root.setStyle("-fx-background-color: #000000;");
 
 		// image
-		iv = new Canvas();
-//		iv.setPreserveRatio(true);
-//		iv.setSmooth(true);
-		// https://stackoverflow.com/questions/15003897/is-there-any-way-to-force-javafx-to-release-video-memory
-		iv.setCache(false);
-		// https://stackoverflow.com/questions/12630296/resizing-images-to-fit-the-parent-node
-//		iv.fitWidthProperty().bind(root.widthProperty());
-//		iv.fitHeightProperty().bind(root.heightProperty());
-		iv.widthProperty().bind(root.widthProperty());
-		iv.heightProperty().bind(root.heightProperty());
-		iv.widthProperty().addListener(currentPictureInvalidationListener); // repaint, if the size is changing!
-		iv.heightProperty().addListener(currentPictureInvalidationListener);
-		root.getChildren().add(iv);
+		mediaBase = new MediaRenderBaseImpl(root);
+		mediaBase.getCanvas().widthProperty().addListener(currentPictureInvalidationListener); // repaint, if the size is changing!
+		mediaBase.getCanvas().heightProperty().addListener(currentPictureInvalidationListener);
 
     	vBox = new VBox();
     	vBox.visibleProperty().bind(MainApp.get().labelsVisible);
@@ -178,8 +169,8 @@ public class SingleCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
-	protected Canvas getImage() {
-		return iv;
+	protected MediaRenderBase getImage() {
+		return mediaBase;
 	}
 
 	public void setCurrentCollection(PictureCollection currentCollection) {
