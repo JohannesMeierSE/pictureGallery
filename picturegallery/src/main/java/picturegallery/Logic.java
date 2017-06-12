@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,6 +64,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
@@ -1965,11 +1969,20 @@ public class Logic {
 			// Gif
 			renderPicture(pictureToRender, base.getImageView(), cache);
 		} else if (extension.equals("mp4")) {
-			// video TODO
+			// video
+			renderPicture(pictureToRender, base.getMediaView());
 		} else {
 			// image
 			renderPicture(pictureToRender, base.getCanvas(), cache);
 		}
+	}
+	public static void renderPicture(RealPicture pictureToRender, MediaView image) {
+		renderPicture(new PictureProvider() {
+			@Override
+			public RealPicture get() {
+				return pictureToRender;
+			}
+		}, image);
 	}
 	public static void renderPicture(RealPicture pictureToRender, ImageView image, ObjectCache<RealPicture, Image> cache) {
 		renderPicture(new PictureProvider() {
@@ -2004,10 +2017,29 @@ public class Logic {
 			// Gif
 			renderPicture(provider, base.getImageView(), cache);
 		} else if (extension.equals("mp4")) {
-			// video TODO
+			// video
+			renderPicture(provider, base.getMediaView());
 		} else {
 			// image
 			renderPicture(provider, base.getCanvas(), cache);
+		}
+	}
+	public static void renderPicture(PictureProvider provider, MediaView image) {
+		RealPicture realCurrentPicture = provider.get();
+		if (realCurrentPicture == null) {
+			throw new IllegalArgumentException();
+		} else {
+			// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
+			if (Platform.isFxApplicationThread()) {
+				renderMedia(realCurrentPicture);
+			} else {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						renderMedia(realCurrentPicture);
+					}
+				});
+			}
 		}
 	}
 	/**
@@ -2061,7 +2093,7 @@ public class Logic {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					renderImage(image, null, null);
+					renderCanvas(image, null, null);
 				}
 			});
 		} else {
@@ -2071,13 +2103,13 @@ public class Logic {
 					// https://stackoverflow.com/questions/26554814/javafx-updating-gui
 					// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
 					if (Platform.isFxApplicationThread()) {
-						renderImage(image, value, realCurrentPicture);
+						renderCanvas(image, value, realCurrentPicture);
 					} else {
 						Platform.runLater(new Runnable() {
 							@Override
 							public void run() {
 								if (key.equals(provider.get())) {
-									renderImage(image, value, realCurrentPicture);
+									renderCanvas(image, value, realCurrentPicture);
 								} else {
 									// ignore the result, because another picture should be shown
 								}
@@ -2087,6 +2119,18 @@ public class Logic {
 				}
 			});
 		}
+	}
+
+	private static void renderMedia(RealPicture picture) {
+		// TODO: geeignet cachen!?
+		String link = new File(picture.getFullPath()).toURI().toString();
+		System.out.println(link);
+		Media media = new Media(link);
+		if (media.getError() != null) {
+			media.getError().printStackTrace();
+		}
+		MediaPlayer player = new MediaPlayer(media);
+		player.play();
 	}
 
 	private static void renderImage(ImageView image, Image value, RealPicture picture) {
@@ -2101,7 +2145,7 @@ public class Logic {
 		image.setImage(value);
 	}
 
-	private static void renderImage(Canvas image, Image value, RealPicture picture) {
+	private static void renderCanvas(Canvas image, Image value, RealPicture picture) {
 		// draw the image in rotated way
 		// https://stackoverflow.com/questions/18260421/how-to-draw-image-rotated-on-javafx-canvas
 		GraphicsContext gc = image.getGraphicsContext2D();
