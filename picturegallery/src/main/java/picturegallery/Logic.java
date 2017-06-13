@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -2031,12 +2030,12 @@ public class Logic {
 		} else {
 			// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
 			if (Platform.isFxApplicationThread()) {
-				renderMedia(realCurrentPicture);
+				renderMedia(realCurrentPicture, image);
 			} else {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						renderMedia(realCurrentPicture);
+						renderMedia(realCurrentPicture, image);
 					}
 				});
 			}
@@ -2121,16 +2120,32 @@ public class Logic {
 		}
 	}
 
-	private static void renderMedia(RealPicture picture) {
+	private static void renderMedia(RealPicture picture, MediaView image) {
+		renderMedia(picture.getFullPath(), image);
+	}
+	public static void renderMedia(String picture, MediaView image) {
 		// TODO: geeignet cachen!?
-		String link = new File(picture.getFullPath()).toURI().toString();
-		System.out.println(link);
-		Media media = new Media(link);
-		if (media.getError() != null) {
-			media.getError().printStackTrace();
+		String link = new File(picture).toURI().toString();
+		Media media = null;
+		try {
+			media = new Media(link);
+			final Media mediaFinal = media;
+			media.setOnError(() -> {
+				System.out.println("error:");
+				if (mediaFinal.getError() != null) {
+					mediaFinal.getError().printStackTrace();
+				} else {
+					System.err.println("error is null!");
+				}
+			});
+		} catch (Throwable e) {
+			System.err.println("loading " + picture + " failed because of:");
+			e.printStackTrace();
 		}
 		MediaPlayer player = new MediaPlayer(media);
-		player.play();
+		image.setMediaPlayer(player);
+//		player.play();
+		player.setAutoPlay(true);
 	}
 
 	private static void renderImage(ImageView image, Image value, RealPicture picture) {
