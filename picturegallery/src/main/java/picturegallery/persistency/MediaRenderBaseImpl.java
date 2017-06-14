@@ -46,6 +46,8 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 
 		width = -1;
 		height = -1;
+
+		showImageView();
 	}
 
 	public MediaRenderBaseImpl(ObjectCache<RealPicture, Image> cache, double width, double height) {
@@ -58,6 +60,8 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		parentNode = null;
 		this.width = width;
 		this.height = height;
+
+		showImageView();
 	}
 
 	@Override
@@ -69,12 +73,12 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			if (parentNode != null) {
 				canvas.widthProperty().bind(parentNode.widthProperty());
 				canvas.heightProperty().bind(parentNode.heightProperty());
+
+				parentNode.getChildren().add(canvas);
 			} else {
 				canvas.setWidth(width);
 				canvas.setHeight(height);
 			}
-
-			parentNode.getChildren().add(canvas);
 		}
 		return canvas;
 	}
@@ -91,12 +95,12 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			if (parentNode != null) {
 				image.fitWidthProperty().bind(parentNode.widthProperty());
 				image.fitHeightProperty().bind(parentNode.heightProperty());
+
+				parentNode.getChildren().add(image);
 			} else {
 				image.setFitWidth(width);
 				image.setFitHeight(height);
 			}
-
-			parentNode.getChildren().add(image);
 		}
 		return image;
 	}
@@ -112,35 +116,56 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			if (parentNode != null) {
 				media.fitWidthProperty().bind(parentNode.widthProperty());
 				media.fitHeightProperty().bind(parentNode.heightProperty());
+
+				parentNode.getChildren().add(media);
 			} else {
 				media.setFitWidth(width);
 				media.setFitHeight(height);
 			}
-
-			parentNode.getChildren().add(media);
 		}
 		return media;
 	}
 
 	@Override
 	public void showCanvas() {
+		getCanvas();
 		canvas.setVisible(true);
-		image.setVisible(false);
-		media.setVisible(false);
+		shownNode = canvas;
+
+		if (image != null) {
+			image.setVisible(false);
+		}
+		if (media != null) {
+			media.setVisible(false);
+		}
 	}
 
 	@Override
 	public void showImageView() {
-		canvas.setVisible(false);
+		getImageView();
 		image.setVisible(true);
-		media.setVisible(false);
+		shownNode = image;
+
+		if (canvas != null) {
+			canvas.setVisible(false);
+		}
+		if (media != null) {
+			media.setVisible(false);
+		}
 	}
 
 	@Override
 	public void showMediaView() {
-		canvas.setVisible(false);
-		image.setVisible(false);
+		getMediaView();
 		media.setVisible(true);
+		shownNode = media;
+
+		if (canvas != null) {
+			canvas.setVisible(false);
+		}
+		if (image != null) {
+			image.setVisible(false);
+		}
 	}
 
 	@Override
@@ -164,7 +189,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		RealPicture realPicture = provider.get();
 		if (realPicture == null) {
 			// nothing to render => draw black image
-			renderPicture(provider, getImageView(), cache);
+			renderPictureImage(provider);
 			return;
 		}
 
@@ -175,29 +200,29 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		extension = extension.toLowerCase();
 		if (extension.equals("gif")) {
 			// Gif
-			renderPicture(provider, getImageView(), cache);
+			renderPictureImage(provider);
 		} else if (extension.equals("mp4")) {
 			// video
-			renderPicture(provider, getMediaView());
+			renderPictureMedia(provider);
 		} else {
 			// image
-			renderPicture(provider, getCanvas(), cache);
+			renderPictureCanvas(provider);
 		}
 	}
 
-	public static void renderPicture(PictureProvider provider, MediaView image) {
+	private void renderPictureMedia(PictureProvider provider) {
 		RealPicture realCurrentPicture = provider.get();
 		if (realCurrentPicture == null) {
 			throw new IllegalArgumentException();
 		} else {
 			// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
 			if (Platform.isFxApplicationThread()) {
-				renderMedia(realCurrentPicture, image);
+				renderMedia(realCurrentPicture);
 			} else {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						renderMedia(realCurrentPicture, image);
+						renderMedia(realCurrentPicture);
 					}
 				});
 			}
@@ -208,14 +233,15 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	 * @param provider for the feature, that this request is out-dated after loading the picture!
 	 * @param image
 	 */
-	public static void renderPicture(PictureProvider provider, ImageView image, ObjectCache<RealPicture, Image> cache) {
+	private void renderPictureImage(PictureProvider provider) {
 		RealPicture realCurrentPicture = provider.get();
 		if (realCurrentPicture == null) {
 			// show no picture
 			Logic.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					image.setImage(null);
+					getImageView().setImage(null);
+					showImageView();
 				}
 			});
 		} else {
@@ -225,13 +251,13 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 					// https://stackoverflow.com/questions/26554814/javafx-updating-gui
 					// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
 					if (Platform.isFxApplicationThread()) {
-						renderImage(image, value, realCurrentPicture);
+						renderImage(value, realCurrentPicture);
 					} else {
 						Platform.runLater(new Runnable() {
 							@Override
 							public void run() {
 								if (key.equals(provider.get())) {
-									renderImage(image, value, realCurrentPicture);
+									renderImage(value, realCurrentPicture);
 								} else {
 									// ignore the result, because another picture should be shown
 								}
@@ -247,14 +273,14 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	 * @param provider for the feature, that this request is out-dated after loading the picture!
 	 * @param image
 	 */
-	public static void renderPicture(PictureProvider provider, Canvas image, ObjectCache<RealPicture, Image> cache) {
+	private void renderPictureCanvas(PictureProvider provider) {
 		RealPicture realCurrentPicture = provider.get();
 		if (realCurrentPicture == null) {
 			// show no picture
 			Logic.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					renderCanvas(image, null, null);
+					renderCanvas(null, null);
 				}
 			});
 		} else {
@@ -264,13 +290,13 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 					// https://stackoverflow.com/questions/26554814/javafx-updating-gui
 					// https://stackoverflow.com/questions/24043420/why-does-platform-runlater-not-check-if-it-currently-is-on-the-javafx-thread
 					if (Platform.isFxApplicationThread()) {
-						renderCanvas(image, value, realCurrentPicture);
+						renderCanvas(value, realCurrentPicture);
 					} else {
 						Platform.runLater(new Runnable() {
 							@Override
 							public void run() {
 								if (key.equals(provider.get())) {
-									renderCanvas(image, value, realCurrentPicture);
+									renderCanvas(value, realCurrentPicture);
 								} else {
 									// ignore the result, because another picture should be shown
 								}
@@ -282,7 +308,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		}
 	}
 
-	private static void renderMedia(RealPicture picture, MediaView image) {
+	private void renderMedia(RealPicture picture) {
 		String picturePath = picture.getFullPath();
 		// TODO: geeignet cachen!?
 		String link = new File(picturePath).toURI().toString();
@@ -303,12 +329,13 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			e.printStackTrace();
 		}
 		MediaPlayer player = new MediaPlayer(media);
-		image.setMediaPlayer(player);
+		getMediaView().setMediaPlayer(player);
 //		player.play();
 		player.setAutoPlay(true);
+		showMediaView();
 	}
 
-	private static void renderImage(ImageView image, Image value, RealPicture picture) {
+	private void renderImage(Image value, RealPicture picture) {
 		gallery.Metadata metadata = picture.getMetadata();
 		double rotate = 0.0;
 		if (metadata != null) {
@@ -316,16 +343,19 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 				rotate = 90.0;
 			}
 		}
-		image.setRotate(rotate);
-		image.setImage(value);
+		ImageView localImage = getImageView();
+		localImage.setRotate(rotate);
+		localImage.setImage(value);
+		showImageView();
 	}
 
-	private static void renderCanvas(Canvas image, Image value, RealPicture picture) {
+	private void renderCanvas(Image value, RealPicture picture) {
+		Canvas localImage = getCanvas();
 		// draw the image in rotated way
 		// https://stackoverflow.com/questions/18260421/how-to-draw-image-rotated-on-javafx-canvas
-		GraphicsContext gc = image.getGraphicsContext2D();
-		double availableHeight = image.getHeight();
-		double availableWidth = image.getWidth();
+		GraphicsContext gc = localImage.getGraphicsContext2D();
+		double availableHeight = localImage.getHeight();
+		double availableWidth = localImage.getWidth();
 
 		// print black rectangle => clear previous picture
 		gc.setFill(Color.BLACK);
@@ -380,6 +410,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			
 			gc.restore(); // back to original state (before rotation)
 		}
+		showCanvas();
 	}
 
 }
