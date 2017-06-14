@@ -6,7 +6,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -19,6 +18,8 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.HidePathInformationAction;
+import picturegallery.persistency.MediaRenderBase;
+import picturegallery.persistency.MediaRenderBaseImpl;
 
 public class MultiPictureState extends State {
 	public static final double WIDTH = 200.0;
@@ -45,19 +46,15 @@ public class MultiPictureState extends State {
 			@Override
 			public GridCell<Picture> call(GridView<Picture> param) {
 				return new GridCell<Picture>() {
+					private final MediaRenderBase render = new MediaRenderBaseImpl(MainApp.get().getImageCacheSmall(), WIDTH, HEIGHT);
+
 					@Override
 					protected void updateItem(Picture item, boolean empty) {
 						super.updateItem(item, empty);
 						if (empty) {
 							setGraphic(null);
 						} else {
-							ImageView imageView = new ImageView();
-							imageView.setPreserveRatio(true);
-							imageView.setSmooth(true);
-							imageView.setCache(false);
-							imageView.setFitHeight(HEIGHT);
-							imageView.setFitWidth(WIDTH); 
-							Logic.renderPicture(Logic.getRealPicture(item), imageView, MainApp.get().getImageCacheSmall());
+							render.renderPicture(Logic.getRealPicture(item));
 
 							String text = item.getName() + "\n";
 							if (item.getMetadata() != null) {
@@ -74,7 +71,7 @@ public class MultiPictureState extends State {
 							MainApp.styleLabel(labelPath);
 
 							VBox labelBox = new VBox(labelText, labelPath);
-							StackPane stack = new StackPane(imageView, labelBox);
+							StackPane stack = new StackPane(render.getShownNode(), labelBox);
 							setGraphic(stack);
 						}
 					}

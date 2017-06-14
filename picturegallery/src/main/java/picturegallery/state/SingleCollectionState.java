@@ -109,9 +109,9 @@ public class SingleCollectionState extends PictureSwitchingState {
 		root.setStyle("-fx-background-color: #000000;");
 
 		// image
-		mediaBase = new MediaRenderBaseImpl(root);
+		mediaBase = new MediaRenderBaseImpl(MainApp.get().getImageCache(), root);
 		mediaBase.getCanvas().widthProperty().addListener(currentPictureInvalidationListener); // repaint, if the size is changing!
-		mediaBase.getCanvas().heightProperty().addListener(currentPictureInvalidationListener);
+		mediaBase.getCanvas().heightProperty().addListener(currentPictureInvalidationListener); // TODO: irgendwie anders realisieren!
 
     	vBox = new VBox();
     	vBox.visibleProperty().bind(MainApp.get().labelsVisible);

@@ -24,7 +24,6 @@ import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
 import picturegallery.Logic;
-import picturegallery.Logic.PictureProvider;
 import picturegallery.MainApp;
 import picturegallery.action.AddToRemoveFromTempCollectionAction;
 import picturegallery.action.ClearLinktoCollectionAction;
@@ -39,6 +38,7 @@ import picturegallery.action.PreviousPictureAction;
 import picturegallery.action.PrintMetadataAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
 import picturegallery.persistency.MediaRenderBase;
+import picturegallery.persistency.MediaRenderBase.PictureProvider;
 import picturegallery.persistency.ObservablePicture;
 import picturegallery.persistency.SpecialSortedList;
 
@@ -57,6 +57,7 @@ public abstract class PictureSwitchingState extends State {
 
 	protected TempCollectionState tempState;
 	protected final InvalidationListener currentPictureInvalidationListener;
+	private final PictureProvider pictureProvider;
 
 	public abstract PictureCollection getCurrentCollection();
 	protected abstract String getCollectionDescription();
@@ -169,16 +170,17 @@ public abstract class PictureSwitchingState extends State {
 			}
 		};
 
+		pictureProvider = new PictureProvider() {
+			@Override
+			public RealPicture get() {
+				return getCurrentRealPicture();
+			}
+		};
 		currentPictureInvalidationListener = new InvalidationListener() {
 			@Override
 			public void invalidated(Observable observable) {
 				// picture changed => show this picture in ImageView
-				Logic.renderPicture(new PictureProvider() {
-					@Override
-					public RealPicture get() {
-						return getCurrentRealPicture();
-					}
-				}, getImage(), MainApp.get().getImageCache());
+				getImage().renderPicture(pictureProvider);
 
 				// update the labels for the new picture
 				updatePictureLabel();
