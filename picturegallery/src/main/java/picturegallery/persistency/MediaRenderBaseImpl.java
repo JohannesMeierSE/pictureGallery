@@ -5,6 +5,8 @@ import gallery.RealPicture;
 import java.io.File;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -31,6 +33,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	private MediaView media;
 
 	private Node shownNode;
+	private PictureProvider currentProvider;
 
 	public MediaRenderBaseImpl(ObjectCache<RealPicture, Image> cache, Pane parentNode) {
 		super();
@@ -47,7 +50,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		width = -1;
 		height = -1;
 
-		showImageView();
+		init();
 	}
 
 	public MediaRenderBaseImpl(ObjectCache<RealPicture, Image> cache, double width, double height) {
@@ -61,11 +64,30 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		this.width = width;
 		this.height = height;
 
-		showImageView();
+		init();
 	}
 
-	@Override
-	public Canvas getCanvas() {
+	private void init() {
+		showImageView();
+
+		if (parentNode != null) {
+			/* repaint the canvas, if the size of the canvas was changed!
+			 * image and media will be resized automatically
+			 */
+			InvalidationListener listener = new InvalidationListener() {
+				@Override
+				public void invalidated(Observable observable) {
+					if (shownNode != null && shownNode == canvas && currentProvider != null) {
+						renderPictureCanvas();
+					}
+				}
+			};
+			parentNode.widthProperty().addListener(listener);
+			parentNode.heightProperty().addListener(listener);
+		}
+	}
+
+	private Canvas getCanvas() {
 		if (canvas == null) {
 			canvas = new Canvas();
 			canvas.setCache(false);
@@ -83,8 +105,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		return canvas;
 	}
 
-	@Override
-	public ImageView getImageView() {
+	private ImageView getImageView() {
 		if (image == null) {
 			image = new ImageView();
 			image.setPreserveRatio(true);
@@ -105,8 +126,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		return image;
 	}
 
-	@Override
-	public MediaView getMediaView() {
+	private MediaView getMediaView() {
 		if (media == null) {
 			media = new MediaView();
 			media.setCache(false);
@@ -126,8 +146,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		return media;
 	}
 
-	@Override
-	public void showCanvas() {
+	private void showCanvas() {
 		getCanvas();
 		canvas.setVisible(true);
 		shownNode = canvas;
@@ -140,8 +159,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		}
 	}
 
-	@Override
-	public void showImageView() {
+	private void showImageView() {
 		getImageView();
 		image.setVisible(true);
 		shownNode = image;
@@ -154,8 +172,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		}
 	}
 
-	@Override
-	public void showMediaView() {
+	private void showMediaView() {
 		getMediaView();
 		media.setVisible(true);
 		shownNode = media;
@@ -186,10 +203,11 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 
 	@Override
 	public void renderPicture(PictureProvider provider) {
-		RealPicture realPicture = provider.get();
+		currentProvider = provider;
+		RealPicture realPicture = currentProvider.get();
 		if (realPicture == null) {
 			// nothing to render => draw black image
-			renderPictureImage(provider);
+			renderPictureImage();
 			return;
 		}
 
@@ -200,18 +218,18 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		extension = extension.toLowerCase();
 		if (extension.equals("gif")) {
 			// Gif
-			renderPictureImage(provider);
+			renderPictureImage();
 		} else if (extension.equals("mp4")) {
 			// video
-			renderPictureMedia(provider);
+			renderPictureMedia();
 		} else {
 			// image
-			renderPictureCanvas(provider);
+			renderPictureCanvas();
 		}
 	}
 
-	private void renderPictureMedia(PictureProvider provider) {
-		RealPicture realCurrentPicture = provider.get();
+	private void renderPictureMedia() {
+		RealPicture realCurrentPicture = currentProvider.get();
 		if (realCurrentPicture == null) {
 			throw new IllegalArgumentException();
 		} else {
@@ -233,8 +251,8 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	 * @param provider for the feature, that this request is out-dated after loading the picture!
 	 * @param image
 	 */
-	private void renderPictureImage(PictureProvider provider) {
-		RealPicture realCurrentPicture = provider.get();
+	private void renderPictureImage() {
+		RealPicture realCurrentPicture = currentProvider.get();
 		if (realCurrentPicture == null) {
 			// show no picture
 			Logic.runOnUiThread(new Runnable() {
@@ -256,7 +274,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 						Platform.runLater(new Runnable() {
 							@Override
 							public void run() {
-								if (key.equals(provider.get())) {
+								if (key.equals(currentProvider.get())) {
 									renderImage(value, realCurrentPicture);
 								} else {
 									// ignore the result, because another picture should be shown
@@ -273,8 +291,8 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	 * @param provider for the feature, that this request is out-dated after loading the picture!
 	 * @param image
 	 */
-	private void renderPictureCanvas(PictureProvider provider) {
-		RealPicture realCurrentPicture = provider.get();
+	private void renderPictureCanvas() {
+		RealPicture realCurrentPicture = currentProvider.get();
 		if (realCurrentPicture == null) {
 			// show no picture
 			Logic.runOnUiThread(new Runnable() {
@@ -295,7 +313,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 						Platform.runLater(new Runnable() {
 							@Override
 							public void run() {
-								if (key.equals(provider.get())) {
+								if (key.equals(currentProvider.get())) {
 									renderCanvas(value, realCurrentPicture);
 								} else {
 									// ignore the result, because another picture should be shown

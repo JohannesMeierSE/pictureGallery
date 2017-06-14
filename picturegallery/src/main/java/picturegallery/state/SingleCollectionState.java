@@ -110,8 +110,6 @@ public class SingleCollectionState extends PictureSwitchingState {
 
 		// image
 		mediaBase = new MediaRenderBaseImpl(MainApp.get().getImageCache(), root);
-		mediaBase.getCanvas().widthProperty().addListener(currentPictureInvalidationListener); // repaint, if the size is changing!
-		mediaBase.getCanvas().heightProperty().addListener(currentPictureInvalidationListener); // TODO: irgendwie anders realisieren!
 
     	vBox = new VBox();
     	vBox.visibleProperty().bind(MainApp.get().labelsVisible);
