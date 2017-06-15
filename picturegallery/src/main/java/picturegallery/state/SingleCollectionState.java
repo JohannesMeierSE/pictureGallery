@@ -124,6 +124,7 @@ public class SingleCollectionState extends PictureSwitchingState {
     	handleLabel(labelMeta);
 
     	root.getChildren().add(vBox);
+    	vBox.toFront();
 	}
 
     private void handleLabel(Label label) {

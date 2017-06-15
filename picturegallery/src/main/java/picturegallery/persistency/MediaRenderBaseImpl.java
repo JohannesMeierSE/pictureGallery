@@ -97,6 +97,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 				canvas.heightProperty().bind(parentNode.heightProperty());
 
 				parentNode.getChildren().add(canvas);
+				canvas.toBack();
 			} else {
 				canvas.setWidth(width);
 				canvas.setHeight(height);
@@ -118,6 +119,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 				image.fitHeightProperty().bind(parentNode.heightProperty());
 
 				parentNode.getChildren().add(image);
+				image.toBack();
 			} else {
 				image.setFitWidth(width);
 				image.setFitHeight(height);
@@ -138,6 +140,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 				media.fitHeightProperty().bind(parentNode.heightProperty());
 
 				parentNode.getChildren().add(media);
+				media.toBack();
 			} else {
 				media.setFitWidth(width);
 				media.setFitHeight(height);
