@@ -44,8 +44,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -59,16 +57,8 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaView;
-import javafx.scene.paint.Color;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Scale;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import javafx.util.Pair;
@@ -91,9 +81,6 @@ import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.xml.sax.SAXException;
 
-import picturegallery.persistency.MediaRenderBase;
-import picturegallery.persistency.ObjectCache;
-import picturegallery.persistency.ObjectCache.CallBack;
 import picturegallery.persistency.Settings;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
@@ -959,6 +946,9 @@ public class Logic {
 
 	public static int askForChoice(List<String> options, boolean allowNull,
 			String title, String header, String content) {
+		if (options == null || options.size() < 2) {
+			throw new IllegalArgumentException();
+		}
 		int result = -1;
 		while (result < 0) {
 			ChoiceDialog<String> dialog = new ChoiceDialog<>(options.get(0), options);
