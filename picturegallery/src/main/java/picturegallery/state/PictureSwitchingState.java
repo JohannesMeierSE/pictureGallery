@@ -247,6 +247,13 @@ public abstract class PictureSwitchingState extends State {
 		return picturesSorted.contains(picture);
 	}
 
+	public void gotoPicture(Picture newPictureToShow, boolean preload) {
+		if (! containsPicture(newPictureToShow)) {
+			throw new IllegalArgumentException(newPictureToShow.getRelativePath() + " is not available!");
+		}
+		changeIndex(picturesSorted.indexOf(newPictureToShow), preload);
+	}
+
 	public void gotoPicture(int diff, boolean preload) {
 		int size = getSize();
 

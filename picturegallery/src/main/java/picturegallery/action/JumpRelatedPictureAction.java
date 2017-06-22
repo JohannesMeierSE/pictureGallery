@@ -27,16 +27,7 @@ public class JumpRelatedPictureAction extends Action {
 		}
 		if (currentPicture instanceof LinkedPicture) {
 			// jump to the real picture
-			RealPicture realPicture = ((LinkedPicture) currentPicture).getRealPicture();
-			if (realPicture.getCollection() == currentPicture.getCollection()) {
-				// linked and real picture are in the same collection
-				// TODO
-//				state.gotoPicture(diff, preload);
-			} else {
-				// linked and real picture are in the different collections
-				// TODO
-				state.setCurrentCollection(realPicture.getCollection(), realPicture);
-			}
+			jumpLogic(state, currentPicture, ((LinkedPicture) currentPicture).getRealPicture());
 		} else {
 			RealPicture realPicture = (RealPicture) currentPicture;
 			if (realPicture.getLinkedBy().isEmpty()) {
@@ -45,14 +36,27 @@ public class JumpRelatedPictureAction extends Action {
 			LinkedPicture jumpTarget = realPicture.getLinkedBy().get(0);
 			if (realPicture.getLinkedBy().size() > 1) {
 				List<String> options = new ArrayList<>();
-				// TODO
+				for (int i = 0; i < realPicture.getLinkedBy().size(); i++) {
+					options.add(i, realPicture.getLinkedBy().get(i).getRelativePathWithoutBase());
+				}
 
 				int selectedOption = Logic.askForChoice(options, true, "Select the jump target", "There are several links to this picture.", "Select the target to jump to:");
 				if (selectedOption < 0) {
 					return;
 				}
-				// TODO
+				jumpTarget = realPicture.getLinkedBy().get(selectedOption);
 			}
+			jumpLogic(state, realPicture, jumpTarget);
+		}
+	}
+
+	private void jumpLogic(SingleCollectionState state, Picture fromPicture, Picture toPicture) {
+		if (toPicture.getCollection() == fromPicture.getCollection()) {
+			// linked and real picture are in the same collection
+			state.gotoPicture(toPicture, true);
+		} else {
+			// linked and real picture are in the different collections
+			state.setCurrentCollection(toPicture.getCollection(), toPicture);
 		}
 	}
 
