@@ -91,13 +91,14 @@ public class SingleCollectionState extends PictureSwitchingState {
 				RealPictureCollection oldRealValue = Logic.getRealCollection(oldValue);
 				RealPictureCollection newRealValue = Logic.getRealCollection(newValue);
 
-				if (oldRealValue != null) {
-					oldRealValue.eAdapters().remove(adapterCurrentCollection);
-					picturesToShow.removeAll(oldRealValue.getPictures());
-				}
 				if (newRealValue != null) {
 					newRealValue.eAdapters().add(adapterCurrentCollection);
 					picturesToShow.addAll(newRealValue.getPictures());
+				}
+				// 1. add 2. remove => otherwise, this state will be closed, because there are no pictures to show!
+				if (oldRealValue != null) {
+					oldRealValue.eAdapters().remove(adapterCurrentCollection);
+					picturesToShow.removeAll(oldRealValue.getPictures());
 				}
 
 				updateCollectionLabel();
