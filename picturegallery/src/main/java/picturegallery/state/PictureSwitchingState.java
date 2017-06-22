@@ -129,10 +129,17 @@ public abstract class PictureSwitchingState extends State {
 						int newIndex = indexCurrentCollection;
 						while (c.next()) {
 							if (c.wasReplaced()) {
-								// => replace => show that new/replaced picture
+								// => replace => show that new/replaced picture => do not change the current index
 							} else if (c.wasRemoved()) {
 								if (newIndex > c.getFrom()) {
-									newIndex = newIndex - c.getRemovedSize();
+									// => update the current index
+									if (newIndex >= c.getTo()) {
+										// current index is "right" of all the removed pictures
+										newIndex = newIndex - c.getRemovedSize();
+									} else {
+										// current index is "within" the removed picture (interval) => show the next picture
+										newIndex = c.getFrom();
+									}
 								}
 							}
 						}
