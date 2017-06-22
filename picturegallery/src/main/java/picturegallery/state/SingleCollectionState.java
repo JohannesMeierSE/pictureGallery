@@ -22,6 +22,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
+import picturegallery.action.JumpRelatedPictureAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.RenamePictureAction;
 import picturegallery.persistency.MediaRenderBase;
@@ -174,14 +175,26 @@ public class SingleCollectionState extends PictureSwitchingState {
 	}
 
 	public void setCurrentCollection(PictureCollection currentCollection) {
+		setCurrentCollection(currentCollection, null);
+	}
+	public void setCurrentCollection(PictureCollection currentCollection, Picture initialPicture) {
 		if (currentCollection == null) {
 			throw new IllegalArgumentException();
 		}
+		if (this.currentCollection.get() == currentCollection) {
+			// same collection as before => do nothing
+			return;
+		}
 
-		this.currentCollection.set(currentCollection);
 		setMovetoCollection(null);
 		setLinktoCollection(null);
-		indexCurrentCollection = -1;
+
+		this.currentCollection.set(currentCollection);
+		if (initialPicture == null || ! containsPicture(initialPicture)) {
+			indexCurrentCollection = -1;
+		} else {
+			indexCurrentCollection = picturesSorted.indexOf(initialPicture);
+		}
 
 		if (isVisible()) {
 			showInitialPicture();
@@ -193,6 +206,7 @@ public class SingleCollectionState extends PictureSwitchingState {
 		super.onInit();
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
+		registerAction(new JumpRelatedPictureAction());
 		registerAction(new ExitSingleCollectionStateAction());
 		registerAction(new RenamePictureAction());
 	}

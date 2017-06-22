@@ -256,7 +256,7 @@ public abstract class PictureSwitchingState extends State {
 
 	public void changeIndex(int newIndex, boolean preload) {
 		if (newIndex < 0) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("new index: " + newIndex);
 		}
 		int size = getSize();
 		if (newIndex >= size) {
