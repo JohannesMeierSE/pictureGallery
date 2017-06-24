@@ -707,18 +707,20 @@ public class MainApp extends Application {
 				// do the movement in the file system
 				boolean success = Logic.moveDirectory(collectionToMove.getFullPath(), target.getFullPath());
 
-				// do the changes in the EMF model
-		    	EditingDomain domain = MainApp.get().getModelDomain();
+				if (success) {
+					// do the changes in the EMF model
+			    	EditingDomain domain = MainApp.get().getModelDomain();
 
-		    	domain.getCommandStack().execute(RemoveCommand.create(domain,
-						collectionToMove.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove));
+			    	domain.getCommandStack().execute(RemoveCommand.create(domain,
+							collectionToMove.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove));
+	
+					domain.getCommandStack().execute(AddCommand.create(domain,
+							target, GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove,
+							Logic.getIndexForCollectionInsertion(target.getSubCollections(), collectionToMove)));
 
-				domain.getCommandStack().execute(AddCommand.create(domain,
-						target, GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove,
-						Logic.getIndexForCollectionInsertion(target.getSubCollections(), collectionToMove)));
-
-				domain.getCommandStack().execute(SetCommand.create(domain,
-						collectionToMove, GalleryPackage.eINSTANCE.getPictureCollection_SuperCollection(), target));
+					domain.getCommandStack().execute(SetCommand.create(domain,
+							collectionToMove, GalleryPackage.eINSTANCE.getPictureCollection_SuperCollection(), target));
+				}
 
 				// re-create the links in the file system
 				for (LinkedPicture link : linkedPictures) {
