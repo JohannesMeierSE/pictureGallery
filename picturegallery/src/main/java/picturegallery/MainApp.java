@@ -656,12 +656,6 @@ public class MainApp extends Application {
 		Logic.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				// do the changes in the file system
-				boolean success = Logic.moveDirectory(collectionToMove.getFullPath(), target.getFullPath());
-				if (!success) {
-					return;
-				}
-
 				/* collect problematic links:
 				 * - pictures vs. collections
 				 * - link contained vs. link to
@@ -670,17 +664,17 @@ public class MainApp extends Application {
 				 * (link and target could be both within the moved folder!)
 				 */
 				List<RealPictureCollection> realCollections = new ArrayList<>();
-
-				List<LinkedPicture> linkedPictures = new ArrayList<>();
 				List<LinkedPictureCollection> linkedCollections = new ArrayList<>();
 
-				Logic.getAllSubCollectionsLogic(collectionToMove, realCollections, linkedCollections); // contained linked collections
+				List<LinkedPicture> linkedPictures = new ArrayList<>();
+
+				Logic.getAllSubCollectionsLogic(collectionToMove, realCollections, linkedCollections); // contained linked and real collections
 				realCollections.add(collectionToMove);
 
 				for (RealPictureCollection real : realCollections) {
 					// linked collections to
 					for (LinkedPictureCollection link : real.getLinkedBy()) {
-						if (!linkedCollections.contains(link)) {
+						if ( ! linkedCollections.contains(link)) {
 							linkedCollections.add(link);
 						}
 					}
@@ -688,13 +682,13 @@ public class MainApp extends Application {
 					for (Picture pic : real.getPictures()) {
 						if (pic instanceof LinkedPicture) {
 							// contained linked pictures
-							if (!linkedPictures.contains(pic)) {
+							if ( ! linkedPictures.contains(pic)) {
 								linkedPictures.add((LinkedPicture) pic);
 							}
 						} else {
 							// linked pictures to
 							for (LinkedPicture link : ((RealPicture) pic).getLinkedBy()) {
-								if (!linkedPictures.contains(link)) {
+								if ( ! linkedPictures.contains(link)) {
 									linkedPictures.add(link);
 								}
 							}
@@ -702,15 +696,17 @@ public class MainApp extends Application {
 					}
 				}
 
-
-				// remove the links
+				// remove the links in the file system
 				for (LinkedPicture link : linkedPictures) {
 					Logic.deleteSymlinkPicture(link);
 				}
 				for (LinkedPictureCollection link : linkedCollections) {
 					Logic.deleteSymlinkCollection(link);
 				}
-				
+
+				// do the movement in the file system
+				boolean success = Logic.moveDirectory(collectionToMove.getFullPath(), target.getFullPath());
+
 				// do the changes in the EMF model
 		    	EditingDomain domain = MainApp.get().getModelDomain();
 
@@ -724,7 +720,7 @@ public class MainApp extends Application {
 				domain.getCommandStack().execute(SetCommand.create(domain,
 						collectionToMove, GalleryPackage.eINSTANCE.getPictureCollection_SuperCollection(), target));
 
-				// re-create the links
+				// re-create the links in the file system
 				for (LinkedPicture link : linkedPictures) {
 					Logic.createSymlinkPicture(link);
 				}
