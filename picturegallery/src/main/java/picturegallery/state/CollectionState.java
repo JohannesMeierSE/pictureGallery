@@ -32,6 +32,7 @@ import picturegallery.action.DebuggerCollectionAction;
 import picturegallery.action.DiffCollectionDeleteAction;
 import picturegallery.action.ExportLinkedPicturesAction;
 import picturegallery.action.FixPictureNumbersAction;
+import picturegallery.action.JumpRelatedCollectionAction;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.MoveCollectionAction;
 import picturegallery.action.RenameCollectionAction;
@@ -254,6 +255,7 @@ public class CollectionState extends State {
 		registerAction(new SearchIdenticalDeletedAction());
 		registerAction(new DiffCollectionDeleteAction());
 		registerAction(new ExportLinkedPicturesAction());
+		registerAction(new JumpRelatedCollectionAction());
 		registerAction(new FixPictureNumbersAction());
 		registerAction(new DebuggerCollectionAction());
 	}
@@ -313,5 +315,21 @@ public class CollectionState extends State {
 			return true;
 		}
 		return collectionFilter.isUsable(collection);
+	}
+
+	public void jumpToCollection(PictureCollection jumpTo) {
+		if (jumpTo == null) {
+			throw new IllegalArgumentException();
+		}
+		// search for the TreeItem of the collection
+		TreeItem<PictureCollection> item = ((RecursiveTreeItem<PictureCollection>) table.getRoot()).getTreeItemOfElement(jumpTo);
+		if (item == null) {
+			throw new IllegalArgumentException(jumpTo.getRelativePath());
+		}
+
+		// scroll and select it
+		int row = table.getRow(item);
+		table.scrollTo(row);
+		table.getSelectionModel().select(row);
 	}
 }

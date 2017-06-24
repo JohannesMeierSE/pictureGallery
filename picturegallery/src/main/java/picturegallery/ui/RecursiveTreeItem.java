@@ -143,4 +143,27 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 			return positionFactory.calculate(getChildren(), valueToAdd);
 		}
 	}
+
+	/**
+	 * Searches recursively (depth-first) for the TreeItem of the specified element.
+	 * @param element content element to search for
+	 * @return the found RecursiveTreeItem or null
+	 */
+	public RecursiveTreeItem<T> getTreeItemOfElement(T element) {
+		// found here
+		if (getValue() == element) {
+			return this;
+		}
+
+		// search in all children
+		for (TreeItem<T> child : getChildren()) {
+			RecursiveTreeItem<T> res = ((RecursiveTreeItem<T>) child).getTreeItemOfElement(element);
+			if (res != null) {
+				return res;
+			}
+		}
+
+		// not found
+		return null;
+	}
 }
