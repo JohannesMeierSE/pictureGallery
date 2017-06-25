@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -90,6 +91,8 @@ import com.pragone.jphash.image.radial.RadialHash;
 
 public class Logic {
 	public static final String NO_HASH = "nohash!";
+
+	public final static Map<String, AtomicInteger> extensionMap = new HashMap<>();
 
 	/** (real collection -> ((picture.name + picture.extension) -> Picture)) */
 	private static Map<RealPictureCollection, Map<String, Picture>> findByNameMap = new HashMap<>();
@@ -148,6 +151,7 @@ public class Logic {
 
 	public static void loadDirectory(RealPictureCollection baseCollection) {
 		long startTime = System.currentTimeMillis();
+		extensionMap.clear();
 		findByNameMap = new HashMap<>(baseCollection.getSubCollections().size());
 		findByNameInit(baseCollection);
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>(); // Path -> Collection in which the Path was found
@@ -216,6 +220,7 @@ public class Logic {
 					} else {
 						// found linked picture both in file system and in model.xmi
 					}
+					analyzePictureInitial(linkedPicture);
 				}
 			}
 		}
@@ -289,6 +294,7 @@ public class Logic {
 		        		} else {
 		        			// found real picture, both in file system and model.xmi
 		        		}
+		        		analyzePictureInitial(pic);
 			        } else {
 			        	// file with different file extension => ignore it
 			        	System.err.println("ignored: " + file.toString());
@@ -385,6 +391,21 @@ public class Logic {
 		pic.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")));
 	}
 
+	private static void analyzePictureInitial(Picture picture) {
+		if (picture instanceof RealPicture) {
+			String key = picture.getFileExtension().toLowerCase();
+
+			AtomicInteger counter = extensionMap.get(key);
+			if (counter == null) {
+				counter = new AtomicInteger(0);
+				extensionMap.put(key, counter);
+			}
+
+			// count the different kinds of extensions!
+			counter.incrementAndGet();
+		}
+	}
+
 	public static RealPictureCollection createEmptyLibrary(final String baseDir) {
 		String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
         String dirName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1);
@@ -400,7 +421,7 @@ public class Logic {
 		return base;
 	}
 
-	public static Picture findFirstPicture(PictureCollection col) {
+	public static Picture findFirstPicture(PictureCollection col) { // TODO: unused
 		if (!col.getPictures().isEmpty()) {
 			return col.getPictures().get(0);
 		}
@@ -414,7 +435,7 @@ public class Logic {
 		return null;
 	}
 
-	public static PictureCollection findFirstNonEmptyCollection(PictureCollection col) {
+	public static PictureCollection findFirstNonEmptyCollection(PictureCollection col) { // TODO: unused
 		if (!col.getPictures().isEmpty()) {
 			return col;
 		}
@@ -2055,6 +2076,39 @@ public class Logic {
 			}
 			return result;
 		}
+	}
+
+	public static Map<String, AtomicInteger> getExtensionMap(PictureCollection collection) {
+		Map<String, AtomicInteger> extensionMap = new HashMap<>();
+
+		for (Picture pic : collection.getPictures()) {
+			if (pic == null) {
+				System.out.println(collection.getRelativePath() + " contains NULL as picture ?!");
+				continue;
+			}
+			RealPicture real = getRealPicture(pic);
+			if (real == null) {
+				System.out.println("The real picture of " + pic.getRelativePath() + " is null ?!");
+				continue;
+			}
+			String key = real.getFileExtension();
+			if (key == null || key.isEmpty()) {
+				System.out.println("missing file extension for " + real.getRelativePath());
+				continue;
+			}
+			key = key.toLowerCase();
+
+			AtomicInteger counter = extensionMap.get(key);
+			if (counter == null) {
+				counter = new AtomicInteger(0);
+				extensionMap.put(key, counter);
+			}
+
+			// count the different kinds of extensions!
+			counter.incrementAndGet();
+		}
+
+		return extensionMap;
 	}
 
 	public static void runOnUiThread(Runnable run) {

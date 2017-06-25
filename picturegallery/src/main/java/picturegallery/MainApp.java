@@ -20,10 +20,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -86,6 +90,8 @@ public class MainApp extends Application {
 	public SimpleBooleanProperty labelsVisible = new SimpleBooleanProperty(true);
 	public SimpleObjectProperty<Comparator<Picture>> pictureComparator
 		= new SimpleObjectProperty<Comparator<Picture>>(Logic.createComparatorPicturesName(true));
+
+	public ObservableList<String> extensions;
 
 	private static MainApp instance;
 
@@ -239,6 +245,19 @@ public class MainApp extends Application {
         		Logic.loadDirectory(baseCollection);
 
         		modelDomain = new AdapterFactoryEditingDomain(new GalleryAdapterFactory(), new BasicCommandStack(), rset);
+
+        		// handle the available extensions
+        		extensions = FXCollections.observableArrayList();
+        		for (Entry<String, AtomicInteger> ex : Logic.extensionMap.entrySet()) {
+        			extensions.add(ex.getKey());
+        			System.out.println(ex.getKey() + " : " + ex.getValue().get());
+        		}
+        		extensions.sort(new Comparator<String>() {
+					@Override
+					public int compare(String o1, String o2) {
+						return o1.compareToIgnoreCase(o2);
+					}
+				});
 
         		return null;
         	}

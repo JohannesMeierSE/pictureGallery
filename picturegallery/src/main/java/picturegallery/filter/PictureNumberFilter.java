@@ -2,10 +2,13 @@ package picturegallery.filter;
 
 import gallery.PictureCollection;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -13,6 +16,11 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
+
+import org.controlsfx.control.CheckComboBox;
+
+import picturegallery.Logic;
+import picturegallery.MainApp;
 
 public class PictureNumberFilter extends CollectionFilter {
 	public static class IntegerFilter implements
@@ -27,8 +35,10 @@ public class PictureNumberFilter extends CollectionFilter {
 		}
 	}
 
-	public final SimpleObjectProperty<Integer> min;
-	public final SimpleObjectProperty<Integer> max;
+	private final SimpleObjectProperty<Integer> min;
+	private final SimpleObjectProperty<Integer> max;
+
+	private final CheckComboBox<String> extensionCombo;
 
 	public PictureNumberFilter(CompositeCollectionFilter parentFilter) {
 		super(parentFilter);
@@ -59,18 +69,41 @@ public class PictureNumberFilter extends CollectionFilter {
 		TextFormatter<Integer> minFormatter = new TextFormatter<>(converter, 0, new IntegerFilter());
 		minFormatter.valueProperty().bindBidirectional(min);
 		minField.setTextFormatter(minFormatter);
+		minField.setMaxWidth(60.0);
 
 		TextField maxField = new TextField();
 		TextFormatter<Integer> maxFormatter = new TextFormatter<>(converter, 0, new IntegerFilter());
 		maxFormatter.valueProperty().bindBidirectional(max);
 		maxField.setTextFormatter(maxFormatter);
+		maxField.setMaxWidth(60.0);
 
-		hbox.getChildren().addAll(minLabel, minField, maxLabel, maxField);
+		extensionCombo = new CheckComboBox<>(MainApp.get().extensions);
+		extensionCombo.getCheckModel().checkAll();
+		extensionCombo.getCheckModel().getCheckedItems().addListener(listenerForNotification);
+
+		hbox.getChildren().addAll(minLabel, minField, maxLabel, maxField, extensionCombo);
 	}
 
 	@Override
 	protected boolean isUsableLogic(PictureCollection collection) {
-		int size = collection.getPictures().size();
+		ObservableList<String> checkedItems = extensionCombo.getCheckModel().getCheckedItems();
+		if (checkedItems.isEmpty()) {
+			return false;
+		}
+		/* Das Ganze muss dynamisch sein und sich beim Löschen von Bildern sofort ändern!
+		 * - In DIESEM Fall hier ist das unnötig, da die Zellen bereits beim Ändern der Anzahl Bilder aktualisiert werden ...
+		 * - ... wegen der Spalte "Anzahl Bilder"!
+		 */
+		Map<String, AtomicInteger> extensionMap = Logic.getExtensionMap(Logic.getRealCollection(collection));
+
+		// count the number of pictures with one of the selected file extensions
+		int size = 0;
+		for (String extension : checkedItems) {
+			AtomicInteger count = extensionMap.get(extension);
+			if (count != null) {
+				size += count.get();
+			}
+		}
 
 		if (size < min.get()) {
 			return false;
