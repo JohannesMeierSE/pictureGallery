@@ -91,6 +91,8 @@ public class RenameCollectionAction extends Action {
 			// rename in EMF model
 			renameModel(collectionToRename, newName);
 		}
+
+		state.jumpToCollection(collectionToRename);
 	}
 
 	private void renameModel(PictureCollection collectionToRename, String newName) {

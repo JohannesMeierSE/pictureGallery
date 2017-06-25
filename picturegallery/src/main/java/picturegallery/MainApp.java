@@ -647,7 +647,7 @@ public class MainApp extends Application {
 		});
 	}
 
-	public void moveCollection(RealPictureCollection collectionToMove, RealPictureCollection target) {
+	public void moveCollection(RealPictureCollection collectionToMove, RealPictureCollection target, boolean jump) {
 		// check input
 		if (collectionToMove == null || target == null || collectionToMove.equals(target)) {
 			throw new IllegalArgumentException();
@@ -750,6 +750,15 @@ public class MainApp extends Application {
 				}
 
 				switchCloseWaitingState();
+
+				if (jump) {
+					Logic.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							((CollectionState) getCurrentState()).jumpToCollection(collectionToMove);
+						}
+					});
+				}
 			}
 		});
 	}
