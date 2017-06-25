@@ -1938,31 +1938,6 @@ public class Logic {
 		return element.getName().toUpperCase().toLowerCase();
 	}
 
-	/**
-	 * Checks whether the end of the String is a number.
-	 * @param name
-	 * @return the end of the input string, if it is a number (than: biggest number of digits)
-	 */
-	public static String getLastNumberSubstring(String name) {
-		int digits = 0;
-
-		while (digits < name.length()) {
-			String sub = name.substring(name.length() - digits - 1);
-			try {
-				Integer.parseInt(sub);
-				digits++;
-			} catch (Throwable e) {
-				break;
-			}
-		}
-
-		if (digits <= 0) {
-			return "";
-		} else {
-			return name.substring(name.length() - digits);
-		}
-	}
-
 	public static PictureCollection getCollectionByName(RealPictureCollection parent, String collectionName,
 			boolean searchReal, boolean searchLinked) {
 		// TODO: diese Methode könnte theoretisch auch durch eine Map beschleunigt werden, dürfte aber nur bei sehr vielen Unterordnern relevant sein!
@@ -2076,6 +2051,15 @@ public class Logic {
 			}
 			return result;
 		}
+	}
+
+	public static boolean isNumber(String value) {
+		// https://stackoverflow.com/questions/1102891/how-to-check-if-a-string-is-numeric-in-java
+		for (char c : value.toCharArray()) {
+			if ( ! Character.isDigit(c))
+				return false;
+		}
+		return true;
 	}
 
 	public static Map<String, AtomicInteger> getExtensionMap(PictureCollection collection) {

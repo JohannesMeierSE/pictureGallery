@@ -9,6 +9,9 @@ import java.util.List;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
+import picturegallery.fix.FirstNumberInUnderscoreFixer;
+import picturegallery.fix.NumberAtEndFixer;
+import picturegallery.fix.NumberFixer;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
 
@@ -29,11 +32,28 @@ public class FixPictureNumbersAction extends Action {
 			return;
 		}
 
+		// ask the user which method he wants to use
+		List<NumberFixer> fixer = new ArrayList<>();
+		fixer.add(0, new NumberAtEndFixer());
+		fixer.add(1, new FirstNumberInUnderscoreFixer());
+
+		List<String> fixerNames = new ArrayList<>(fixer.size());
+		for (int i = 0; i < fixer.size(); i++) {
+			fixerNames.add(i, fixer.get(i).getName());
+		}
+
+		int option = Logic.askForChoice(fixerNames, true, "Select fix mechanism",
+				"There are different patterns for numbers with missing leading zeros.", "Select one pattern:");
+		if (option < 0) {
+			return;
+		}
+		NumberFixer fixerToUse = fixer.get(option);
+
 		// determine the maximum number of digits
 		int digits = 0;
-		int noNumberAtTheEnd = 0;
+		int noNumberAtTheEnd = 0; // counts the number of pictures which does not fit to the selected "pattern to fix"
 		for (Picture pic : collectionToFix.getPictures()) {
-			String number = Logic.getLastNumberSubstring(pic.getName());
+			String number = fixerToUse.getNumberPart(pic.getName());
 			if (number == null || number.isEmpty()) {
 				noNumberAtTheEnd++;
 			} else {
@@ -50,12 +70,12 @@ public class FixPictureNumbersAction extends Action {
 		// determine the pictures to fix
 		final List<Picture> toFix = new ArrayList<>(size - noNumberAtTheEnd);
 		for (Picture pic : collectionToFix.getPictures()) {
-			String number = Logic.getLastNumberSubstring(pic.getName());
+			String number = fixerToUse.getNumberPart(pic.getName());
 			if (number == null || number.isEmpty()) {
 				// do nothing
 			} else if (number.length() < digits) {
 				toFix.add(pic);
-				System.out.println(pic.getName() + "." + pic.getFileExtension());
+				System.out.println(pic.getRelativePathWithoutBase());
 			}
 		}
 		if (toFix.isEmpty()) {
@@ -63,31 +83,26 @@ public class FixPictureNumbersAction extends Action {
 		}
 
 		if (!Logic.askForConfirmation("Fix picture names: running number",
-				"From the " + size + " pictures, " + (size - noNumberAtTheEnd) + " have a number at the end of its name, "
-						+ toFix.size() + " of them needs a fix, "
-						+ "and " + noNumberAtTheEnd + " do not have any numbers.",
+				"From the " + size + " pictures, " + (size - noNumberAtTheEnd) + " have a number at the specified position, "
+						+ toFix.size() + " of them need a fix (missing leading zeros), "
+						+ "and " + noNumberAtTheEnd + " do not match the number pattern.",
 				"Do you really want to add missing leading zeros (up to " + digits + " digits)?")) {
 			return;
 		}
 
 		// the user has to wait and must not do other things (long running process)
 		MainApp.get().switchToWaitingState();
+		// TODO: remove renamed pictures from the cache??
 
 		final int finalDigits = digits;
 		Logic.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				for (Picture pic : toFix) {
-					String numberOld = Logic.getLastNumberSubstring(pic.getName());
-					String prefix = pic.getName().substring(0, pic.getName().length() - numberOld.length());
-
-					String numberNew = new String(numberOld);
-					while (numberNew.length() < finalDigits) {
-						numberNew = "0" + numberNew;
-					}
-					String newName = prefix + numberNew;
+					String newName = fixerToUse.getNewComplete(pic.getName(), finalDigits);
 
 					try {
+						System.out.println(pic.getName() + " => " + newName);
 						MainApp.get().renamePicture(pic, newName);
 					} catch (Throwable e) {
 						System.err.println("error while renaming " + pic.getFullPath() + " to " + newName);
