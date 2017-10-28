@@ -352,7 +352,7 @@ public class Logic {
 
 			// delete contained pictures => this is required to delete linked pictures, too!
 			List<Picture> pictures = collectionToRemove.getPictures();
-			while (!pictures.isEmpty()) {
+			while (pictures.isEmpty() == false) {
 				deletePictureSimple(pictures.get(0));
 			}
 
@@ -371,17 +371,24 @@ public class Logic {
 
 	private static void deletePictureSimple(Picture pictureToDelete) {
 		if (pictureToDelete instanceof RealPicture) {
+			RealPicture realPicture = (RealPicture) pictureToDelete;
+
 			// delete all pictures which are linking on this picture to remove!
-			List<LinkedPicture> linked = ((RealPicture) pictureToDelete).getLinkedBy();
-			while (!linked.isEmpty()) {
+			List<LinkedPicture> linked = realPicture.getLinkedBy();
+			while (linked.isEmpty() == false) {
 				deletePictureSimple(linked.get(0));
 			}
+
+			// delete the meta data
+			realPicture.setMetadata(null);
 		} else {
 			// nothing special is required for LinkedPictures
 		}
 
-		// removes also possible Metadata!
-		EcoreUtil.delete(pictureToDelete, true);
+		// remove the picture from its collection
+		if (pictureToDelete.getCollection() != null) {
+			pictureToDelete.getCollection().getPictures().remove(pictureToDelete);
+		}
 	}
 
 	private static void initPicture(RealPictureCollection currentCollection, String name, Picture pic) {
