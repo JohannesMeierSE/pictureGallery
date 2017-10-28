@@ -191,14 +191,8 @@ public class MainApp extends Application {
 					}
 				}
 
-				// save model afterwards => for debugging purpose
-				try {
-					if (modelResource != null) {
-						modelResource.save(null); // falls vorhanden, wird es überschrieben!
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				// save model afterwards
+				saveModel();
 			}
 		});
         stage.show();
@@ -284,6 +278,16 @@ public class MainApp extends Application {
         });
         new Thread(task).start();
     }
+
+	public void saveModel() {
+		try {
+			if (modelResource != null) {
+				modelResource.save(null); // falls vorhanden, wird es überschrieben!
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static void styleLabel(Label label) {
 		// https://assylias.wordpress.com/2013/12/08/383/
