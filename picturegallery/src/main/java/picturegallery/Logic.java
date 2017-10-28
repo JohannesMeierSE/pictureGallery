@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -688,14 +690,25 @@ public class Logic {
 		}
 	}
 
-	public static void extractMetadata(RealPicture picture, boolean forceReload, boolean printOnly)
+	/**
+	 * 
+	 * @param picture
+	 * @param forceReload
+	 * @param printOnly
+	 * @return false if the metadata were not loaded, true otherwise
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws TikaException
+	 */
+	public static boolean extractMetadata(RealPicture picture, boolean forceReload, boolean printOnly)
 			throws FileNotFoundException, IOException, SAXException, TikaException {
 		// check input
 		if (picture == null) {
 			throw new IllegalArgumentException();
 		}
 		if (picture.getMetadata() != null && !printOnly && !forceReload) {
-			return;
+			return false;
 		}
 
 		System.out.println("load meta data for " + picture.getRelativePath());
@@ -721,7 +734,7 @@ public class Logic {
 		} catch (Throwable e) {
 			System.err.println("error while reading the meta-data of " + picture.getFullPath());
 			e.printStackTrace();
-			return;
+			return false;
 		} finally {
 			in.close();
 		}
@@ -838,6 +851,7 @@ public class Logic {
 		}
 		String cameraValue = make + " " + model;
 		cameraValue = cameraValue.trim(); // for the case, when both, make + model are both empty!
+		cameraValue = fixStringForXml(cameraValue);
 		md.setCamera(cameraValue);
 
 		// meine RX100
@@ -858,6 +872,19 @@ public class Logic {
 	    	domain.getCommandStack().execute(SetCommand.create(domain,
 	    			picture, GalleryPackage.eINSTANCE.getRealPicture_Metadata(), md));
 		}
+		return true;
+	}
+
+	private static String fixStringForXml(String newValue) {
+		// https://stackoverflow.com/questions/2362302/error-about-invalid-xml-characters-on-java
+		Pattern pattern = Pattern.compile("[\\000]*");
+		Matcher matcher = pattern.matcher(newValue);
+		if (matcher.find()) {
+			String fixedValue = matcher.replaceAll("");
+			System.err.println("fixed XML string: invalid " + newValue + ", fixed: " + fixedValue);
+			newValue = fixedValue;
+		}
+		return newValue;
 	}
 
 	public static String printMetadata(gallery.Metadata md) {
