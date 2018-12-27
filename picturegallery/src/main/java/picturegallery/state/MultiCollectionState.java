@@ -3,6 +3,8 @@ package picturegallery.state;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -59,9 +61,27 @@ public class MultiCollectionState extends SinglePictureState {
 			
 			@Override
 			public void onNameChanged(PictureCollection collection) {
-				updateCollectionLabel(); // TODO: muss öfters passieren!
+				updateCollectionLabel();
 			}
 		};
+
+		// update the shown name of the collection
+		currentPicture.addListener(new ChangeListener<Picture>() {
+			@Override
+			public void changed(ObservableValue<? extends Picture> observable, Picture oldValue, Picture newValue) {
+				if (oldValue == null && newValue == null) {
+					return;
+				}
+				if ((oldValue == null) != (newValue == null)) {
+					updateCollectionLabel();
+				} else {
+					// both are not null
+					if (oldValue.getCollection() != newValue.getCollection()) {
+						updateCollectionLabel();
+					}
+				}
+			}
+		});
 	}
 
 	@Override
