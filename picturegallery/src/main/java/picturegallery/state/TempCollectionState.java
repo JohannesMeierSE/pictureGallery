@@ -11,7 +11,7 @@ public class TempCollectionState extends PictureSwitchingState {
 		super();
 	}
 
-	private PictureSwitchingState getReal() {
+	private PictureSwitchingState getRealState() {
 		if (getNextAfterClosed() instanceof PictureSwitchingState) {
 			return (PictureSwitchingState) getNextAfterClosed();
 		} else {
@@ -21,42 +21,42 @@ public class TempCollectionState extends PictureSwitchingState {
 
 	@Override
 	public PictureCollection getCurrentCollection() {
-		return getReal().getCurrentCollection();
+		return getRealState().getCurrentCollection();
 	}
 
 	@Override
 	protected String getCollectionDescription() {
-		return "temp collection within (" + getReal().getCollectionDescription() + ")";
+		return "temp collection within (" + getRealState().getCollectionDescription() + ")";
 	}
 
 	@Override
 	protected void setLabelIndex(String newText) {
-		getReal().setLabelIndex(newText);
+		getRealState().setLabelIndex(newText);
 	}
 
 	@Override
 	protected void setLabelMeta(String newText) {
-		getReal().setLabelMeta(newText);
+		getRealState().setLabelMeta(newText);
 	}
 
 	@Override
 	protected void setLabelPictureName(String newText) {
-		getReal().setLabelPictureName(newText);
+		getRealState().setLabelPictureName(newText);
 	}
 
 	@Override
 	protected void setLabelCollectionPath(String newText) {
-		getReal().setLabelCollectionPath(newText);
+		getRealState().setLabelCollectionPath(newText);
 	}
 
 	@Override
 	protected MediaRenderBase getImage() {
-		return getReal().getImage();
+		return getRealState().getImage();
 	}
 
 	@Override
 	public Region getRootNode() {
-		return getReal().getRootNode();
+		return getRealState().getRootNode();
 	}
 
 	@Override
@@ -89,21 +89,21 @@ public class TempCollectionState extends PictureSwitchingState {
 
 	@Override
 	public RealPictureCollection getMovetoCollection() {
-		return getReal().getMovetoCollection();
+		return getRealState().getMovetoCollection();
 	}
 
 	@Override
 	public void setMovetoCollection(RealPictureCollection movetoCollection) {
-		getReal().setMovetoCollection(movetoCollection);
+		getRealState().setMovetoCollection(movetoCollection);
 	}
 
 	@Override
 	public RealPictureCollection getLinktoCollection() {
-		return getReal().getLinktoCollection();
+		return getRealState().getLinktoCollection();
 	}
 
 	@Override
 	public void setLinktoCollection(RealPictureCollection linktoCollection) {
-		getReal().setLinktoCollection(linktoCollection);
+		getRealState().setLinktoCollection(linktoCollection);
 	}
 }
