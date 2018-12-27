@@ -35,6 +35,7 @@ import picturegallery.action.FixPictureNumbersAction;
 import picturegallery.action.JumpRelatedCollectionAction;
 import picturegallery.action.LinkCollectionsAction;
 import picturegallery.action.MoveCollectionAction;
+import picturegallery.action.OpenCloseCollectionsOfSameLevelAction;
 import picturegallery.action.RenameCollectionAction;
 import picturegallery.action.SearchIdenticalAction;
 import picturegallery.action.SearchIdenticalAndCollectAction;
@@ -258,6 +259,7 @@ public class CollectionState extends State {
 		registerAction(new JumpRelatedCollectionAction());
 		registerAction(new FixPictureNumbersAction());
 		registerAction(new DebuggerCollectionAction());
+		registerAction(new OpenCloseCollectionsOfSameLevelAction());
 	}
 
 	@Override
@@ -317,12 +319,20 @@ public class CollectionState extends State {
 		return collectionFilter.isUsable(collection);
 	}
 
+	public TreeItem<PictureCollection> getCollectionItem(PictureCollection collection) {
+		if (collection == null) {
+			return null;
+		}
+		TreeItem<PictureCollection> item = ((RecursiveTreeItem<PictureCollection>) table.getRoot()).getTreeItemOfElement(collection);
+		return item;
+	}
+
 	public void jumpToCollection(PictureCollection jumpTo) {
 		if (jumpTo == null) {
 			throw new IllegalArgumentException();
 		}
 		// search for the TreeItem of the collection
-		TreeItem<PictureCollection> item = ((RecursiveTreeItem<PictureCollection>) table.getRoot()).getTreeItemOfElement(jumpTo);
+		TreeItem<PictureCollection> item = getCollectionItem(jumpTo);
 		if (item == null) {
 			throw new IllegalArgumentException(jumpTo.getRelativePath());
 		}
