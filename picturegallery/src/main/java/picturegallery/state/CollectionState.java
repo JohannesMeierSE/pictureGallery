@@ -41,6 +41,7 @@ import picturegallery.action.SearchIdenticalAction;
 import picturegallery.action.SearchIdenticalAndCollectAction;
 import picturegallery.action.SearchIdenticalAndReplaceAction;
 import picturegallery.action.SearchIdenticalDeletedAction;
+import picturegallery.action.ShowSeveralCollectionsAction;
 import picturegallery.action.ShowSingleCollectionAction;
 import picturegallery.filter.CompositeCollectionFilter;
 import picturegallery.persistency.ObservablePictureCollection;
@@ -56,12 +57,17 @@ public class CollectionState extends State {
 	private final CompositeCollectionFilter collectionFilter;
 
 	private final SingleCollectionState singleState;
+	private final MultiCollectionState multiState;
 
 	public CollectionState() {
 		super();
 		singleState = new SingleCollectionState();
 		singleState.setNextAfterClosed(this);
 		singleState.onInit();
+
+		multiState = new MultiCollectionState();
+		multiState.setNextAfterClosed(this);
+		multiState.onInit();
 
 		collectionFilter = new CompositeCollectionFilter(this, null); // no parent filter available!
 		collectionFilter.setAcceptMinimum(0);
@@ -244,6 +250,7 @@ public class CollectionState extends State {
 	public void onInit() {
 		super.onInit();
 		registerAction(new ShowSingleCollectionAction());
+		registerAction(new ShowSeveralCollectionsAction());
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());
 		registerAction(new MoveCollectionAction());
@@ -304,6 +311,9 @@ public class CollectionState extends State {
 
 	public SingleCollectionState getSingleState() {
 		return singleState;
+	}
+	public MultiCollectionState getMultiState() {
+		return multiState;
 	}
 
 	public boolean isCollectionEnabled(PictureCollection collection) {

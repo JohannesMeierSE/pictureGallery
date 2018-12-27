@@ -1034,7 +1034,7 @@ public class Logic {
 	public static PictureCollection selectCollection(
 			State currentState,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections,
-			List<PictureCollection> ignoredCollections) {
+			List<? extends PictureCollection> ignoredCollections) {
 		final PictureCollection currentCollection;
 		final PictureCollection movetoCollection;
 		final PictureCollection linktoCollection;

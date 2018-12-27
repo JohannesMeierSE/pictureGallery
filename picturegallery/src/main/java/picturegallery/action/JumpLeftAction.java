@@ -2,17 +2,17 @@ package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
-import picturegallery.state.SingleCollectionState;
+import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
 
 public class JumpLeftAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof SingleCollectionState)) {
+		if (!(currentState instanceof SinglePictureState)) {
 			throw new IllegalStateException();
 		}
-		SingleCollectionState state = (SingleCollectionState) currentState;
+		SinglePictureState state = (SinglePictureState) currentState;
 
 		// does not work in temp collections and in very small collections!
 		if (state.getSize() > MainApp.JUMP_SIZE) {
