@@ -1,6 +1,8 @@
 package picturegallery.action;
 
+
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import picturegallery.state.State;
 
 public abstract class Action {
@@ -22,6 +24,7 @@ public abstract class Action {
 	 */
 	public abstract void run(State currentState);
 
+
 	public abstract KeyCode getKey();
 
 	public boolean requiresShift() {
@@ -31,6 +34,17 @@ public abstract class Action {
 	public boolean requiresCtrl() {
 		return false;
 	}
+
+	/**
+	 * Will be called only if "getKey()" returns null.
+	 * In that case, getKeyDescription() has to be overridden!
+	 * @param event
+	 * @return
+	 */
+	public boolean acceptKeyEvent(KeyEvent event) {
+		return false;
+	}
+
 
 	public boolean allowKeyPressed() {
 		return false;

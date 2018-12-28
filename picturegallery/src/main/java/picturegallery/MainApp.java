@@ -116,12 +116,28 @@ public class MainApp extends Application {
 		public void handle(KeyEvent event) {
 			// will be called from the UI-Thread => no nesting (while handling one key, another key appears) of KeyEvents is possible!
 			int numberListeners = 0;
+
+//			System.out.println("current key: " + event.getCode() + ", with character: " + event.getCharacter());
+
 			for (Action action : getAllCurrentActions()) {
-				if (action.getKey().equals(event.getCode()) && keyPressed == action.allowKeyPressed()) {
-					if (action.requiresShift() == event.isShiftDown() && action.requiresCtrl() == event.isControlDown()) {
-						numberListeners++;
-						action.run(getCurrentState());
+				boolean accepted = false;
+
+				if (keyPressed == action.allowKeyPressed()) {
+					if (action.getKey() == null) {
+						// generic case
+						accepted = action.acceptKeyEvent(event);
+					} else if (action.getKey().equals(event.getCode())) {
+						// simplified case
+						if (action.requiresShift() == event.isShiftDown() && action.requiresCtrl() == event.isControlDown()) {
+							accepted = true;
+						}
 					}
+				}
+
+				// execute action
+				if (accepted) {
+					numberListeners++;
+					action.run(getCurrentState());
 				}
 			}
 

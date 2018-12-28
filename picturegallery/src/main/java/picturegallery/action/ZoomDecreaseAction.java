@@ -1,6 +1,7 @@
 package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
 
@@ -18,13 +19,22 @@ public class ZoomDecreaseAction extends Action {
 
 	@Override
 	public KeyCode getKey() {
-		return KeyCode.MINUS;
-//		return KeyCode.SUBTRACT; TODO
+		return null;
+	}
+
+	@Override
+	public boolean acceptKeyEvent(KeyEvent event) {
+		return event.getCode().equals(KeyCode.MINUS) || event.getCode().equals(KeyCode.SUBTRACT);
 	}
 
 	@Override
 	public boolean allowKeyPressed() {
 		return true;
+	}
+
+	@Override
+	public String getKeyDescription() {
+		return "-";
 	}
 
 	@Override
