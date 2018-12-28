@@ -1,7 +1,10 @@
 package picturegallery.state;
 
 import gallery.RealPictureCollection;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -11,12 +14,22 @@ import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.RenamePictureAction;
+import picturegallery.action.ZoomDecreaseAction;
+import picturegallery.action.ZoomIncreaseAction;
+import picturegallery.action.ZoomResetAction;
 import picturegallery.persistency.MediaRenderBase;
 import picturegallery.persistency.MediaRenderBaseImpl;
 
 public abstract class SinglePictureState extends PictureSwitchingState {
 	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
+
+	public final static double detailRationXDefault = 0.5;
+	public final static double detailRationYDefault = 0.5;
+	public final static double zoomDefault = 1.0;
+	public final SimpleDoubleProperty detailRatioX = new SimpleDoubleProperty(detailRationXDefault); // horizontal shift: 0 .. 1 (0.5 == centered)
+	public final SimpleDoubleProperty detailRatioY = new SimpleDoubleProperty(detailRationYDefault); // vertical shift: 0 .. 1 (0.5 == centered)
+	public final SimpleDoubleProperty zoom = new SimpleDoubleProperty(zoomDefault); // 1.0 == no zoom
 
 	private final MediaRenderBase mediaBase;
 	private final StackPane root;
@@ -28,6 +41,26 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 
 	public SinglePictureState() {
 		super();
+
+		// react on changes of the settings
+		detailRatioX.addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				mediaBase.setDetailX((double) newValue);
+			}
+		});
+		detailRatioY.addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				mediaBase.setDetailY((double) newValue);
+			}
+		});
+		zoom.addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				mediaBase.setZoom((double) newValue);
+			}
+		});
 
 		// Stack Pane
 		root = new StackPane();
@@ -94,6 +127,9 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 		registerAction(new JumpLeftAction());
 		registerAction(new ExitSingleCollectionStateAction());
 		registerAction(new RenamePictureAction());
+		registerAction(new ZoomIncreaseAction());
+		registerAction(new ZoomDecreaseAction());
+		registerAction(new ZoomResetAction());
 	}
 
 	public RealPictureCollection getLinktoCollection() {

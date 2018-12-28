@@ -21,12 +21,20 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import picturegallery.Logic;
 import picturegallery.persistency.ObjectCache.CallBack;
+import picturegallery.state.SinglePictureState;
 
 public class MediaRenderBaseImpl implements MediaRenderBase {
 	private final ObjectCache<RealPicture, Image> cache;
 	private final Pane parentNode;
+
+	// used to set the width/height of the "nodes" to print on ...
 	private final double width;
 	private final double height;
+
+	// used to calculate the part of the image to show on the currently used "node"
+	protected double zoom = SinglePictureState.zoomDefault;
+	protected double detailX = SinglePictureState.detailRationXDefault;
+	protected double detailY = SinglePictureState.detailRationYDefault;
 
 	private Canvas canvas;
 	private ImageView image;
@@ -85,6 +93,28 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			parentNode.widthProperty().addListener(listener);
 			parentNode.heightProperty().addListener(listener);
 		}
+	}
+
+	@Override
+	public void setZoom(double zoom) {
+		this.zoom = zoom;
+		repaint();
+	}
+
+	@Override
+	public void setDetailX(double detailX) {
+		this.detailX = detailX;
+		repaint();
+	}
+
+	@Override
+	public void setDetailY(double detailY) {
+		this.detailY = detailY;
+		repaint();
+	}
+
+	protected void repaint() {
+		renderPicture(currentProvider);
 	}
 
 	private Canvas getCanvas() {
@@ -332,6 +362,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	private void renderMedia(RealPicture picture) {
 		String picturePath = picture.getFullPath();
 		// TODO: geeignet cachen!?
+		// TODO: Zoom + Details realisieren
 		String link = new File(picturePath).toURI().toString();
 		Media media = null;
 		try {
@@ -367,6 +398,9 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		ImageView localImage = getImageView();
 		localImage.setRotate(rotate);
 		localImage.setImage(value);
+//		TODO: Zoom + Details realisieren
+//		localImage.setX(value);
+//		localImage.setViewport(value);
 		showImageView();
 	}
 
@@ -375,8 +409,8 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		// draw the image in rotated way
 		// https://stackoverflow.com/questions/18260421/how-to-draw-image-rotated-on-javafx-canvas
 		GraphicsContext gc = localImage.getGraphicsContext2D();
-		double availableHeight = localImage.getHeight();
-		double availableWidth = localImage.getWidth();
+		final double availableHeight = localImage.getHeight();
+		final double availableWidth = localImage.getWidth();
 
 		// print black rectangle => clear previous picture
 		gc.setFill(Color.BLACK);
@@ -395,13 +429,16 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 				// width is the limit
 				factor = availableWidth / imageWidth;
 			}
+			// zoom / scale
+			factor *= zoom;
+			// update the wanted image size
 			imageHeight = imageHeight * factor;
 			imageWidth = imageWidth * factor;
 
 			gc.save(); // saves the current state on stack, including the current transform
 
 			// get the rotation angle
-			if (picture != null && picture.getMetadata() != null && !picture.getMetadata().isLandscape()) {
+			if (picture != null && picture.getMetadata() != null && picture.getMetadata().isLandscape() == false) {
 				double rotate = 90.0;
 
 				Rotate r = new Rotate(rotate, availableWidth / 2.0, availableHeight / 2.0);
@@ -426,9 +463,14 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 				
 			}
 
-			gc.drawImage(value, (availableWidth - imageWidth) / 2.0, (availableHeight - imageHeight) / 2.0,
-					imageWidth, imageHeight); // top-left x, y, width, height
-			
+//			without change of the detail x/y
+//			double x = (availableWidth - imageWidth) / 2.0;
+//			double y = (availableHeight - imageHeight) / 2.0;
+			double x = (availableWidth - imageWidth) * detailX;
+			double y = (availableHeight - imageHeight) * detailY;
+
+			gc.drawImage(value, x, y, imageWidth, imageHeight); // top-left x, y, width, height
+
 			gc.restore(); // back to original state (before rotation)
 		}
 		showCanvas();
