@@ -10,6 +10,11 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import picturegallery.MainApp;
+import picturegallery.action.DetailsDownAction;
+import picturegallery.action.DetailsLeftAction;
+import picturegallery.action.DetailsResetAction;
+import picturegallery.action.DetailsRightAction;
+import picturegallery.action.DetailsUpAction;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpRightAction;
@@ -130,6 +135,11 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 		registerAction(new ZoomIncreaseAction());
 		registerAction(new ZoomDecreaseAction());
 		registerAction(new ZoomResetAction());
+		registerAction(new DetailsRightAction());
+		registerAction(new DetailsLeftAction());
+		registerAction(new DetailsUpAction());
+		registerAction(new DetailsDownAction());
+		registerAction(new DetailsResetAction());
 	}
 
 	public RealPictureCollection getLinktoCollection() {
