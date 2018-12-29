@@ -21,11 +21,6 @@ public class DetailsRightAction extends Action {
 		return KeyCode.RIGHT;
 	}
 
-//	@Override
-//	public boolean acceptKeyEvent(KeyEvent event) {
-//		return event.getCode().equals(KeyCode.RIGHT) || event.getCode().equals(KeyCode.SUBTRACT);
-//	}
-
 	@Override
 	public boolean requiresCtrl() {
 		return true;

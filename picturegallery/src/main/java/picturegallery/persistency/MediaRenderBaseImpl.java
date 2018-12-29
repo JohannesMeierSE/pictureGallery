@@ -26,11 +26,11 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	private final ObjectCache<RealPicture, Image> cache;
 	private final Pane parentNode;
 
-	// used to set the width/height of the "nodes" to print on ...
+	// used to set the width/height of the "node/canvas" to print on ...
 	private final double width;
 	private final double height;
 
-	// used to calculate the part of the image to show on the currently used "node"
+	// used to calculate the part of the image to show on the currently used "node/canvas"
 	protected double zoom = MediaRenderBase.zoomDefault;
 	protected double detailX = MediaRenderBase.detailRationXDefault;
 	protected double detailY = MediaRenderBase.detailRationYDefault;
