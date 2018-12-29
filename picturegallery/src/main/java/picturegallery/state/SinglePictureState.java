@@ -29,12 +29,9 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 
-	public final static double detailRationXDefault = 0.5;
-	public final static double detailRationYDefault = 0.5;
-	public final static double zoomDefault = 1.0;
-	public final SimpleDoubleProperty detailRatioX = new SimpleDoubleProperty(detailRationXDefault); // horizontal shift: 0 .. 1 (0.5 == centered)
-	public final SimpleDoubleProperty detailRatioY = new SimpleDoubleProperty(detailRationYDefault); // vertical shift: 0 .. 1 (0.5 == centered)
-	public final SimpleDoubleProperty zoom = new SimpleDoubleProperty(zoomDefault); // 1.0 == no zoom
+	public final SimpleDoubleProperty detailRatioX = new SimpleDoubleProperty(MediaRenderBase.detailRationXDefault); // horizontal shift: 0 .. 1 (0.5 == centered)
+	public final SimpleDoubleProperty detailRatioY = new SimpleDoubleProperty(MediaRenderBase.detailRationYDefault); // vertical shift: 0 .. 1 (0.5 == centered)
+	public final SimpleDoubleProperty zoom = new SimpleDoubleProperty(MediaRenderBase.zoomDefault); // 1.0 == no zoom
 
 	private final MediaRenderBase mediaBase;
 	private final StackPane root;

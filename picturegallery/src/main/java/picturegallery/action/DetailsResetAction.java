@@ -1,6 +1,7 @@
 package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
+import picturegallery.persistency.MediaRenderBase;
 import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
 
@@ -13,8 +14,8 @@ public class DetailsResetAction extends Action {
 		}
 		SinglePictureState state = (SinglePictureState) currentState;
 
-		state.detailRatioX.set(SinglePictureState.detailRationXDefault);
-		state.detailRatioY.set(SinglePictureState.detailRationYDefault);
+		state.detailRatioX.set(MediaRenderBase.detailRationXDefault);
+		state.detailRatioY.set(MediaRenderBase.detailRationYDefault);
 	}
 
 	@Override

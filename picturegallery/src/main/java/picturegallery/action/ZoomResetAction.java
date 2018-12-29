@@ -1,6 +1,7 @@
 package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
+import picturegallery.persistency.MediaRenderBase;
 import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
 
@@ -13,7 +14,7 @@ public class ZoomResetAction extends Action {
 		}
 		SinglePictureState state = (SinglePictureState) currentState;
 
-		state.zoom.set(SinglePictureState.zoomDefault);
+		state.zoom.set(MediaRenderBase.zoomDefault);
 	}
 
 	@Override

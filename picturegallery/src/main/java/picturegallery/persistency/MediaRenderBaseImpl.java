@@ -21,7 +21,6 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import picturegallery.Logic;
 import picturegallery.persistency.ObjectCache.CallBack;
-import picturegallery.state.SinglePictureState;
 
 public class MediaRenderBaseImpl implements MediaRenderBase {
 	private final ObjectCache<RealPicture, Image> cache;
@@ -32,9 +31,9 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	private final double height;
 
 	// used to calculate the part of the image to show on the currently used "node"
-	protected double zoom = SinglePictureState.zoomDefault;
-	protected double detailX = SinglePictureState.detailRationXDefault;
-	protected double detailY = SinglePictureState.detailRationYDefault;
+	protected double zoom = MediaRenderBase.zoomDefault;
+	protected double detailX = MediaRenderBase.detailRationXDefault;
+	protected double detailY = MediaRenderBase.detailRationYDefault;
 
 	private Canvas canvas;
 	private ImageView image;
