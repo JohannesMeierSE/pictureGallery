@@ -26,6 +26,9 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	private final ObjectCache<RealPicture, Image> cache;
 	private final Pane parentNode;
 
+	private double currentImageWidth;
+	private double currentImageHeight;
+
 	// used to set the width/height of the "node/canvas" to print on ...
 	private final double width;
 	private final double height;
@@ -92,6 +95,52 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			parentNode.widthProperty().addListener(listener);
 			parentNode.heightProperty().addListener(listener);
 		}
+	}
+
+	@Override
+	public double getCurrentImageWidth() {
+		return currentImageWidth;
+	}
+
+	@Override
+	public double getCurrentImageHeight() {
+		return currentImageHeight;
+	}
+
+	@Override
+	public double getCurrentNodeWidth() {
+		Node node = getShownNode();
+		if (node == null) {
+			return 0.0;
+		}
+		if (node instanceof ImageView) {
+			return ((ImageView) node).fitWidthProperty().get();
+		}
+		if (node instanceof Canvas) {
+			return ((Canvas) node).getWidth();
+		}
+		if (node instanceof MediaView) {
+			return ((MediaView) node).fitWidthProperty().get();
+		}
+		throw new IllegalStateException("unknown node: " + node);
+	}
+
+	@Override
+	public double getCurrentNodeHeight() {
+		Node node = getShownNode();
+		if (node == null) {
+			return 0.0;
+		}
+		if (node instanceof ImageView) {
+			return ((ImageView) node).fitHeightProperty().get();
+		}
+		if (node instanceof Canvas) {
+			return ((Canvas) node).getHeight();
+		}
+		if (node instanceof MediaView) {
+			return ((MediaView) node).fitHeightProperty().get();
+		}
+		throw new IllegalStateException("unknown node: " + node);
 	}
 
 	@Override
@@ -359,6 +408,9 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	}
 
 	private void renderMedia(RealPicture picture) {
+		currentImageHeight = 0.0;
+		currentImageWidth = 0.0;
+
 		String picturePath = picture.getFullPath();
 		// TODO: geeignet cachen!?
 		// TODO: Zoom + Details realisieren
@@ -387,6 +439,9 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 	}
 
 	private void renderImage(Image value, RealPicture picture) {
+		currentImageHeight = 0.0;
+		currentImageWidth = 0.0;
+
 		gallery.Metadata metadata = picture.getMetadata();
 		double rotate = 0.0;
 		if (metadata != null) {
@@ -433,6 +488,8 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			// update the wanted image size
 			imageHeight = imageHeight * factor;
 			imageWidth = imageWidth * factor;
+			currentImageHeight = imageHeight;
+			currentImageWidth = imageWidth;
 
 			gc.save(); // saves the current state on stack, including the current transform
 
@@ -471,8 +528,10 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 			gc.drawImage(value, x, y, imageWidth, imageHeight); // top-left x, y, width, height
 
 			gc.restore(); // back to original state (before rotation)
+		} else {
+			currentImageHeight = 0.0;
+			currentImageWidth = 0.0;
 		}
 		showCanvas();
 	}
-
 }

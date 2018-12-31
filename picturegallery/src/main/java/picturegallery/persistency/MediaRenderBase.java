@@ -20,4 +20,9 @@ public interface MediaRenderBase {
 	void setZoom(double newZoom);
 	void setDetailX(double newX);
 	void setDetailY(double newY);
+
+	double getCurrentImageHeight();
+	double getCurrentImageWidth();
+	double getCurrentNodeHeight();
+	double getCurrentNodeWidth();
 }

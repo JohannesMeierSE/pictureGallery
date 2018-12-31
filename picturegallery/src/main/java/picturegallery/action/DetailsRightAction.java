@@ -5,6 +5,7 @@ import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
 
 public class DetailsRightAction extends Action {
+	public final static double detailsFactor = 0.25;
 
 	@Override
 	public void run(State currentState) {
@@ -13,7 +14,17 @@ public class DetailsRightAction extends Action {
 		}
 		SinglePictureState state = (SinglePictureState) currentState;
 
-		state.detailRatioX.set(Math.min(state.detailRatioX.get() + 0.1, 1.0));
+		double imageSize = state.getCurrentImageWidth();
+		double nodeSize = state.getCurrentNodeWidth();
+		double ratioShift;
+		if (imageSize < nodeSize) {
+			// scale 10% inside the visible area/node
+			ratioShift = 0.1;
+		} else {
+			// scale 20% inside the currently visible part of the image
+			ratioShift = (nodeSize / imageSize * detailsFactor);
+		}
+		state.detailRatioX.set(Math.min(state.detailRatioX.get() + ratioShift, 1.0));
 	}
 
 	@Override

@@ -152,4 +152,17 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 	public void setMovetoCollection(RealPictureCollection movetoCollection) {
 		this.movetoCollection.set(movetoCollection);
 	}
+
+	public double getCurrentImageWidth() {
+		return mediaBase.getCurrentImageWidth();
+	}
+	public double getCurrentImageHeight() {
+		return mediaBase.getCurrentImageHeight();
+	}
+	public double getCurrentNodeHeight() {
+		return mediaBase.getCurrentNodeHeight();
+	}
+	public double getCurrentNodeWidth() {
+		return mediaBase.getCurrentNodeWidth();
+	}
 }

@@ -13,7 +13,17 @@ public class DetailsDownAction extends Action {
 		}
 		SinglePictureState state = (SinglePictureState) currentState;
 
-		state.detailRatioY.set(Math.min(state.detailRatioY.get() + 0.1, 1.0));
+		double imageSize = state.getCurrentImageHeight();
+		double nodeSize = state.getCurrentNodeHeight();
+		double ratioShift;
+		if (imageSize < nodeSize) {
+			// scale 10% inside the visible area/node
+			ratioShift = 0.1;
+		} else {
+			// scale 20% inside the currently visible part of the image
+			ratioShift = (nodeSize / imageSize * DetailsRightAction.detailsFactor);
+		}
+		state.detailRatioY.set(Math.min(state.detailRatioY.get() + ratioShift, 1.0));
 	}
 
 	@Override
