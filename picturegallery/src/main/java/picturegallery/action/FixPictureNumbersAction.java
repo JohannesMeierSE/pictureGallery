@@ -48,6 +48,7 @@ public class FixPictureNumbersAction extends Action {
 			return;
 		}
 		NumberFixer fixerToUse = fixer.get(option);
+		fixerToUse.initialize(); // initialize the fixer => e.g. ask for more information from the user (once)
 
 		// determine the maximum number of digits
 		int digits = 0;
@@ -70,12 +71,11 @@ public class FixPictureNumbersAction extends Action {
 		// determine the pictures to fix
 		final List<Picture> toFix = new ArrayList<>(size - noNumberAtTheEnd);
 		for (Picture pic : collectionToFix.getPictures()) {
-			String number = fixerToUse.getNumberPart(pic.getName());
-			if (number == null || number.isEmpty()) {
-				// do nothing
-			} else if (number.length() < digits) {
+			if (fixerToUse.shouldNumberBeFixed(pic.getName(), digits)) {
 				toFix.add(pic);
 				System.out.println(pic.getRelativePathWithoutBase());
+			} else {
+				// do nothing
 			}
 		}
 		if (toFix.isEmpty()) {
@@ -84,9 +84,9 @@ public class FixPictureNumbersAction extends Action {
 
 		if (!Logic.askForConfirmation("Fix picture names: running number",
 				"From the " + size + " pictures, " + (size - noNumberAtTheEnd) + " have a number at the specified position, "
-						+ toFix.size() + " of them need a fix (missing leading zeros), "
+						+ toFix.size() + " of them need a fix (missing leading zeros up to " + digits + " digits OR other fixes), "
 						+ "and " + noNumberAtTheEnd + " do not match the number pattern.",
-				"Do you really want to add missing leading zeros (up to " + digits + " digits)?")) {
+				"Do you really want to fix them all?")) {
 			return;
 		}
 
@@ -123,6 +123,6 @@ public class FixPictureNumbersAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "Fixes missing leading zeros in picture names.";
+		return "Fixes missing leading zeros in picture names (or other issues with file names).";
 	}
 }

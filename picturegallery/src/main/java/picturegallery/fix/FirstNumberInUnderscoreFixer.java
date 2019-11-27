@@ -32,6 +32,15 @@ public class FirstNumberInUnderscoreFixer implements NumberFixer {
 	}
 
 	@Override
+	public boolean shouldNumberBeFixed(String complete, int wantedDigits) {
+		String numberPart = getNumberPart(complete);
+		if (numberPart == null || numberPart.isEmpty()) {
+			return false;
+		}
+		return numberPart.length() < wantedDigits;
+	}
+
+	@Override
 	public String getNewComplete(String completeOld, int digits) {
 		String number = getNumberPart(completeOld);
 		if (number == null) {
