@@ -1,6 +1,7 @@
 package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import picturegallery.persistency.MediaRenderBase;
 import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
@@ -19,18 +20,13 @@ public class ZoomResetAction extends Action {
 
 	@Override
 	public KeyCode getKey() {
-		return KeyCode.DIGIT0;
+		return null;
 	}
 
-//	@Override
-//	public boolean acceptKeyEvent(KeyEvent event) {
-//		https://stackoverflow.com/questions/48128298/javafx-checking-if-events-keycode-is-a-digit-key
-//		char digit = event.getCharacter().charAt(0);
-//		if (digit == '0') {
-//			return true;
-//		}
-//		return false;
-//	}
+	@Override
+	public boolean acceptKeyEvent(KeyEvent event) {
+		return event.getCode().equals(KeyCode.DIGIT0) || event.getCode().equals(KeyCode.NUMPAD0);
+	}
 
 	@Override
 	public String getKeyDescription() {

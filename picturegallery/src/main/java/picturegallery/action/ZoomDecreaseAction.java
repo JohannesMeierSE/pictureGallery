@@ -24,7 +24,7 @@ public class ZoomDecreaseAction extends Action {
 
 	@Override
 	public boolean acceptKeyEvent(KeyEvent event) {
-		return event.getCode().equals(KeyCode.MINUS) || event.getCode().equals(KeyCode.SUBTRACT);
+		return event.getCode().equals(KeyCode.MINUS) || event.getCode().equals(KeyCode.SUBTRACT) || "-".equals(event.getText());
 	}
 
 	@Override

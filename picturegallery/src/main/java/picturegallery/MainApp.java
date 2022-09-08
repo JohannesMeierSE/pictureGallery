@@ -106,7 +106,7 @@ public class MainApp extends Application {
 	// https://stackoverflow.com/questions/23163189/keylistener-javafx
 	// https://stackoverflow.com/questions/16834997/cannot-listen-to-keyevent-in-javafx
 	class AdvancedKeyHandler implements EventHandler<KeyEvent> {
-		private final boolean keyPressed;
+		private final boolean keyPressed; // false: key released
 		public AdvancedKeyHandler(boolean keyPressed) {
 			super();
 			this.keyPressed = keyPressed;
@@ -116,7 +116,7 @@ public class MainApp extends Application {
 			// will be called from the UI-Thread => no nesting (while handling one key, another key appears) of KeyEvents is possible!
 			int numberListeners = 0;
 
-//			System.out.println("current key: " + event.getCode() + ", with character: " + event.getCharacter());
+//			System.out.println("current key: " + event.getCode() + ", with character: " + event.getCharacter() + ", text: " + event.getText());
 
 			for (Action action : getAllCurrentActions()) {
 				boolean accepted = false;

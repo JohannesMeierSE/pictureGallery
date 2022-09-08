@@ -1,6 +1,7 @@
 package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import picturegallery.persistency.MediaRenderBase;
 import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
@@ -20,7 +21,12 @@ public class DetailsResetAction extends Action {
 
 	@Override
 	public KeyCode getKey() {
-		return KeyCode.DIGIT0;
+		return null;
+	}
+
+	@Override
+	public boolean acceptKeyEvent(KeyEvent event) {
+		return event.getCode().equals(KeyCode.DIGIT0) || event.getCode().equals(KeyCode.NUMPAD0);
 	}
 
 	@Override
@@ -30,7 +36,7 @@ public class DetailsResetAction extends Action {
 
 	@Override
 	public boolean allowKeyPressed() {
-		return true;
+		return false;
 	}
 
 	@Override

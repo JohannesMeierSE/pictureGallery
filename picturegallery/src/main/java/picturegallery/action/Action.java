@@ -46,6 +46,10 @@ public abstract class Action {
 	}
 
 
+	/**
+	 * Controls, whether the action is executed after pressing or releasing (the default) a key.
+	 * @return true for pressing keys, false for releasing keys
+	 */
 	public boolean allowKeyPressed() {
 		return false;
 	}
