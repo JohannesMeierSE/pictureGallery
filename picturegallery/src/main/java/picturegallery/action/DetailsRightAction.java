@@ -33,7 +33,7 @@ public class DetailsRightAction extends Action {
 	}
 
 	@Override
-	public boolean requiresCtrl() {
+	public boolean requiresShift() {
 		return true;
 	}
 

@@ -26,11 +26,11 @@ public class DetailsResetAction extends Action {
 
 	@Override
 	public boolean acceptKeyEvent(KeyEvent event) {
-		return event.getCode().equals(KeyCode.DIGIT0) || event.getCode().equals(KeyCode.NUMPAD0);
+		return (event.getCode().equals(KeyCode.DIGIT0) || event.getCode().equals(KeyCode.NUMPAD0)) && event.isShiftDown();
 	}
 
 	@Override
-	public boolean requiresCtrl() {
+	public boolean requiresShift() {
 		return true;
 	}
 
