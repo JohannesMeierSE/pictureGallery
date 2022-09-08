@@ -3,6 +3,7 @@ package picturegallery.persistency;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -12,6 +13,14 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
 
+/**
+ * This list wraps another observable list by providing all elements of the source list in the order of the wanted comparator.
+ * The comparator is stored inside an observable property and can be changed, which is reflected automatically.
+ *
+ * @author Johannes Meier
+ *
+ * @param <T> the type of elements in the list
+ */
 public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 	private final InvalidationListener elementListener;
 	private final List<T> sortedList;
@@ -20,13 +29,10 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 
 	protected SpecialSortedList(ObservableList<? extends T> source, ObservableValue<Comparator<T>> comparator) {
 		super(source);
-		if (comparator == null || source == null) {
-			throw new IllegalArgumentException();
-		}
-		wrappedList = source;
+		wrappedList = Objects.requireNonNull(source);
 		sortedList = new ArrayList<>(source.size());
 
-		this.comparator = comparator;
+		this.comparator = Objects.requireNonNull(comparator);
 		this.comparator.addListener(new ChangeListener<Comparator<T>>() {
 			@Override
 			public void changed(ObservableValue<? extends Comparator<T>> observable,
@@ -178,8 +184,15 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 	}
 
 	@Override
-	public int getSourceIndex(int index) {
-		return wrappedList.indexOf(get(index));
+	public int getSourceIndex(int indexInThisList) {
+		// index in this list ==> index in source list
+		return wrappedList.indexOf(get(indexInThisList));
+	}
+
+	@Override
+	public int getViewIndex(int indexInSourceList) {
+		// index in source list ==> index in this list
+		return sortedList.indexOf(wrappedList.get(indexInSourceList));
 	}
 
 	@Override

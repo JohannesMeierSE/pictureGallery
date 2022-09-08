@@ -18,6 +18,7 @@
 // information: http://www.lestard.eu/2015/treetable_datamodel/
 // another implementation: https://github.com/jfoenixadmin/JFoenix/blob/master/src/com/jfoenix/controls/RecursiveTreeItem.java
 // something slightly different: https://myjavafx.blogspot.de/2012/03/treeview-with-data-source.html
+// https://openjfx.io/javadoc/16/javafx.controls/javafx/scene/control/TreeItem.html
 
 /*
  * With some changes/fixes by Johannes Meier.
@@ -85,6 +86,7 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 		// initialization of the currently available children
 		children.forEach(child -> {
 				RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(child, getGraphic(), childrenFactory, positionFactory);
+//				RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(child, childrenFactory, positionFactory); // makes no difference
 				getChildren().add(getAddPosition(child), newElement);
 			});
 
@@ -127,6 +129,7 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
 
 							if (itemsAlreadyAvailable.isEmpty()) {
 								RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(t, getGraphic(), childrenFactory, positionFactory);
+//								RecursiveTreeItem<T> newElement = new RecursiveTreeItem<>(t, childrenFactory, positionFactory); // makes no difference
 								getChildren().add(getAddPosition(t), newElement);
 							}
 						});

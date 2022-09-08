@@ -146,6 +146,7 @@ public abstract class PictureSwitchingState extends State {
 
 						// fix problems if the last picture of the list was removed
 						newIndex = Math.min(newIndex, getSize() - 1);
+						// TODO: hier treten manchmal seltsame Werte wie "-144" auf, nach JumpRelatedPicture und anschließend normal andere Collection öffnen!
 
 						// show next/updated/permutated picture
 						jumpedBefore(); // => requests sibling pictures, too!
