@@ -255,7 +255,7 @@ public abstract class PictureSwitchingState extends State {
 		changeIndex(picturesSorted.indexOf(newPictureToShow), preload);
 	}
 
-	public void gotoPicture(int diff, boolean preload) {
+	public void gotoPictureDiff(int diff, boolean preload) {
 		int size = getSize();
 
 		int newIndex = ( indexCurrentCollection + size + diff ) % size;

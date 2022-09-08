@@ -14,7 +14,7 @@ public class PreviousPictureAction extends Action {
 
 		PictureSwitchingState state = (PictureSwitchingState) currentState;
 		if (state.getSize() >= 2) {
-			state.gotoPicture(-1, true);
+			state.gotoPictureDiff(-1, true);
 		}
 	}
 

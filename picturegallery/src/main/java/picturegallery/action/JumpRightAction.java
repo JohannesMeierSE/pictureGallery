@@ -17,7 +17,7 @@ public class JumpRightAction extends Action {
 		// does not work in temp collections (TODO: why??) and in very small collections!
 		if (state.getSize() > MainApp.JUMP_SIZE) {
 			state.jumpedBefore();
-			state.gotoPicture(MainApp.JUMP_SIZE, false);
+			state.gotoPictureDiff(MainApp.JUMP_SIZE, false);
 		}
 	}
 

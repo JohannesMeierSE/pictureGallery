@@ -51,7 +51,7 @@ public class DeletePictureAction extends Action {
 
 		// go directly to the next picture
 		if (state.getSize() >= 2) {
-			state.gotoPicture(1, true);
+			state.gotoPictureDiff(1, true);
 		}
 
 		// delete the picture

@@ -17,6 +17,7 @@ import picturegallery.action.DetailsRightAction;
 import picturegallery.action.DetailsUpAction;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.JumpLeftAction;
+import picturegallery.action.JumpParticularPictureAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.RenamePictureAction;
 import picturegallery.action.ZoomDecreaseAction;
@@ -127,6 +128,7 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 		super.onInit();
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
+		registerAction(new JumpParticularPictureAction());
 		registerAction(new ExitSingleCollectionStateAction());
 		registerAction(new RenamePictureAction());
 		registerAction(new ZoomIncreaseAction());
