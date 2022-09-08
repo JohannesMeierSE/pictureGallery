@@ -16,9 +16,11 @@
 	</organization>
 
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<javafx.version>16</javafx.version>
+		<apache.tika.version>1.27</apache.tika.version> <!-- 1.13, 2.1.0; 2.x lässt sich nicht herunterladen?? -->
 	</properties>
 
 	<build>
@@ -50,19 +52,52 @@
 				</executions>
 			</plugin>
 
-			<!-- for creating a working JavaFX-JAR -->
+			<!--
+			Run project via terminal: mvn clean javafx:run
+			https://openjfx.io/openjfx-docs/#IDE-Eclipse
+			Probleme mit fehlenden Sources:
+				https://stackoverflow.com/questions/54278159/javafx-11-in-netbeans-10-with-maven-has-no-sources-javadocs
+				https://stackoverflow.com/questions/52144931/how-to-add-javafx-runtime-to-eclipse-in-java-11 
+			-->
 			<plugin>
-				<groupId>com.zenjava</groupId>
+				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-maven-plugin</artifactId>
-				<version>8.1.5</version>
+				<version>0.0.5</version>
 				<configuration>
 					<mainClass>picturegallery.MainApp</mainClass>
-
-					<!-- only required if signing the jar file -->
-					<keyStoreAlias>example-user</keyStoreAlias>
-					<keyStorePassword>example-password</keyStorePassword>
-					<allPermissions>true</allPermissions>
-
+				</configuration>
+			</plugin>
+    
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<fork>true</fork> <!-- required to activate the following compilerArgs! -->
+					<!-- For Java 9+, access to modules must be enabled explicitly
+					https://github.com/controlsfx/controlsfx/wiki/Using-ControlsFX-with-JDK-9-and-above
+					https://nipafx.dev/maven-on-java-9/
+					https://github.com/controlsfx/controlsfx/blob/9.0.0/build.gradle#L1
+					https://github.com/controlsfx/controlsfx/issues/1100
+					-->
+					<compilerArgs>
+						<arg>-version</arg>
+						<arg>--add-exports</arg>
+						<arg>javafx.base/com.sun.javafx.runtime=ALL-UNNAMED</arg>
+						<arg>--add-opens</arg>
+						<arg>javafx.graphics/com.sun.javafx.css=ALL-UNNAMED</arg>
+						<arg>--add-opens</arg>
+						<arg>javafx.controls/javafx.scene.control.skin=ALL-UNNAMED</arg>
+						<arg>--add-exports</arg>
+						<arg>javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED</arg>
+						<arg>--add-exports</arg>
+						<arg>javafx.base/com.sun.javafx.collections=ALL-UNNAMED</arg>
+					</compilerArgs>
+					<!-- the following approaches failed: this is ignored! -->
+					<!--argLine>fail</argLine-->
+					<!--add-exports>javafx.base/com.sun.javafx.runtime=ALL-UNNAMED</add-exports-->
 				</configuration>
 			</plugin>
 
@@ -73,7 +108,16 @@
 	<dependencies>
 
 		<!-- JavaFX -->
-
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-media</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.miglayout</groupId>
 			<artifactId>miglayout-javafx</artifactId>
@@ -82,16 +126,22 @@
 		<dependency>
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>
-			<version>8.40.12</version>
+			<version>11.1.0</version> <!-- 8.40.12 -->
 		</dependency>
 
 		<!-- Apache Commons -->
-
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		    <version>3.12.0</version>
+		</dependency>
+		<!--dependency> old: updated due to resolve conflict/newer version used by Apache Tika!
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
-		</dependency>
+		</dependency-->
+		<!-- TODO: wird hier eine Dependency rausgefiltert?? https://github.com/yasserg/crawler4j/issues/311 -->
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -107,16 +157,16 @@
 
 		<!-- Special Functionality -->
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
-		<dependency>
+		<!--dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.13</version>
-		</dependency>
+			<version>${apache.tika.version}</version>
+		</dependency-->
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
-			<version>1.13</version>
+			<version>${apache.tika.version}</version>
 		</dependency>
 
 		<!-- EMF stuff -->

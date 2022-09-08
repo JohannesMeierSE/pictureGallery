@@ -1,14 +1,11 @@
 package picturegallery.action;
 
-import gallery.Picture;
-
 import java.io.IOException;
 
-import javafx.scene.input.KeyCode;
-
 import org.apache.tika.exception.TikaException;
-import org.xml.sax.SAXException;
 
+import gallery.Picture;
+import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
@@ -30,7 +27,7 @@ public class PrintMetadataAction extends Action {
 		// print the raw metadata into the console
 		try {
 			Logic.extractMetadata(Logic.getRealPicture(currentPicture), false, true);
-		} catch (IOException | SAXException | TikaException e) {
+		} catch (IOException | TikaException e) {
 			e.printStackTrace();
 		}
 	}

@@ -54,7 +54,6 @@ import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
-import org.xml.sax.SAXException;
 
 import picturegallery.action.Action;
 import picturegallery.action.FullScreenAction;
@@ -400,7 +399,7 @@ public class MainApp extends Application {
 					// 3. meta data
 					try {
 						Logic.extractMetadata(next, false, false);
-					} catch (IOException | SAXException | TikaException e) {
+					} catch (IOException | TikaException e) {
 						// ignore
 					}
 					break;

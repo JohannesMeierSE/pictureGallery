@@ -1,12 +1,13 @@
 package picturegallery.filter;
 
-import gallery.PictureCollection;
-
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
+import org.controlsfx.control.CheckComboBox;
+
+import gallery.PictureCollection;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -16,9 +17,6 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
-
-import org.controlsfx.control.CheckComboBox;
-
 import picturegallery.Logic;
 import picturegallery.MainApp;
 

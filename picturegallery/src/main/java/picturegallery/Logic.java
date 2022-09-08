@@ -82,7 +82,6 @@ import org.eclipse.emf.edit.command.MoveCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
-import org.xml.sax.SAXException;
 
 import picturegallery.persistency.Settings;
 import picturegallery.state.PictureSwitchingState;
@@ -278,7 +277,11 @@ public class Logic {
 		        		// found symlink in file system: both, picture or collection!
 		        		symlinks.add(new Pair<Path, RealPictureCollection>(file, currentCollection));
 		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg")
-		        			|| nameLower.endsWith(".gif") || nameLower.endsWith(".mp4")) {
+		        			|| nameLower.endsWith(".gif") || nameLower.endsWith(".arw")
+		        			|| nameLower.endsWith(".mp4") || nameLower.endsWith(".mts")) {
+		        		/*
+		        		 * MTS: video format of Sony camera
+		        		 */
 			        	/*
 			        	 * scheinbar nicht funktionierende Gifs:
 			        	 * - https://www.tutorials.de/threads/animierte-gifs.180222/ => GIFs fehlerhaft, ohne entsprechend 100ms Delay zwischen den Bildern(?)
@@ -681,7 +684,7 @@ public class Logic {
 	}
 
 	public static void extractMetadata(PictureCollection currentCollection)
-			throws FileNotFoundException, IOException, SAXException, TikaException {
+			throws FileNotFoundException, IOException, TikaException {
 		for (Picture pic : currentCollection.getPictures()) {
 			if (pic.getMetadata() != null) {
 				continue;
@@ -702,7 +705,7 @@ public class Logic {
 	 * @throws TikaException
 	 */
 	public static boolean extractMetadata(RealPicture picture, boolean forceReload, boolean printOnly)
-			throws FileNotFoundException, IOException, SAXException, TikaException {
+			throws FileNotFoundException, IOException, TikaException {
 		// check input
 		if (picture == null) {
 			throw new IllegalArgumentException();
