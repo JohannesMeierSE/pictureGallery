@@ -1,17 +1,5 @@
 package picturegallery;
 
-import gallery.DeletedPicture;
-import gallery.GalleryFactory;
-import gallery.GalleryPackage;
-import gallery.LinkedPicture;
-import gallery.LinkedPictureCollection;
-import gallery.PathElement;
-import gallery.Picture;
-import gallery.PictureCollection;
-import gallery.PictureLibrary;
-import gallery.RealPicture;
-import gallery.RealPictureCollection;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,6 +30,37 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.image.ImageParser;
+import org.apache.tika.parser.image.JpegParser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.common.util.ECollections;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.command.MoveCommand;
+import org.eclipse.emf.edit.command.RemoveCommand;
+import org.eclipse.emf.edit.command.SetCommand;
+import org.eclipse.emf.edit.domain.EditingDomain;
+
+import com.pragone.jphash.jpHash;
+import com.pragone.jphash.image.radial.RadialHash;
+
+import gallery.DeletedPicture;
+import gallery.GalleryFactory;
+import gallery.GalleryPackage;
+import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
+import gallery.PathElement;
+import gallery.Picture;
+import gallery.PictureCollection;
+import gallery.PictureLibrary;
+import gallery.RealPicture;
+import gallery.RealPictureCollection;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -65,30 +84,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import javafx.util.Pair;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.image.ImageParser;
-import org.apache.tika.parser.jpeg.JpegParser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.common.util.ECollections;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.edit.command.AddCommand;
-import org.eclipse.emf.edit.command.MoveCommand;
-import org.eclipse.emf.edit.command.RemoveCommand;
-import org.eclipse.emf.edit.command.SetCommand;
-import org.eclipse.emf.edit.domain.EditingDomain;
-
 import picturegallery.persistency.Settings;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
-
-import com.pragone.jphash.jpHash;
-import com.pragone.jphash.image.radial.RadialHash;
 
 public class Logic {
 	public static final String NO_HASH = "nohash!";

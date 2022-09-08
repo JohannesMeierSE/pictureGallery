@@ -1,14 +1,11 @@
 package picturegallery.persistency;
 
-import gallery.GalleryPackage;
-import gallery.Picture;
-import gallery.PictureCollection;
-
-import javax.ws.rs.NotSupportedException;
-
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
+import gallery.GalleryPackage;
+import gallery.Picture;
+import gallery.PictureCollection;
 import picturegallery.Logic;
 
 public abstract class AdapterCollection extends AdapterImpl {
@@ -35,12 +32,12 @@ public abstract class AdapterCollection extends AdapterImpl {
 					onPictureAdded((PictureCollection) msg.getNotifier(), (Picture) msg.getNewValue());
 					break;
 				case Notification.ADD_MANY:
-					throw new NotSupportedException(msg.getNewValue().toString());
+					throw new IllegalStateException("missing implementation: " + msg.getNewValue().toString());
 				case Notification.REMOVE:
 					onPictureRemoved((PictureCollection) msg.getNotifier(), (Picture) msg.getOldValue());
 					break;
 				case Notification.REMOVE_MANY:
-					throw new NotSupportedException(msg.getOldValue().toString());
+					throw new IllegalStateException("missing implementation: " + msg.getOldValue().toString());
 				case Notification.MOVE:
 					// nothing to do, because this case is handled by the SpecialSortedList in PictureSwitchingState!
 					break;

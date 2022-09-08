@@ -20,7 +20,7 @@
 		<maven.compiler.target>11</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<javafx.version>18.0.2</javafx.version>
-		<apache.tika.version>1.27</apache.tika.version> <!-- 1.13, 2.1.0; 2.x lässt sich nicht herunterladen?? -->
+		<apache.tika.version>2.4.1</apache.tika.version> <!-- 1.27 is the used old version -->
 	</properties>
 
 	<build>
@@ -165,7 +165,13 @@
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
+			<!--artifactId>tika-parsers</artifactId-->
+			<artifactId>tika-core</artifactId>
+			<version>${apache.tika.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers-standard-package</artifactId>
 			<version>${apache.tika.version}</version>
 		</dependency>
 

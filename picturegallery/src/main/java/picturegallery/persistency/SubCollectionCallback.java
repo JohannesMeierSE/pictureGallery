@@ -1,23 +1,19 @@
 package picturegallery.persistency;
 
-import gallery.GalleryPackage;
-import gallery.LinkedPictureCollection;
-import gallery.PictureCollection;
-import gallery.RealPictureCollection;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.util.Callback;
-
-import javax.ws.rs.NotSupportedException;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
+import gallery.GalleryPackage;
+import gallery.LinkedPictureCollection;
+import gallery.PictureCollection;
+import gallery.RealPictureCollection;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.util.Callback;
 import picturegallery.Logic;
 
 public class SubCollectionCallback implements Callback<PictureCollection, ObservableList<PictureCollection>> {
@@ -62,11 +58,11 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 						if (msg.getEventType() == Notification.ADD) {
 							result.add(msg.getPosition(), (PictureCollection) newValue);
 						} else if (msg.getEventType() == Notification.ADD_MANY) {
-							throw new NotSupportedException();
+							throw new IllegalStateException("missing implementation");
 						} else if (msg.getEventType() == Notification.REMOVE) {
 							result.remove(msg.getOldValue());
 						} else if (msg.getEventType() == Notification.REMOVE_MANY) {
-							throw new NotSupportedException();
+							throw new IllegalStateException("missing implementation");
 						} else if (msg.getEventType() == Notification.MOVE) {
 							result.remove(newValue);
 							result.add(msg.getPosition(), (PictureCollection) newValue);

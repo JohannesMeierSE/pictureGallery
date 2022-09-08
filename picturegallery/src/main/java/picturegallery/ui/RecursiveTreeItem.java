@@ -35,8 +35,6 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 import javafx.util.Callback;
 
-import javax.ws.rs.NotSupportedException;
-
 public class RecursiveTreeItem<T> extends TreeItem<T> {
 	private Callback<T, ObservableList<T>> childrenFactory;
 
@@ -99,7 +97,7 @@ public class RecursiveTreeItem<T> extends TreeItem<T> {
                     for (int i = change.getFrom(); i < change.getTo(); ++i) {
                          // permutate
                     }
-					throw new NotSupportedException();
+					throw new IllegalStateException("missing implementation");
                 }
 
 				// it is important to remove first, and to add after that, to handle movements (?)
