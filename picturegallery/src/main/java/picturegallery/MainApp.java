@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.tika.exception.TikaException;
@@ -576,7 +577,7 @@ public class MainApp extends Application {
 				throw new IllegalArgumentException("moving is not possible: uniqueness is hurt!");
 			}
 		}
-		// Real- und LinkedPicture (mit Bezug zueinander) dürfen NICHT im selben Ordner/Collection landen
+		// Real- und LinkedPicture (mit Bezug zueinander) dürfen NICHT im selben Ordner/Collection landen (TODO: warum eigentlich? wegen gleicher Namen?)
 		if (picture instanceof LinkedPicture) {
 			if (((LinkedPicture) picture).getRealPicture().getCollection() == newCollection) {
 				return;
@@ -664,7 +665,113 @@ public class MainApp extends Application {
 		});
 	}
 
-	public void moveCollection(RealPictureCollection collectionToMove, RealPictureCollection target, boolean jump) {
+	public void mergeCollections(RealPictureCollection source, RealPictureCollection target) {
+		// check input
+		if (source == null || target == null || source.equals(target)) {
+			throw new IllegalArgumentException();
+		}
+
+		// check the applicability of a merge
+		boolean mergePossible = mergeCollectionsCheck(source, target);
+		if (mergePossible == false) {
+			return;
+		}
+
+		// move directly contained pictures
+		for (Picture child : new ArrayList<>(source.getPictures())) {
+			movePicture(child, target);
+		}
+
+		// move/merge contained collections
+		List<RealPictureCollection> realCollections = new ArrayList<>();
+		List<LinkedPictureCollection> linkedCollections = new ArrayList<>();
+		Logic.getAllSubCollectionsLogic(source, realCollections, linkedCollections); // contained linked and real collections
+
+		for (PictureCollection sourceChild : new ArrayList<>(source.getSubCollections())) {
+			PictureCollection targetChild = Logic.getCollectionByName(target, sourceChild.getName(), true, true);
+			if (targetChild == null) {
+				// move collection
+				if (sourceChild instanceof RealPictureCollection) {
+					// move real collection
+					moveCollectionReal((RealPictureCollection) sourceChild, target, false, false);
+				} else {
+					// move linked collection
+					LinkedPictureCollection link = (LinkedPictureCollection) sourceChild;
+					Logic.deleteSymlinkCollection(link);
+					moveCollectionInEmf(link, target);
+					Logic.createSymlinkCollection(link);
+				}
+			} else {
+				if (sourceChild instanceof RealPictureCollection && targetChild instanceof RealPictureCollection) {
+					// merge collection
+					mergeCollections((RealPictureCollection) sourceChild, (RealPictureCollection) targetChild);
+				} else {
+					throw new IllegalStateException("eigentlich sollte die Check-Methode diesen Fall schon herausgefiltert haben!");
+				}
+			}
+		}
+
+		// handle links to the deleted collection
+		for (LinkedPictureCollection linkedBy : new ArrayList<>(source.getLinkedBy())) {
+			Logic.deleteSymlinkCollection(linkedBy);
+			moveCollectionInEmf(linkedBy, target);
+			Logic.createSymlinkCollection(linkedBy);
+		}
+
+		// delete source collection in file system
+		Logic.deleteCollection(source);
+
+		// delete source collection in EMF
+    	EditingDomain domain = MainApp.get().getModelDomain();
+    	domain.getCommandStack().execute(RemoveCommand.create(domain,
+				source.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), source));
+		domain.getCommandStack().execute(SetCommand.create(domain,
+				source, GalleryPackage.eINSTANCE.getPictureCollection_SuperCollection(), null));
+	}
+	private boolean mergeCollectionsCheck(RealPictureCollection source, RealPictureCollection target) {
+		// check input
+		if (source == null || target == null || source.equals(target)) {
+			throw new IllegalArgumentException();
+		}
+
+		// check uniqueness of directly contained pictures
+		for (Picture sourcePicture : source.getPictures()) {
+			for (Picture targetPicture : target.getPictures()) {
+				if (Objects.areEqual(sourcePicture.getName(), targetPicture.getName())) {
+					return false;
+				}
+			}
+		}
+
+		// check contained collections
+		for (PictureCollection sourceCollection : source.getSubCollections()) {
+			for (PictureCollection targetCollection : target.getSubCollections()) {
+				if (Objects.areEqual(sourceCollection.getName(), targetCollection.getName())) {
+					// same name
+					if (sourceCollection instanceof RealPictureCollection && targetCollection instanceof RealPictureCollection) {
+						boolean merge = mergeCollectionsCheck((RealPictureCollection) sourceCollection, (RealPictureCollection) targetCollection);
+						if (merge == false) {
+							return false;
+						} else {
+							// these collections are mergable!
+						}
+					} else {
+						/* TODO: einfachste Implementierung hier verwendet
+						 * - for linked collections, some (maybe dirty) solutions are automatically applied
+						 */
+						return false;
+					}
+				} else {
+					// different names => no problem
+				}
+			}
+		}
+
+		// everything is fine
+		return true;
+	}
+
+	public void moveCollectionReal(RealPictureCollection collectionToMove, RealPictureCollection target, boolean jump, boolean swithToWaitingState) {
 		// check input
 		if (collectionToMove == null || target == null || collectionToMove.equals(target)) {
 			throw new IllegalArgumentException();
@@ -685,7 +792,9 @@ public class MainApp extends Application {
 		 * - Real- und LinkedCollection (mit Bezug zueinander) dürfen im selben Ordner/Collection landen
 		 */
 
-		switchToWaitingState();
+		if (swithToWaitingState) {
+			switchToWaitingState();
+		}
 
 		// do the long-running moving in another thread!
 		Logic.runNotOnUiThread(new Runnable() {
@@ -744,17 +853,7 @@ public class MainApp extends Application {
 
 				if (success) {
 					// do the changes in the EMF model
-			    	EditingDomain domain = MainApp.get().getModelDomain();
-
-			    	domain.getCommandStack().execute(RemoveCommand.create(domain,
-							collectionToMove.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove));
-	
-					domain.getCommandStack().execute(AddCommand.create(domain,
-							target, GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove,
-							Logic.getIndexForCollectionInsertion(target.getSubCollections(), collectionToMove)));
-
-					domain.getCommandStack().execute(SetCommand.create(domain,
-							collectionToMove, GalleryPackage.eINSTANCE.getPictureCollection_SuperCollection(), target));
+					moveCollectionInEmf(collectionToMove, target);
 				}
 
 				// re-create the links in the file system
@@ -765,7 +864,9 @@ public class MainApp extends Application {
 					Logic.createSymlinkCollection(link);
 				}
 
-				switchCloseWaitingState();
+				if (swithToWaitingState) {
+					switchCloseWaitingState();
+				}
 
 				if (jump) {
 					Logic.runOnUiThread(new Runnable() {
@@ -777,6 +878,20 @@ public class MainApp extends Application {
 				}
 			}
 		});
+	}
+
+	private void moveCollectionInEmf(PictureCollection collectionToMove, RealPictureCollection target) {
+    	EditingDomain domain = MainApp.get().getModelDomain();
+
+    	domain.getCommandStack().execute(RemoveCommand.create(domain,
+				collectionToMove.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove));
+
+		domain.getCommandStack().execute(AddCommand.create(domain,
+				target, GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(), collectionToMove,
+				Logic.getIndexForCollectionInsertion(target.getSubCollections(), collectionToMove)));
+
+		domain.getCommandStack().execute(SetCommand.create(domain,
+				collectionToMove, GalleryPackage.eINSTANCE.getPictureCollection_SuperCollection(), target));
 	}
 
 	public void renamePicture(Picture pictureToRename, String newName) {

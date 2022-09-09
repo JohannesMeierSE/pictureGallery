@@ -49,7 +49,7 @@ public class MoveCollectionAction extends Action {
 		}
 
 		// do the logic
-		MainApp.get().moveCollection(collectionToMove, target, true);
+		MainApp.get().moveCollectionReal(collectionToMove, target, true, true);
 	}
 
 	@Override

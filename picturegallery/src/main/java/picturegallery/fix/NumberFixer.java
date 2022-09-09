@@ -1,8 +1,8 @@
 package picturegallery.fix;
 
 /**
- * Interface for different algorithms to add missing leading zeros to different patterns of numbers.
- * @author Johannes
+ * Interface for different algorithms to add missing leading zeros and to change values for different patterns of numbers.
+ * @author Johannes Meier
  */
 public interface NumberFixer {
 	/**

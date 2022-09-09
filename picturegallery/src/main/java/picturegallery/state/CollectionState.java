@@ -34,6 +34,7 @@ import picturegallery.action.ExportLinkedPicturesAction;
 import picturegallery.action.FixPictureNumbersAction;
 import picturegallery.action.JumpRelatedCollectionAction;
 import picturegallery.action.LinkCollectionsAction;
+import picturegallery.action.MergeCollectionsAction;
 import picturegallery.action.MoveCollectionAction;
 import picturegallery.action.OpenCloseCollectionsOfSameLevelAction;
 import picturegallery.action.RenameCollectionAction;
@@ -259,6 +260,7 @@ public class CollectionState extends State {
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());
 		registerAction(new MoveCollectionAction());
+		registerAction(new MergeCollectionsAction());
 		registerAction(new LinkCollectionsAction());
 		registerAction(new ClearLinkCollectionsAction());
 		registerAction(new ClearAndSetLinkCollectionsAction());

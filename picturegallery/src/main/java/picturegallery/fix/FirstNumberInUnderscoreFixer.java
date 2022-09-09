@@ -6,7 +6,7 @@ public class FirstNumberInUnderscoreFixer implements NumberFixer {
 
 	@Override
 	public String getName() {
-		return "First Number in Underscores (e.g. Tumblr)";
+		return "First Number surrounded by Underscores (e.g. Prefix_123_OtherStuff)";
 	}
 
 	@Override

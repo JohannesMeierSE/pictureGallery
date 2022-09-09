@@ -328,7 +328,7 @@ public class Logic {
 
     		findByPathMap.remove(removed.getFullPath());
     		findByNameMap.remove(removed);
-			deleteCollectionSimple(removed);
+			deleteCollectionEmfSimple(removed);
        	}
 
     	// remove all deleted pictures of this collection
@@ -340,29 +340,29 @@ public class Logic {
     	}
     	while (!picturesToRemove.isEmpty()) {
     		System.out.println("removed picture " + picturesToRemove.get(0).getRelativePath());
-    		deletePictureSimple(picturesToRemove.remove(0));
+    		deletePictureEmfSimple(picturesToRemove.remove(0));
     	}
 	}
 
-	private static void deleteCollectionSimple(PictureCollection collectionToRemove) {
+	private static void deleteCollectionEmfSimple(PictureCollection collectionToRemove) {
 		if (collectionToRemove instanceof RealPictureCollection) {
 			RealPictureCollection real = (RealPictureCollection) collectionToRemove;
 			// delete all linked picture collections
 			EList<LinkedPictureCollection> linkedCollections = real.getLinkedBy();
 			while (! linkedCollections.isEmpty()) {
-				deleteCollectionSimple(linkedCollections.get(0));
+				deleteCollectionEmfSimple(linkedCollections.get(0));
 			}
 
 			// delete contained pictures => this is required to delete linked pictures, too!
 			List<Picture> pictures = collectionToRemove.getPictures();
 			while (pictures.isEmpty() == false) {
-				deletePictureSimple(pictures.get(0));
+				deletePictureEmfSimple(pictures.get(0));
 			}
 
 			// delete sub-collections
 			List<PictureCollection> subs = collectionToRemove.getSubCollections();
 			while (!subs.isEmpty()) {
-				deleteCollectionSimple(subs.get(0));
+				deleteCollectionEmfSimple(subs.get(0));
 			}
 		} else {
 			// nothing special is required
@@ -372,14 +372,14 @@ public class Logic {
 		EcoreUtil.delete(collectionToRemove, true);
 	}
 
-	private static void deletePictureSimple(Picture pictureToDelete) {
+	private static void deletePictureEmfSimple(Picture pictureToDelete) {
 		if (pictureToDelete instanceof RealPicture) {
 			RealPicture realPicture = (RealPicture) pictureToDelete;
 
 			// delete all pictures which are linking on this picture to remove!
 			List<LinkedPicture> linked = realPicture.getLinkedBy();
 			while (linked.isEmpty() == false) {
-				deletePictureSimple(linked.get(0));
+				deletePictureEmfSimple(linked.get(0));
 			}
 
 			// delete the meta data
@@ -1237,10 +1237,6 @@ public class Logic {
 		}
 	}
 
-	public static void deleteSymlinkPicture(LinkedPicture link) {
-		deletePath(link.getFullPath());
-	}
-
 	public static boolean deletePath(String fullPath) { // TODO: Fehlschläge müssen berücksichtigt werden!!
 		try {
 			Files.delete(Paths.get(fullPath));
@@ -1251,12 +1247,25 @@ public class Logic {
 		}
 	}
 
+	public static void deleteCollection(PictureCollection collection) {
+		if (collection instanceof RealPictureCollection) {
+			deleteRealCollection((RealPictureCollection) collection);
+		} else {
+			deleteSymlinkCollection((LinkedPictureCollection) collection);
+		}
+	}
+	public static void deleteRealCollection(RealPictureCollection real) {
+		deletePath(real.getFullPath());
+	}
 	public static void deleteSymlinkCollection(LinkedPictureCollection link) {
 		deletePath(link.getFullPath());
 	}
 
 	public static void deleteRealPicture(RealPicture real) {
 		deletePath(real.getFullPath());
+	}
+	public static void deleteSymlinkPicture(LinkedPicture link) {
+		deletePath(link.getFullPath());
 	}
 
 	public static boolean moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
@@ -1443,10 +1452,24 @@ public class Logic {
 	}
 
 	/**
+	 * Returns all direct and indirect super collections of the given collection.
+	 * @param collection works for real and linked collections
+	 * @return The given collection itself is NOT contained in the resulting list, while the base collection is always contained (as long as the base collection is not used as input).
+	 */
+	public static List<RealPictureCollection> getAllSuperCollections(PictureCollection collection) {
+		List<RealPictureCollection> result = new ArrayList<>();
+		RealPictureCollection current = collection.getSuperCollection();
+		while (current != null) {
+			result.add(current);
+			current = current.getSuperCollection();
+		}
+		return result;
+	}
+
+	/**
 	 * Returns all direct and indirect sub-{@link RealPictureCollection}s of the given collection.
-	 * The given collection itself is NOT contained in the resulting list.
 	 * @param baseCollection
-	 * @return
+	 * @return The given collection itself is NOT contained in the resulting list.
 	 */
 	public static List<RealPictureCollection> getAllSubCollections(RealPictureCollection baseCollection) {
 		List<RealPictureCollection> result = new ArrayList<>();

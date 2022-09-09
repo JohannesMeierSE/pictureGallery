@@ -23,7 +23,7 @@ public class NumberAtEndFixer implements NumberFixer {
 
 	@Override
 	public String getName() {
-		return "Number at the End (e.g. Sony)";
+		return "Number at the End (e.g. Prefix123)";
 	}
 
 	@Override
