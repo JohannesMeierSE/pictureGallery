@@ -30,7 +30,7 @@ public class MoveCollectionAction extends Action {
 		}
 		RealPictureCollection collectionToMove = (RealPictureCollection) selection;
 		if (MainApp.get().getBaseCollection().equals(collectionToMove)) {
-			return;
+			return; // do not move the base collection
 		}
 
 		// select the target real collection
@@ -44,7 +44,7 @@ public class MoveCollectionAction extends Action {
 		}
 
 		// check uniqueness
-		if (!Logic.isCollectionNameUnique(target, collectionToMove.getName())) {
+		if (Logic.getCollectionByName(target, collectionToMove.getName(), true, true) != null) {
 			return;
 		}
 

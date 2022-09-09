@@ -21,15 +21,13 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 
 public class PictureNumberFilter extends CollectionFilter {
-	public static class IntegerFilter implements
-			UnaryOperator<TextFormatter.Change> {
+	public static class IntegerFilter implements UnaryOperator<TextFormatter.Change> {
 		// https://stackoverflow.com/questions/7555564/what-is-the-recommended-way-to-make-a-numeric-textfield-in-javafx
 		private final static Pattern DIGIT_PATTERN = Pattern.compile("-?\\d*");
 
 		@Override
 		public Change apply(TextFormatter.Change change) {
-			return DIGIT_PATTERN.matcher(change.getText()).matches() ? change
-					: null;
+			return DIGIT_PATTERN.matcher(change.getText()).matches() ? change : null;
 		}
 	}
 

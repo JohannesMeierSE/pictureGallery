@@ -50,6 +50,11 @@ import picturegallery.persistency.SubCollectionCallback;
 import picturegallery.ui.RecursiveTreeItem;
 import picturegallery.ui.RecursiveTreeItem.PositionCalculator;
 
+/**
+ * This state shows real and linked collections in form of a tree and allows to manage collections.
+ *
+ * @author Johannes Meier
+ */
 public class CollectionState extends State {
 	private final VBox vbox;
 	protected final TreeTableView<PictureCollection> table;

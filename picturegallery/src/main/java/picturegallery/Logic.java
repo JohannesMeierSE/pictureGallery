@@ -1975,7 +1975,7 @@ public class Logic {
 
 	public static PictureCollection getCollectionByName(RealPictureCollection parent, String collectionName,
 			boolean searchReal, boolean searchLinked) {
-		// TODO: diese Methode könnte theoretisch auch durch eine Map beschleunigt werden, dürfte aber nur bei sehr vielen Unterordnern relevant sein!
+		// diese Methode könnte theoretisch auch durch eine Map beschleunigt werden, dürfte aber nur bei sehr vielen Unterordnern relevant sein!
 		if (!searchReal && !searchLinked) {
 			throw new IllegalArgumentException();
 		}

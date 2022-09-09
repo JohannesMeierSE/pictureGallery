@@ -1,17 +1,5 @@
 package picturegallery;
 
-import gallery.DeletedPicture;
-import gallery.GalleryFactory;
-import gallery.GalleryPackage;
-import gallery.LinkedPicture;
-import gallery.LinkedPictureCollection;
-import gallery.Picture;
-import gallery.PictureCollection;
-import gallery.PictureLibrary;
-import gallery.RealPicture;
-import gallery.RealPictureCollection;
-import gallery.util.GalleryAdapterFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -22,23 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javafx.application.Application;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 import org.apache.tika.exception.TikaException;
 import org.eclipse.emf.common.command.BasicCommandStack;
@@ -55,6 +26,33 @@ import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
 
+import gallery.DeletedPicture;
+import gallery.GalleryFactory;
+import gallery.GalleryPackage;
+import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
+import gallery.Picture;
+import gallery.PictureCollection;
+import gallery.PictureLibrary;
+import gallery.RealPicture;
+import gallery.RealPictureCollection;
+import gallery.util.GalleryAdapterFactory;
+import javafx.application.Application;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import picturegallery.action.Action;
 import picturegallery.action.FullScreenAction;
 import picturegallery.action.HideInformationAction;
@@ -680,12 +678,11 @@ public class MainApp extends Application {
 		if (Logic.isCollectionRecursiveInCollection(collectionToMove, target)) {
 			throw new IllegalArgumentException("The collection must not be moved into one of its sub-collection!");
 		}
-		if (!Logic.isCollectionNameUnique(target, collectionToMove.getName())) {
-			throw new IllegalArgumentException("Moving is not possible: uniqueness is hurt!");
+		if (Logic.getCollectionByName(target, collectionToMove.getName(), true, true) != null) {
+			throw new IllegalArgumentException("Moving is not possible: there is already a collection with the same name in the target collection!");
 		}
-		/* Real- und LinkedCollection (mit Bezug zueinander) dürfen NICHT im selben Ordner/Collection landen
-		 * TODO: relevant??
-		 * ist aber eigentlich egal, oder??
+		/* Spezialfälle:
+		 * - Real- und LinkedCollection (mit Bezug zueinander) dürfen im selben Ordner/Collection landen
 		 */
 
 		switchToWaitingState();
