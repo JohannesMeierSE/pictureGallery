@@ -46,6 +46,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -167,10 +168,12 @@ public class MainApp extends Application {
 
     	final String baseDir = Logic.askForDirectory("Choose the base directory of the library to work with!", false);
 
+    	// Label for showing keys
     	labelKeys = new Label("keys");
     	labelKeys.visibleProperty().bind(labelsVisible);
     	styleLabel(labelKeys);
     	root.getChildren().add(labelKeys);
+    	StackPane.setAlignment(labelKeys, Pos.CENTER_RIGHT);
 
     	Scene scene = new Scene(root, 800, 600);
     	scene.getStylesheets().add("/styles/styles.css");
