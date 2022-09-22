@@ -1,21 +1,10 @@
 package picturegallery.action;
 
-import gallery.GalleryPackage;
-import gallery.LinkedPicture;
-import gallery.LinkedPictureCollection;
-import gallery.Picture;
-import gallery.PictureCollection;
-import gallery.RealPicture;
-import gallery.RealPictureCollection;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.emf.edit.command.AddCommand;
-import org.eclipse.emf.edit.command.RemoveCommand;
-import org.eclipse.emf.edit.command.SetCommand;
-import org.eclipse.emf.edit.domain.EditingDomain;
-
+import gallery.PictureCollection;
+import gallery.RealPictureCollection;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;

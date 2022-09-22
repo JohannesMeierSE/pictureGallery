@@ -1057,15 +1057,21 @@ public class Logic {
 			Dialog<PictureCollection> dialog = new Dialog<>();
 			dialog.setTitle("Select picture collection");
 			dialog.setHeaderText("Select one existing picture collection out of the following ones!");
-			ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
-			dialog.getDialogPane().getButtonTypes().add(select);
-	
-			// handle the "null collection" (1)
-			if (allowNull) {
-				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-			}
-			Button selectButton = (Button) dialog.getDialogPane().lookupButton(select);
+
+			// select button
+			ButtonType selectType = new ButtonType("Select", ButtonData.OK_DONE);
+			dialog.getDialogPane().getButtonTypes().add(selectType);
+			Button selectButton = (Button) dialog.getDialogPane().lookupButton(selectType);
 			selectButton.setDisable(true);
+
+			// cancel button: handle the "null collection" (1)
+			Button cButton = null;
+			ButtonType cancelType = ButtonType.CANCEL;
+			if (allowNull) {
+				dialog.getDialogPane().getButtonTypes().add(cancelType);
+				cButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
+			}
+			Button cancelButton = cButton;
 
 			// create the tree view
 			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
@@ -1121,6 +1127,10 @@ public class Logic {
 					if (event.getCode() == KeyCode.ENTER && !selectButton.isDisabled()) {
 						selectButton.fire();
 					}
+					// cancel the dialog with "Esc"
+					if (event.getCode() == KeyCode.ESCAPE && cancelButton != null) {
+						cancelButton.fire();
+					}
 				}
 			});
 	
@@ -1151,7 +1161,7 @@ public class Logic {
 			dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
 				@Override
 				public PictureCollection call(ButtonType param) {
-					if (param == select) {
+					if (param == selectType) {
 						return tree.getSelectionModel().getSelectedItem().getValue();
 					}
 					return null;

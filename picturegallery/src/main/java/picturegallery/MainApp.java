@@ -737,7 +737,7 @@ public class MainApp extends Application {
 		// check uniqueness of directly contained pictures
 		for (Picture sourcePicture : source.getPictures()) {
 			for (Picture targetPicture : target.getPictures()) {
-				if (Objects.areEqual(sourcePicture.getName(), targetPicture.getName())) {
+				if (Objects.equals(sourcePicture.getName(), targetPicture.getName())) {
 					return false;
 				}
 			}
@@ -746,7 +746,7 @@ public class MainApp extends Application {
 		// check contained collections
 		for (PictureCollection sourceCollection : source.getSubCollections()) {
 			for (PictureCollection targetCollection : target.getSubCollections()) {
-				if (Objects.areEqual(sourceCollection.getName(), targetCollection.getName())) {
+				if (Objects.equals(sourceCollection.getName(), targetCollection.getName())) {
 					// same name
 					if (sourceCollection instanceof RealPictureCollection && targetCollection instanceof RealPictureCollection) {
 						boolean merge = mergeCollectionsCheck((RealPictureCollection) sourceCollection, (RealPictureCollection) targetCollection);
