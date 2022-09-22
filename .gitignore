@@ -1,3 +1,9 @@
+# ignore special Eclipse Plugin configuration files
+/picturegallery/build.properties
+/picturegallery/plugin.properties
+/picturegallery/plugin.xml
+/picturegallery/META-INF/MANIFEST.MF
+
 *.class
 
 # Mobile Tools for Java (J2ME)

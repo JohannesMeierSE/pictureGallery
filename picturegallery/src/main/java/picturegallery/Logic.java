@@ -1,14 +1,5 @@
 package picturegallery;
 
-import gallery.GalleryFactory;
-import gallery.LinkedPicture;
-import gallery.LinkedPictureCollection;
-import gallery.Picture;
-import gallery.PictureCollection;
-import gallery.PictureLibrary;
-import gallery.RealPicture;
-import gallery.RealPictureCollection;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,25 +9,69 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.image.ImageParser;
+import org.apache.tika.parser.image.JpegParser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.common.util.ECollections;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.command.MoveCommand;
+import org.eclipse.emf.edit.command.RemoveCommand;
+import org.eclipse.emf.edit.command.SetCommand;
+import org.eclipse.emf.edit.domain.EditingDomain;
+
+import com.pragone.jphash.jpHash;
+import com.pragone.jphash.image.radial.RadialHash;
+
+import gallery.DeletedPicture;
+import gallery.GalleryFactory;
+import gallery.GalleryPackage;
+import gallery.LinkedPicture;
+import gallery.LinkedPictureCollection;
+import gallery.PathElement;
+import gallery.Picture;
+import gallery.PictureCollection;
+import gallery.PictureLibrary;
+import gallery.RealPicture;
+import gallery.RealPictureCollection;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
@@ -46,36 +81,84 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import javafx.util.Pair;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.image.ImageParser;
-import org.apache.tika.parser.jpeg.JpegParser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.eclipse.emf.common.util.ECollections;
-import org.xml.sax.SAXException;
-
-import com.pragone.jphash.jpHash;
-import com.pragone.jphash.image.radial.RadialHash;
+import picturegallery.persistency.Settings;
+import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.State;
 
 public class Logic {
 	public static final String NO_HASH = "nohash!";
 
-	public static void loadDirectory(PictureLibrary library, boolean recursive) {
-		RealPictureCollection baseCollection = library.getBaseCollection();
-    	Map<String, RealPicture> mapPictures = new HashMap<>(); // full path (String) -> RealPicture
-    	Map<String, RealPictureCollection> mapCollections = new HashMap<>(); // full path (String) -> RealPictureCollection
-    	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>();
+	public final static Map<String, AtomicInteger> extensionMap = new HashMap<>();
 
-    	loadDirectoryLogic(baseCollection, recursive, mapPictures, mapCollections, symlinks);
+	/** (real collection -> ((picture.name + picture.extension) -> Picture)) */
+	private static Map<RealPictureCollection, Map<String, Picture>> findByNameMap = new HashMap<>();
+	/** (absolute path -> real collection) */
+	private static Map<String, RealPictureCollection> findByPathMap = new HashMap<>();
 
-    	List<PictureCollection> collectionsToSort = new ArrayList<>(); // collects the collections which have to be sorted again, because linked picture were added!
-    	List<PictureCollection> subcollectionsToSort = new ArrayList<>(); // collects the collections from which their subcollections have to be sorted again, because linked collections were added as subcollection!
+	private static void findByNameInit(RealPictureCollection currentCollection) {
+		Map<String, Picture> map = new HashMap<>(currentCollection.getPictures().size());
+		findByNameMap.put(currentCollection, map);
+		findByPathMap.put(currentCollection.getFullPath(), currentCollection);
+
+		for (Picture pic : currentCollection.getPictures()) {
+			map.put(pic.getName() + "." + pic.getFileExtension(), pic);
+		}
+
+		// handle all sub-collections
+		for (PictureCollection sub : currentCollection.getSubCollections()) {
+			if (sub instanceof RealPictureCollection) {
+				findByNameInit((RealPictureCollection) sub);
+			}
+		}
+	}
+	@SuppressWarnings("unused")
+	private static void findByNamePut(Picture newPicture) {
+		Map<String, Picture> map = findByNameMap.get(newPicture.getCollection());
+		if (map == null) {
+			map = new HashMap<>();
+			findByNameMap.put(newPicture.getCollection(), map);
+		}
+		map.put(newPicture.getName() + "." + newPicture.getFileExtension(), newPicture);
+	}
+	private static Picture findByNameGet(RealPictureCollection parent, String pictureNameWithExtension) {
+		Map<String, Picture> map = findByNameMap.get(parent);
+		if (map == null) {
+			return null;
+		}
+		return map.get(pictureNameWithExtension);
+	}
+	private static Picture findByNameGet(String absolutePicturePath) {
+		RealPictureCollection col = findByPathGet(absolutePicturePath, true);
+		if (col == null) {
+			return null;
+		}
+		return findByNameGet(col, absolutePicturePath.substring(absolutePicturePath.lastIndexOf(File.separator) + 1));
+	}
+
+	private static RealPictureCollection findByPathGet(String absolutePath, boolean containsPicturePath) {
+		final String path;
+		if (containsPicturePath) {
+			path = absolutePath.substring(0, absolutePath.lastIndexOf(File.separator));
+		} else {
+			path = new String(absolutePath);
+		}
+		return findByPathMap.get(path);
+	}
+
+	public static void loadDirectory(RealPictureCollection baseCollection) {
+		long startTime = System.currentTimeMillis();
+		extensionMap.clear();
+		findByNameMap = new HashMap<>(baseCollection.getSubCollections().size());
+		findByNameInit(baseCollection);
+    	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>(); // Path -> Collection in which the Path was found
+
+    	loadDirectoryLogic(baseCollection, symlinks);
+
     	String baseFullPath = baseCollection.getFullPath();
+
     	// handle symlinks
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
 		for (Pair<Path, RealPictureCollection> symlink : symlinks) {
@@ -83,67 +166,78 @@ public class Logic {
 			try {
 				real = symlink.getKey().toRealPath();
 			} catch (IOException e) {
+				System.out.println("error with a symlink:");
 				e.printStackTrace();
+				continue;
 			}
-			String r = real.toAbsolutePath().toString();
+			String realPath = real.toAbsolutePath().toString();
+
 			// prüfen, ob die Datei überhaupt in dieser Library liegt!
-			if (!r.startsWith(baseFullPath)) {
-				System.err.println("Found symlink to a picture which is not part of this library!");
+			if (!realPath.startsWith(baseFullPath)) {
+				System.err.println("Found symlink to something which is not part of this library!");
 				continue; // => ignore it!
 			}
-			if (Files.isDirectory(real)) {
-				// symlink onto a directory
-				RealPictureCollection ref = mapCollections.get(r);
-				if (ref == null) {
-					String message = "missing link on directory: " + r + " of " + symlink.toString();
-					System.err.println(message);
-					throw new IllegalArgumentException(message);
-				} else {
-					LinkedPictureCollection linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
-					ref.getLinkedBy().add(linkedCollection);
-					linkedCollection.setRealCollection(ref);
-					symlink.getValue().getSubCollections().add(linkedCollection);
-					linkedCollection.setSuperCollection(symlink.getValue());
-					String name = symlink.getKey().toString();
-					linkedCollection.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.length()));
 
-					// sort sub-collections again
-					if (!subcollectionsToSort.contains(symlink.getValue())) {
-						subcollectionsToSort.add(symlink.getValue());
+			String name = symlink.getKey().toString();
+			if (Files.isDirectory(real)) {
+				// found symlink onto a directory in the file system
+				RealPictureCollection ref = findByPathGet(realPath, false);
+				if (ref == null) {
+					String message = "missing link on directory: " + realPath + " of " + symlink.toString();
+					System.err.println(message);
+				} else {
+					String linkedCollectionName = name.substring(name.lastIndexOf(File.separator) + 1, name.length());
+					LinkedPictureCollection linkedCollection = (LinkedPictureCollection) getCollectionByName(symlink.getValue(),
+							linkedCollectionName, false, true);
+					if (linkedCollection == null) {
+						// linked collection is in file system, but not in model.xmi
+						linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
+						ref.getLinkedBy().add(linkedCollection);
+						linkedCollection.setRealCollection(ref);
+						symlink.getValue().getSubCollections().add(linkedCollection);
+						linkedCollection.setSuperCollection(symlink.getValue());
+						linkedCollection.setName(linkedCollectionName);
+					} else {
+						// linked collection is both in file system and model.xmi
 					}
 				}
 			} else {
-				// symlink onto a picture
-				RealPicture ref = mapPictures.get(r);
+				// found symlink onto a picture in the file system
+				RealPicture ref = (RealPicture) findByNameGet(realPath);
 				if (ref == null) {
-					String message = "missing link: " + r + " of " + symlink.toString();
+					String message = "missing link: " + realPath + " of " + symlink.toString();
 					System.err.println(message);
-					throw new IllegalArgumentException(message);
 				} else {
-					LinkedPicture linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
-					ref.getLinkedBy().add(linkedPicture);
-					linkedPicture.setRealPicture(ref);
-					initPicture(symlink.getValue(), symlink.getKey().toString(), linkedPicture);
-
-					// sort the pictures (including the new LinkedPicture) in this collection again
-					if (!collectionsToSort.contains(symlink.getValue())) {
-						collectionsToSort.add(symlink.getValue());
+					String linkedPictureNameWithExtension = name.substring(name.lastIndexOf(File.separator) + 1);
+					LinkedPicture linkedPicture = (LinkedPicture) findByNameGet(symlink.getValue(), linkedPictureNameWithExtension);
+					if (linkedPicture == null) {
+						// found linked picture in file system, but not in model.xmi
+						linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
+						ref.getLinkedBy().add(linkedPicture);
+						linkedPicture.setRealPicture(ref);
+						initPicture(symlink.getValue(), name, linkedPicture);
+					} else {
+						// found linked picture both in file system and in model.xmi
 					}
+					analyzePictureInitial(linkedPicture);
 				}
 			}
 		}
-		// sort collection with additional LinkedPictures (again)
-		for (PictureCollection col : collectionsToSort) {
-			sortPicturesInCollection(col);
-		}
-		// sort sub-collections (again)
-		for (PictureCollection col : subcollectionsToSort) {
-			sortSubCollections(col, false);
-		}
+
+		findByNameMap.clear();
+		findByPathMap.clear();
+
+		// sort all recursive sub-collections: order of collections AND pictures!
+		sortSubCollections(baseCollection, true, true);
+
+		long completeTime = System.currentTimeMillis() - startTime;
+		System.out.println("init time: " + (completeTime / 1000) + " seconds, " + (completeTime % 1000) + " ms");
+		// init time: 130 seconds, 275 ms
+		// init time: 126 seconds, 355 ms (Map-Größe vorher gesetzt)
+		// init time: 124 seconds, 752 ms
 	}
 
-	private static void loadDirectoryLogic(RealPictureCollection currentCollection, boolean recursive,
-			Map<String, RealPicture> mapPictures, Map<String, RealPictureCollection> mapCollections,
+	private static void loadDirectoryLogic(RealPictureCollection currentCollection,
 			List<Pair<Path, RealPictureCollection>> symlinks) {
 		String baseDir = currentCollection.getFullPath();
         try {
@@ -157,14 +251,20 @@ public class Logic {
 					if (name.equals(baseDir)) {
 			    		return FileVisitResult.CONTINUE;
 			    	}
-			    	if (recursive) {
-			    		RealPictureCollection sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
-			    		sub.setSuperCollection(currentCollection);
-			    		currentCollection.getSubCollections().add(sub);
-			    		sub.setName(name.substring(name.lastIndexOf(File.separator) + 1));
-			    		mapCollections.put(sub.getFullPath(), sub);
-			    	}
-					return FileVisitResult.SKIP_SUBTREE;
+
+					String childName = name.substring(name.lastIndexOf(File.separator) + 1);
+		    		RealPictureCollection sub = (RealPictureCollection) getCollectionByName(currentCollection, childName, true, false);
+		    		if (sub == null) {
+		    			// folder is in file system, but not in model.xmi:
+		    			sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
+		    			sub.setSuperCollection(currentCollection);
+		    			currentCollection.getSubCollections().add(sub);
+		    			sub.setName(childName);
+		    		} else {
+		    			// folder is in file system AND in model.xmi
+		    		}
+
+			    	return FileVisitResult.SKIP_SUBTREE;
 				}
 
 				@Override
@@ -172,18 +272,34 @@ public class Logic {
 					String name = file.toAbsolutePath().toString();
 					String nameLower = name.toLowerCase();
 		        	if (FileUtils.isSymlink(new File(name))) {
+		        		// found symlink in file system: both, picture or collection!
 		        		symlinks.add(new Pair<Path, RealPictureCollection>(file, currentCollection));
-		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg") || nameLower.endsWith(".gif")) {
+		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg")
+		        			|| nameLower.endsWith(".gif") || nameLower.endsWith(".arw")
+		        			|| nameLower.endsWith(".mp4") || nameLower.endsWith(".mts")) {
+		        		/*
+		        		 * MTS: video format of Sony camera
+		        		 */
 			        	/*
 			        	 * scheinbar nicht funktionierende Gifs:
 			        	 * - https://www.tutorials.de/threads/animierte-gifs.180222/ => GIFs fehlerhaft, ohne entsprechend 100ms Delay zwischen den Bildern(?)
 			        	 * - oder die Bilddateien sind einfach beschädigt ... !
 			        	 */
-		        		RealPicture pic = GalleryFactory.eINSTANCE.createRealPicture();
-		        		initPicture(currentCollection, name, pic);
-
-		        		mapPictures.put(pic.getFullPath(), pic);
+		        		// 155.461 = 43.5 GB
+		        		// 138.258 = 38.6 GB
+		        		// 138.202 = 38.6 GB
+		        		String pictureNameWithExtension = name.substring(name.lastIndexOf(File.separator) + 1);
+		        		RealPicture pic = (RealPicture) findByNameGet(currentCollection, pictureNameWithExtension);
+		        		if (pic == null) {
+		        			// found real picture in file system, but not in model.xmi
+		        			pic = GalleryFactory.eINSTANCE.createRealPicture();
+		        			initPicture(currentCollection, name, pic);
+		        		} else {
+		        			// found real picture, both in file system and model.xmi
+		        		}
+		        		analyzePictureInitial(pic);
 			        } else {
+			        	// file with different file extension => ignore it
 			        	System.err.println("ignored: " + file.toString());
 			        }
 			        return FileVisitResult.CONTINUE;
@@ -192,13 +308,90 @@ public class Logic {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        sortPicturesInCollection(currentCollection);
-        sortSubCollections(currentCollection, false);
-        if (recursive) {
-        	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
-        		loadDirectoryLogic((RealPictureCollection) newSubCollection, recursive, mapPictures, mapCollections, symlinks);
-        	}
-        }
+
+        // handle all sub-collections
+    	List<PictureCollection> collectionsToRemove = new ArrayList<>();
+    	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
+    		if (!new File(newSubCollection.getFullPath()).exists()) { // detect removed real and linked collections!
+    			collectionsToRemove.add(newSubCollection);
+    			continue;
+    		}
+    		if (newSubCollection instanceof LinkedPictureCollection) {
+    			continue;
+    		}
+    		loadDirectoryLogic((RealPictureCollection) newSubCollection, symlinks);
+    	}
+
+    	// remove collections with all its children which do not exist anymore
+    	while (!collectionsToRemove.isEmpty()) {
+    		PictureCollection removed = collectionsToRemove.remove(0);
+
+    		findByPathMap.remove(removed.getFullPath());
+    		findByNameMap.remove(removed);
+			deleteCollectionEmfSimple(removed);
+       	}
+
+    	// remove all deleted pictures of this collection
+    	List<Picture> picturesToRemove = new ArrayList<>();
+    	for (Picture pic : currentCollection.getPictures()) {
+    		if (!new File(pic.getFullPath()).exists()) {
+    			picturesToRemove.add(pic);
+    		}
+    	}
+    	while (!picturesToRemove.isEmpty()) {
+    		System.out.println("removed picture " + picturesToRemove.get(0).getRelativePath());
+    		deletePictureEmfSimple(picturesToRemove.remove(0));
+    	}
+	}
+
+	private static void deleteCollectionEmfSimple(PictureCollection collectionToRemove) {
+		if (collectionToRemove instanceof RealPictureCollection) {
+			RealPictureCollection real = (RealPictureCollection) collectionToRemove;
+			// delete all linked picture collections
+			EList<LinkedPictureCollection> linkedCollections = real.getLinkedBy();
+			while (! linkedCollections.isEmpty()) {
+				deleteCollectionEmfSimple(linkedCollections.get(0));
+			}
+
+			// delete contained pictures => this is required to delete linked pictures, too!
+			List<Picture> pictures = collectionToRemove.getPictures();
+			while (pictures.isEmpty() == false) {
+				deletePictureEmfSimple(pictures.get(0));
+			}
+
+			// delete sub-collections
+			List<PictureCollection> subs = collectionToRemove.getSubCollections();
+			while (!subs.isEmpty()) {
+				deleteCollectionEmfSimple(subs.get(0));
+			}
+		} else {
+			// nothing special is required
+		}
+
+		// http://eclipsesource.com/blogs/2015/05/26/emf-dos-and-donts-11/
+		EcoreUtil.delete(collectionToRemove, true);
+	}
+
+	private static void deletePictureEmfSimple(Picture pictureToDelete) {
+		if (pictureToDelete instanceof RealPicture) {
+			RealPicture realPicture = (RealPicture) pictureToDelete;
+
+			// delete all pictures which are linking on this picture to remove!
+			List<LinkedPicture> linked = realPicture.getLinkedBy();
+			while (linked.isEmpty() == false) {
+				deletePictureEmfSimple(linked.get(0));
+			}
+
+			// delete the meta data
+			realPicture.setMetadata(null);
+		} else {
+			// nothing special is required for LinkedPictures
+		}
+
+		// remove the picture from its collection
+		if (pictureToDelete.getCollection() != null) {
+			pictureToDelete.getCollection().getPictures().remove(pictureToDelete);
+		}
 	}
 
 	private static void initPicture(RealPictureCollection currentCollection, String name, Picture pic) {
@@ -208,10 +401,24 @@ public class Logic {
 		pic.setName(name.substring(name.lastIndexOf(File.separator) + 1, name.lastIndexOf(".")));
 	}
 
+	private static void analyzePictureInitial(Picture picture) {
+		if (picture instanceof RealPicture) {
+			String key = picture.getFileExtension().toLowerCase();
+
+			AtomicInteger counter = extensionMap.get(key);
+			if (counter == null) {
+				counter = new AtomicInteger(0);
+				extensionMap.put(key, counter);
+			}
+
+			// count the different kinds of extensions!
+			counter.incrementAndGet();
+		}
+	}
+
 	public static RealPictureCollection createEmptyLibrary(final String baseDir) {
 		String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
         String dirName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1);
-        System.out.println(baseDir + " == " + parentDir + " + " + dirName);
 
         PictureLibrary lib = GalleryFactory.eINSTANCE.createPictureLibrary();
         lib.setBasePath(parentDir);
@@ -224,7 +431,7 @@ public class Logic {
 		return base;
 	}
 
-	public static Picture findFirstPicture(PictureCollection col) {
+	public static Picture findFirstPicture(PictureCollection col) { // TODO: unused
 		if (!col.getPictures().isEmpty()) {
 			return col.getPictures().get(0);
 		}
@@ -238,7 +445,7 @@ public class Logic {
 		return null;
 	}
 
-	public static PictureCollection findFirstNonEmptyCollection(PictureCollection col) {
+	public static PictureCollection findFirstNonEmptyCollection(PictureCollection col) { // TODO: unused
 		if (!col.getPictures().isEmpty()) {
 			return col;
 		}
@@ -281,18 +488,132 @@ public class Logic {
 	 */
 	public static void sortPicturesInCollection(PictureCollection collectionToSort) {
 		// http://download.eclipse.org/modeling/emf/emf/javadoc/2.11/org/eclipse/emf/common/util/ECollections.html#sort(org.eclipse.emf.common.util.EList)
-		ECollections.sort(collectionToSort.getPictures(), new Comparator<Picture>() {
+		ECollections.sort(collectionToSort.getPictures(), createComparatorPicturesName(true));
+	}
+
+	public static Comparator<Picture> createComparatorPicturesName(boolean ascending) {
+		if (ascending) {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+					return o1.getName().compareToIgnoreCase(o2.getName());
+				}
+			};
+		} else {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+					return o2.getName().compareToIgnoreCase(o1.getName());
+				}
+			};
+		}
+	}
+
+	public static Comparator<Picture> createComparatorPicturesMonth() {
+		return new Comparator<Picture>() {
 			@Override
 			public int compare(Picture o1, Picture o2) {
 				if (o1 == o2) {
 					return 0;
 				}
-				if (o1.getName() == o2.getName()) {
-					throw new IllegalStateException();
+
+				// check, if meta data are available (elements without meta data will be put at the end)
+				if (o1.getMetadata() == null && o2.getMetadata() == null) {
+					return 0;
 				}
-				return o1.getName().compareTo(o2.getName());
+				if (o1.getMetadata() == null && o2.getMetadata() != null) {
+					return 1;
+				}
+				if (o1.getMetadata() != null && o2.getMetadata() == null) {
+					return -1;
+				}
+
+				// check, if the date is available
+				Date date1 = o1.getMetadata().getCreated();
+				Date date2 = o2.getMetadata().getCreated();
+				if (date1 == null && date2 == null) {
+					return 0;
+				}
+				if (date1 == null && date2 != null) {
+					return 1;
+				}
+				if (date1 != null && date2 == null) {
+					return -1;
+				}
+
+				LocalDate localDate1 = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				LocalDate localDate2 = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+				int monthCompare = Integer.compare(localDate1.getMonthValue(), localDate2.getMonthValue());
+				// 1. month
+				if (monthCompare != 0) {
+					return monthCompare;
+				}
+
+				// 2. day
+				int dayCompare = Integer.compare(localDate1.getDayOfMonth(), localDate2.getDayOfMonth());
+				if (dayCompare != 0) {
+					return dayCompare;
+				}
+
+				// 3. compare year and so on...
+				return Long.compare(date1.getTime(), date2.getTime());
 			}
-		});
+		};
+	}
+
+	public static Comparator<Picture> createComparatorPicturesSize(boolean ascending) {
+		if (ascending) {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+	
+					// check, if meta data are available (elements without meta data will be put at the end)
+					if (o1.getMetadata() == null && o2.getMetadata() == null) {
+						return 0;
+					}
+					if (o1.getMetadata() == null && o2.getMetadata() != null) {
+						return 1;
+					}
+					if (o1.getMetadata() != null && o2.getMetadata() == null) {
+						return -1;
+					}
+	
+					return Integer.compare(o1.getMetadata().getSize(), o2.getMetadata().getSize());
+				}
+			};
+		} else {
+			return new Comparator<Picture>() {
+				@Override
+				public int compare(Picture o1, Picture o2) {
+					if (o1 == o2) {
+						return 0;
+					}
+	
+					// check, if meta data are available (elements without meta data will be put at the end)
+					if (o1.getMetadata() == null && o2.getMetadata() == null) {
+						return 0;
+					}
+					if (o1.getMetadata() == null && o2.getMetadata() != null) {
+						return 1;
+					}
+					if (o1.getMetadata() != null && o2.getMetadata() == null) {
+						return -1;
+					}
+	
+					return Integer.compare(o2.getMetadata().getSize(), o1.getMetadata().getSize());
+				}
+			};
+		}
 	}
 
 	/**
@@ -300,21 +621,10 @@ public class Logic {
 	 * @param picturesToSort
 	 */
 	public static void sortPictures(List<Picture> picturesToSort) {
-		Collections.sort(picturesToSort, new Comparator<Picture>() {
-			@Override
-			public int compare(Picture o1, Picture o2) {
-				if (o1 == o2) {
-					return 0;
-				}
-				if (o1.getName() == o2.getName()) {
-					throw new IllegalStateException();
-				}
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
+		Collections.sort(picturesToSort, createComparatorPicturesName(true));
 	}
 
-	public static void sortSubCollections(PictureCollection base, boolean recursive) {
+	public static void sortSubCollections(PictureCollection base, boolean recursive, boolean sortPictureToo) {
 		ECollections.sort(base.getSubCollections(), new Comparator<PictureCollection>() {
 			@Override
 			public int compare(PictureCollection o1, PictureCollection o2) {
@@ -327,6 +637,16 @@ public class Logic {
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
+
+		if (sortPictureToo) {
+			sortPicturesInCollection(base);
+		}
+
+		if (recursive) {
+			for (PictureCollection sub : base.getSubCollections()) {
+				sortSubCollections(sub, recursive, sortPictureToo);
+			}
+		}
 	}
 
 	public static String formatBytes(int bytes) {
@@ -362,30 +682,37 @@ public class Logic {
 	}
 
 	public static void extractMetadata(PictureCollection currentCollection)
-			throws FileNotFoundException, IOException, SAXException, TikaException {
-		List<RealPicture> currentPictures = new ArrayList<>(currentCollection.getPictures().size());
+			throws FileNotFoundException, IOException, TikaException {
 		for (Picture pic : currentCollection.getPictures()) {
 			if (pic.getMetadata() != null) {
 				continue;
 			}
-			if (pic instanceof RealPicture) {
-				currentPictures.add((RealPicture) pic);
-			} else {
-				currentPictures.add(((LinkedPicture) pic).getRealPicture());
-			}
-		}
-		for (RealPicture pic : currentPictures) {
-			extractMetadata(pic);
+			extractMetadata(Logic.getRealPicture(pic), false, false);
 		}
 	}
 
-	public static void extractMetadata(RealPicture picture)
-			throws FileNotFoundException, IOException, SAXException, TikaException {
+	/**
+	 * 
+	 * @param picture
+	 * @param forceReload
+	 * @param printOnly
+	 * @return false if the metadata were not loaded, true otherwise
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws TikaException
+	 */
+	public static boolean extractMetadata(RealPicture picture, boolean forceReload, boolean printOnly)
+			throws FileNotFoundException, IOException, TikaException {
 		// check input
-		if (picture == null || picture.getMetadata() != null) {
+		if (picture == null) {
 			throw new IllegalArgumentException();
 		}
+		if (picture.getMetadata() != null && !printOnly && !forceReload) {
+			return false;
+		}
 
+		System.out.println("load meta data for " + picture.getRelativePath());
 		/*
 		 * https://wiki.apache.org/tika/
 		 * https://www.tutorialspoint.com/tika/
@@ -397,19 +724,25 @@ public class Logic {
 		BodyContentHandler handler = new BodyContentHandler();
 		FileInputStream in = new FileInputStream(new File(picture.getFullPath()));
 		String ext = picture.getFileExtension().toLowerCase();
-		if (ext.equals("jpeg") || ext.equals("jpg")) {
-			JpegParser JpegParser = new JpegParser();
-			JpegParser.parse(in, handler, metadata, pcontext);
-		} else {
-			ImageParser parser = new ImageParser();
-			parser.parse(in, handler, metadata, pcontext);
+		try {
+			if (ext.equals("jpeg") || ext.equals("jpg")) {
+				JpegParser JpegParser = new JpegParser();
+				JpegParser.parse(in, handler, metadata, pcontext);
+			} else {
+				ImageParser parser = new ImageParser();
+				parser.parse(in, handler, metadata, pcontext);
+			}
+		} catch (Throwable e) {
+			System.err.println("error while reading the meta-data of " + picture.getFullPath());
+			e.printStackTrace();
+			return false;
+		} finally {
+			in.close();
 		}
-		in.close();
-		System.out.println("");
-		System.out.println(picture.getFullPath());
+//		System.out.println("");
+//		System.out.println(picture.getFullPath());
 
 		gallery.Metadata md = GalleryFactory.eINSTANCE.createMetadata();
-		picture.setMetadata(md);
 
 		// helper variables
 		String model = "";
@@ -420,14 +753,27 @@ public class Logic {
 			String valueReal = new String(metadata.get(name));
 			String key = keyReal.toLowerCase();
 			String value = valueReal.toLowerCase();
-			System.out.println(name + ": " + value);
+			if (printOnly) {
+				System.out.println(name + ": " + value);
+			}
 
 			// orientation
+			/*
+			 * Sony RX 100:
+			 * Orientation: right side, top (rotate 90 cw)
+			 * tiff:Orientation: 6
+			 * vs.
+			 * Orientation: top, left side (horizontal / normal)
+			 * tiff:Orientation: 1
+			 */
 			if (key.contains("orientation")) {
 				if (value.contains("horizontal") || value.contains("landscape")) {
 					md.setLandscape(true);
 				}
 				if (value.contains("vertical") || value.contains("portrait")) {
+					md.setLandscape(false);
+				}
+				if (value.contains("rotate")) {
 					md.setLandscape(false);
 				}
 			}
@@ -504,7 +850,10 @@ public class Logic {
 				model = valueReal;
 			}
 		}
-		md.setCamera(make + " " + model);
+		String cameraValue = make + " " + model;
+		cameraValue = cameraValue.trim(); // for the case, when both, make + model are both empty!
+		cameraValue = fixStringForXml(cameraValue);
+		md.setCamera(cameraValue);
 
 		// meine RX100
 		/*
@@ -518,6 +867,25 @@ public class Logic {
 		 * Orientation: right side, top (rotate 90 cw) tiff:Orientation: 6
 		 * File Size: 2795458 bytes
 		 */
+
+		if (!printOnly || forceReload) {
+	    	EditingDomain domain = MainApp.get().getModelDomain();
+	    	domain.getCommandStack().execute(SetCommand.create(domain,
+	    			picture, GalleryPackage.eINSTANCE.getRealPicture_Metadata(), md));
+		}
+		return true;
+	}
+
+	private static String fixStringForXml(String newValue) {
+		// https://stackoverflow.com/questions/2362302/error-about-invalid-xml-characters-on-java
+		Pattern pattern = Pattern.compile("[\\000]*");
+		Matcher matcher = pattern.matcher(newValue);
+		if (matcher.find()) {
+			String fixedValue = matcher.replaceAll("");
+			System.err.println("fixed XML string: invalid " + newValue + ", fixed: " + fixedValue);
+			newValue = fixedValue;
+		}
+		return newValue;
 	}
 
 	public static String printMetadata(gallery.Metadata md) {
@@ -613,39 +981,100 @@ public class Logic {
 		}
 	}
 
-	public static PictureCollection selectCollection(PictureCollection base,
-			PictureCollection currentCollection, PictureCollection movetoCollection,
+	public static String askForDirectory(String title, boolean allowNull) {
+    	// https://docs.oracle.com/javafx/2/ui_controls/file-chooser.htm
+		String baseDir = null;
+		while (baseDir == null) {
+			DirectoryChooser dialog = new DirectoryChooser();
+			dialog.setTitle(title);
+			dialog.setInitialDirectory(new File(Settings.getBasePath()));
+			File choosenLibrary = dialog.showDialog(MainApp.get().getStage());
+	    	if (choosenLibrary != null) {
+	    		baseDir = choosenLibrary.getAbsolutePath();
+	    	} else if (allowNull) {
+	    		break;
+	    	} else {
+	    		// ask the user again
+	    	}
+		}
+		return baseDir;
+	}
+
+	public static int askForChoice(List<String> options, boolean allowNull,
+			String title, String header, String content) {
+		if (options == null || options.size() < 2) {
+			throw new IllegalArgumentException();
+		}
+		int result = -1;
+		while (result < 0) {
+			ChoiceDialog<String> dialog = new ChoiceDialog<>(options.get(0), options);
+			dialog.setTitle(title);
+			dialog.setHeaderText(header);
+			dialog.setContentText(content);
+
+			Optional<String> answer = dialog.showAndWait();
+			if (answer.isPresent()){
+				result = options.indexOf(answer.get());
+			} else if (allowNull) {
+				break;
+			} else {
+				// next iteration
+			}
+		}
+		return result;
+	}
+
+	public static PictureCollection selectCollection(
+			State currentState,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections) {
-		return Logic.selectCollection(base, currentCollection, movetoCollection,
+		return Logic.selectCollection(currentState,
 				allowNull, allowEmptyCollectionForSelection, allowLinkedCollections,
 				Collections.emptyList());
 	}
 
-	public static PictureCollection selectCollection(PictureCollection base,
-			PictureCollection currentCollection, PictureCollection movetoCollection,
+	public static PictureCollection selectCollection(
+			State currentState,
 			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections,
-			List<PictureCollection> ignoredCollections) {
+			List<? extends PictureCollection> ignoredCollections) {
+		final PictureCollection currentCollection;
+		final PictureCollection movetoCollection;
+		final PictureCollection linktoCollection;
+		if (currentState != null && currentState instanceof PictureSwitchingState) {
+			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
+			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection();
+			linktoCollection = ((PictureSwitchingState) currentState).getLinktoCollection();
+		} else {
+			currentCollection = null;
+			movetoCollection = null;
+			linktoCollection = null;
+		}
 		PictureCollection result = null;
 		boolean found = false;
-	
+
 		while (!found) {
 			// create the dialog
 			// http://code.makery.ch/blog/javafx-dialogs-official/
 			Dialog<PictureCollection> dialog = new Dialog<>();
 			dialog.setTitle("Select picture collection");
 			dialog.setHeaderText("Select one existing picture collection out of the following ones!");
-			ButtonType select = new ButtonType("Select", ButtonData.OK_DONE);
-			dialog.getDialogPane().getButtonTypes().add(select);
-	
-			// handle the "null collection" (1)
-			if (allowNull) {
-				dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-			}
-			Button selectButton = (Button) dialog.getDialogPane().lookupButton(select);
+
+			// select button
+			ButtonType selectType = new ButtonType("Select", ButtonData.OK_DONE);
+			dialog.getDialogPane().getButtonTypes().add(selectType);
+			Button selectButton = (Button) dialog.getDialogPane().lookupButton(selectType);
 			selectButton.setDisable(true);
 
+			// cancel button: handle the "null collection" (1)
+			Button cButton = null;
+			ButtonType cancelType = ButtonType.CANCEL;
+			if (allowNull) {
+				dialog.getDialogPane().getButtonTypes().add(cancelType);
+				cButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
+			}
+			Button cancelButton = cButton;
+
 			// create the tree view
-			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(base);
+			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
 			rootItem.setExpanded(true);
 			Logic.handleTreeItem(rootItem, allowLinkedCollections);
 			TreeView<PictureCollection> tree = new TreeView<>(rootItem);
@@ -669,6 +1098,9 @@ public class Logic {
 								}
 								if (item == movetoCollection) {
 									textToShow = textToShow + " [currently moving into]";
+								}
+								if (item == linktoCollection) {
+									textToShow = textToShow + " [currently linking into]";
 								}
 								// show the source of this link
 								if (item instanceof LinkedPictureCollection) {
@@ -694,6 +1126,10 @@ public class Logic {
 					// closes the dialog with "ENTER"
 					if (event.getCode() == KeyCode.ENTER && !selectButton.isDisabled()) {
 						selectButton.fire();
+					}
+					// cancel the dialog with "Esc"
+					if (event.getCode() == KeyCode.ESCAPE && cancelButton != null) {
+						cancelButton.fire();
 					}
 				}
 			});
@@ -725,7 +1161,7 @@ public class Logic {
 			dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
 				@Override
 				public PictureCollection call(ButtonType param) {
-					if (param == select) {
+					if (param == selectType) {
 						return tree.getSelectionModel().getSelectedItem().getValue();
 					}
 					return null;
@@ -761,7 +1197,7 @@ public class Logic {
 		return result;
 	}
 
-	private static void handleTreeItem(TreeItem<PictureCollection> item, boolean showLinkedCollections) {
+	public static void handleTreeItem(TreeItem<PictureCollection> item, boolean showLinkedCollections) {
 		for (PictureCollection subCol : item.getValue().getSubCollections()) {
 			if (subCol instanceof LinkedPictureCollection && !showLinkedCollections) {
 				continue;
@@ -811,18 +1247,26 @@ public class Logic {
 		}
 	}
 
-	public static void deleteSymlinkPicture(LinkedPicture link) {
-		deletePath(link.getFullPath());
-	}
-
-	private static void deletePath(String linkFullPath) {
+	public static boolean deletePath(String fullPath) { // TODO: Fehlschläge müssen berücksichtigt werden!!
 		try {
-			Files.delete(Paths.get(linkFullPath));
+			Files.delete(Paths.get(fullPath));
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
+	public static void deleteCollection(PictureCollection collection) {
+		if (collection instanceof RealPictureCollection) {
+			deleteRealCollection((RealPictureCollection) collection);
+		} else {
+			deleteSymlinkCollection((LinkedPictureCollection) collection);
+		}
+	}
+	public static void deleteRealCollection(RealPictureCollection real) {
+		deletePath(real.getFullPath());
+	}
 	public static void deleteSymlinkCollection(LinkedPictureCollection link) {
 		deletePath(link.getFullPath());
 	}
@@ -830,13 +1274,47 @@ public class Logic {
 	public static void deleteRealPicture(RealPicture real) {
 		deletePath(real.getFullPath());
 	}
+	public static void deleteSymlinkPicture(LinkedPicture link) {
+		deletePath(link.getFullPath());
+	}
 
-	public static void moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
+	public static boolean moveFileIntoDirectory(String previousFullPath, String newDirectoryFullPath) {
 		// https://stackoverflow.com/questions/12563955/move-all-files-from-folder-to-other-folder-with-java
 		try {
 			FileUtils.moveFileToDirectory(new File(previousFullPath), new File(newDirectoryFullPath), false);
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean moveDirectory(String previousFullPath, String newDirectoryFullPath) {
+		try {
+			FileUtils.moveDirectoryToDirectory(new File(previousFullPath), new File(newDirectoryFullPath), false);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * Copies the given (real or linked) picture into the specified folder.
+	 * @param path path of the folder
+	 * @param pictureToCopy picture to copy (real or linked)
+	 * @return
+	 */
+	public static boolean copyPicture(String path, Picture pictureToCopy) {
+		try {
+			Files.copy(
+					new File(getRealPicture(pictureToCopy).getFullPath()).toPath(),
+					new File(path + File.separator + pictureToCopy.getName() + "." + pictureToCopy.getFileExtension()).toPath(),
+					StandardCopyOption.REPLACE_EXISTING);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -849,46 +1327,92 @@ public class Logic {
 		return true;
 	}
 
+	/**
+	 * Checks both the file name and the file extension!
+	 * @param picture
+	 * @param newName
+	 * @return
+	 */
+	public static boolean isPictureNameUnique(Picture picture, String newName) {
+		if (picture.getName().equals(newName)) {
+			return true;
+		}
+		for (Picture pic : picture.getCollection().getPictures()) {
+			if (pic.getName().equals(newName) && pic.getFileExtension().equalsIgnoreCase(picture.getFileExtension())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static String getShortRelativePath(Picture picture) {
+		return picture.getCollection().getRelativePath() + File.separator;
+	}
+
 	public static void replaceRealByLinkedPicture(RealPicture oldReal, RealPicture newRef) {
 		// check the input
 		if (oldReal == null || newRef == null) {
 			throw new IllegalArgumentException();
 		}
+    	EditingDomain domain = MainApp.get().getModelDomain();
 
-		// fix the symlinks onto the old real picture
+		// fix the symlinks onto the old real picture (which will become a linked picture, too!)
 		List<LinkedPicture> links = new ArrayList<>(oldReal.getLinkedBy());
 		for (LinkedPicture link : links) {
 			deleteSymlinkPicture(link);
 
-			oldReal.getLinkedBy().remove(link);
-			newRef.getLinkedBy().add(link);
-			link.setRealPicture(newRef);
+			domain.getCommandStack().execute(RemoveCommand.create(domain,
+					oldReal, GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), link));
+//			oldReal.getLinkedBy().remove(link);
+			domain.getCommandStack().execute(SetCommand.create(domain,
+					link, GalleryPackage.eINSTANCE.getLinkedPicture_RealPicture(), newRef));
+//			link.setRealPicture(newRef);
+			domain.getCommandStack().execute(AddCommand.create(domain,
+					newRef, GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), link,
+					Logic.getIndexForPictureInsertion(newRef.getLinkedBy(), link)));
+//			newRef.getLinkedBy().add(link);
 
 			createSymlinkPicture(link);
 		}
 
+		// remove this old picture from the loading cache
+		MainApp.get().removeFromCache(oldReal);
+
+		RealPictureCollection oldParent = oldReal.getCollection();
 		// create new link
 		LinkedPicture newLink = GalleryFactory.eINSTANCE.createLinkedPicture();
-		newLink.setName(oldReal.getName());
-		newLink.setFileExtension(oldReal.getFileExtension());
-		newRef.getLinkedBy().add(newLink);
+		newLink.setName(new String(oldReal.getName()));
+		newLink.setFileExtension(new String(oldReal.getFileExtension()));
 		newLink.setRealPicture(newRef);
+		newLink.setCollection(oldParent);
 
-		oldReal.getCollection().getPictures().add(newLink);
-		newLink.setCollection(oldReal.getCollection());
+		domain.getCommandStack().execute(AddCommand.create(domain,
+				oldParent, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), newLink,
+				Logic.getIndexForPictureInsertion(oldParent.getPictures(), newLink)));
+//		oldParent.getPictures().add(newLink);
+		domain.getCommandStack().execute(AddCommand.create(domain, newRef, GalleryPackage.eINSTANCE.getRealPicture_LinkedBy(), newLink,
+				Logic.getIndexForPictureInsertion(newRef.getLinkedBy(), newLink)));
+//		newRef.getLinkedBy().add(newLink);
 
 		// remove old picture
 		deleteRealPicture(oldReal);
-		oldReal.getCollection().getPictures().remove(oldReal);
-		oldReal.setCollection(null);
+		domain.getCommandStack().execute(SetCommand.create(domain,
+				oldReal, GalleryPackage.eINSTANCE.getPicture_Collection(), null));
+//		oldReal.setCollection(null);
+		domain.getCommandStack().execute(RemoveCommand.create(domain,
+				oldParent, GalleryPackage.eINSTANCE.getRealPictureCollection_Pictures(), oldReal));
+//		oldParent.getPictures().remove(oldReal);
 
 		// old real and new linked picture have the same name => 1. remove old real, 2. create new link
 		createSymlinkPicture(newLink);
 
-		sortPicturesInCollection(newLink.getCollection());
+//		sortPicturesInCollection(newLink.getCollection());
 	}
 
 	public static RealPictureCollection getRealCollection(PictureCollection collection) {
+		if (collection == null) {
+			return null;
+		}
 		if (collection instanceof RealPictureCollection) {
 			return (RealPictureCollection) collection;
 		} else {
@@ -897,6 +1421,9 @@ public class Logic {
 	}
 
 	public static RealPicture getRealPicture(Picture picture) {
+		if (picture == null) {
+			return null;
+		}
 		if (picture instanceof RealPicture) {
 			return (RealPicture) picture;
 		} else {
@@ -904,6 +1431,92 @@ public class Logic {
 		}
 	}
 
+	/**
+	 * Returns all {@link RealPicture}s within the given collection.
+	 * @param collection
+	 * @return
+	 */
+	public static List<RealPicture> getRealPicturesOf(PictureCollection collection) {
+		List<RealPicture> result = new ArrayList<>(collection.getPictures().size());
+		for (Picture pic : collection.getPictures()) {
+			if (pic instanceof RealPicture) {
+				result.add((RealPicture) pic);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns all {@link LinkedPicture}s within the given collection.
+	 * @param collection
+	 * @return
+	 */
+	public static List<LinkedPicture> getLinkedPicturesOf(PictureCollection collection) {
+		List<LinkedPicture> result = new ArrayList<>(collection.getPictures().size());
+		for (Picture pic : collection.getPictures()) {
+			if (pic instanceof LinkedPicture) {
+				result.add((LinkedPicture) pic);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns all direct and indirect super collections of the given collection.
+	 * @param collection works for real and linked collections
+	 * @return The given collection itself is NOT contained in the resulting list, while the base collection is always contained (as long as the base collection is not used as input).
+	 */
+	public static List<RealPictureCollection> getAllSuperCollections(PictureCollection collection) {
+		List<RealPictureCollection> result = new ArrayList<>();
+		RealPictureCollection current = collection.getSuperCollection();
+		while (current != null) {
+			result.add(current);
+			current = current.getSuperCollection();
+		}
+		return result;
+	}
+
+	/**
+	 * Returns all direct and indirect sub-{@link RealPictureCollection}s of the given collection.
+	 * @param baseCollection
+	 * @return The given collection itself is NOT contained in the resulting list.
+	 */
+	public static List<RealPictureCollection> getAllSubCollections(RealPictureCollection baseCollection) {
+		List<RealPictureCollection> result = new ArrayList<>();
+		getAllSubCollectionsLogic(baseCollection, result, null);
+		return result;
+	}
+	/**
+	 * Collects recursively all direct and indirect sub-{@link RealPictureCollection}s and sub-{@link LinkedPictureCollection}s
+	 * of the given collection.
+	 * The given collection itself is NOT used/part of the filled lists.
+	 * @param baseCollection
+	 * @param resultReal list to store the found real sub-collections
+	 * @param resultLink list to store the found linked sub-collections
+	 */
+	public static void getAllSubCollectionsLogic(RealPictureCollection baseCollection,
+			List<RealPictureCollection> resultReal, List<LinkedPictureCollection> resultLink) {
+		for (PictureCollection sub : baseCollection.getSubCollections()) {
+			if (sub instanceof RealPictureCollection) {
+				RealPictureCollection subReal = (RealPictureCollection) sub;
+				resultReal.add(subReal);
+				getAllSubCollectionsLogic(subReal, resultReal, resultLink);
+			} else if (resultLink != null) {
+				resultLink.add((LinkedPictureCollection) sub);
+			}
+		}
+	}
+
+	public static boolean isCollectionRecursiveInCollection(RealPictureCollection parent, PictureCollection contained) {
+		RealPictureCollection currentContained = contained.getSuperCollection();
+		while (currentContained != null) {
+			if (currentContained == parent) {
+				return true;
+			}
+			currentContained = currentContained.getSuperCollection();
+		}
+		return false;
+	}
 	/**
 	 * !fast: requires a long waiting time!! ~ 2 seconds for "Sony RX100" (20 MPixel) pictures
 	 * @param picture
@@ -927,27 +1540,45 @@ public class Logic {
 		 */
 
 		RealPicture real = getRealPicture(picture);
-		System.out.println("load next");
 		try {
 			if (!fast) {
 				// https://github.com/pragone/jphash
+				System.out.println("load slow hash for " + picture.getRelativePath());
 				RadialHash hash1 = jpHash.getImageRadialHash(real.getFullPath());
-				real.setHash(hash1 + "");
+				setHashLogic(real, hash1 + "", false);
 			} else {
 				// https://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java
+				System.out.println("load fast hash for " + picture.getRelativePath());
 				FileInputStream fis = new FileInputStream(new File(real.getFullPath()));
 				String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
 				fis.close();
-				real.setHashFast(md5);
+				setHashLogic(real, md5, true);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			real.setHash(NO_HASH);
+			setHashLogic(real, NO_HASH, fast);
 		} catch (Throwable e) {
+			// as example, sometime, exceptions like "java.lang.IllegalArgumentException: Can't work with this type of byte image: 13" occur
 			e.printStackTrace();
-			real.setHash(NO_HASH);
+			setHashLogic(real, NO_HASH, fast);
 		}
-		return real.getHash();
+		// return the calculated result
+		if (fast) {
+			return real.getHashFast();
+		} else {
+			return real.getHash();
+		}
+	}
+
+	private static void setHashLogic(RealPicture picture, String hash, boolean fast) {
+		EditingDomain domain = MainApp.get().getModelDomain();
+		final Command set;
+		if (fast) {
+			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getPictureWithHash_HashFast(), hash);
+		} else {
+			set = SetCommand.create(domain, picture, GalleryPackage.eINSTANCE.getPictureWithHash_Hash(), hash);
+		}
+		domain.getCommandStack().execute(set);
 	}
 
 	public static double getSimilarity(Picture p1, Picture p2, boolean fast) {
@@ -982,108 +1613,576 @@ public class Logic {
 			return true;
 		}
 
-		// check which values are available: if the slower==complexer==better is available for both pictures => use the slower hash!
+		// 1. if the FAST hash is available => use it
+		if (p1.getHashFast() != null && !p1.getHashFast().equals(NO_HASH)
+				&& p2.getHashFast() != null && !p2.getHashFast().equals(NO_HASH)) {
+			return getSimilarity(p1, p2, true) >= 1.0;
+		}
+
+		// 2. if the SLOW hash is available => use it
 		if (p1.getHash() != null && !p1.getHash().equals(NO_HASH)
 				&& p2.getHash() != null && !p2.getHash().equals(NO_HASH)) {
 			return getSimilarity(p1, p2, false) >= 1.0;
-		} else {
-			return getSimilarity(p1, p2, true) >= 1.0;
 		}
+
+		// hashes are not comparable => different pictures
+		return false;
 	}
 
-	public static void findIdenticalInOneCollection(PictureCollection collection) {
-		int size = collection.getPictures().size();
-		System.out.println("beginning!");
-		for (int i = 0; i < size - 1; i++) {
-			for (int j = i + 1; j < size; j++) {
-				if (i == 0) {
-					System.out.println("next: " + j);
+	/**
+	 * Collects identical pictures within one collection.
+	 * Ignores linked pictures!
+	 * No comparison of pictures which are contained in different collections. 
+	 * @param collection
+	 * @param recursive
+	 * @return
+	 */
+	public static Map<RealPicture, List<RealPicture>> findIdenticalInOneCollection(
+			RealPictureCollection collection, boolean recursive) {
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
+		findIdenticalInOneCollectionLogic(collection, recursive, result);
+		return result;
+	}
+	private static void findIdenticalInOneCollectionLogic(RealPictureCollection collection,
+			boolean recursive, Map<RealPicture, List<RealPicture>> result) {
+		Map<String, RealPicture> hashMap = new HashMap<>(collection.getPictures().size());
+
+		System.out.println("beginning with " + collection.getRelativePath() + "!");
+
+		for (Picture pic : collection.getPictures()) {
+			if (!(pic instanceof RealPicture)) {
+				continue;
+			}
+			RealPicture currentReal = (RealPicture) pic;
+
+			// calculate the hash for the current RealPicture
+			String currentHash = getOrLoadHashOfPicture(currentReal, true);
+			if (currentHash == null || currentHash.isEmpty() || currentHash.equals(NO_HASH)) {
+				continue;
+			}
+
+			RealPicture duplicated = hashMap.get(currentHash);
+			if (duplicated == null) {
+				// new hash:
+				hashMap.put(currentHash, currentReal);
+			} else {
+				// already available hash: => duplicate!
+
+				// 1. get the result list to store duplicate values
+				List<RealPicture> res = result.get(duplicated);
+				if (res == null) {
+					res = new ArrayList<>();
+					result.put(duplicated, res);
 				}
-				Picture p1 = collection.getPictures().get(i);
-				Picture p2 = collection.getPictures().get(j);
-				if (Logic.arePicturesIdentical(p1, p2)) {
-					System.out.println(p1.getRelativePath() + " and " + p2.getRelativePath() + " are identical!");
+
+				// 2. save the current picture as duplicated!
+				res.add(currentReal);
+			}
+		}
+
+		System.out.println("ready! found " + result.size() + " pictures with duplicates");
+
+		if (recursive) {
+			for (PictureCollection sub : collection.getSubCollections()) {
+				if (sub instanceof RealPictureCollection) {
+					findIdenticalInOneCollectionLogic((RealPictureCollection) sub, recursive, result);
 				}
 			}
 		}
-		System.out.println("ready!");
 	}
 
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalInSubcollections(PictureCollection baseCollection) {
-		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
+	public static Map<RealPicture, List<RealPicture>> findIdenticalInSubcollections(RealPictureCollection baseCollection) {
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
 		findIdenticalInSubcollectionsLogic(baseCollection, baseCollection, result);
 		return result;
 	}
-	private static void findIdenticalInSubcollectionsLogic(PictureCollection baseCollection, PictureCollection current,
-			List<Pair<RealPicture, RealPicture>> result) {
+	private static void findIdenticalInSubcollectionsLogic(RealPictureCollection baseCollection, RealPictureCollection current,
+			Map<RealPicture, List<RealPicture>> result) {
 		for (PictureCollection sub : current.getSubCollections()) {
 			if (sub instanceof LinkedPictureCollection) {
 				continue;
 			}
-			List<Pair<RealPicture, RealPicture>> r = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures());
-			if (r != null) {
-				result.addAll(r);
+
+			List<Pair<RealPicture, RealPicture>> foundPictures = findIdenticalBetweenLists(baseCollection.getPictures(), sub.getPictures());
+
+			// moves the found pictures into the result map
+			for (Pair<RealPicture, RealPicture> found : foundPictures) {
+				List<RealPicture> list = result.get(found.getKey());
+				if (list == null) {
+					list = new ArrayList<>();
+					result.put(found.getKey(), list);
+				}
+				list.add(found.getValue());
 			}
-			findIdenticalInSubcollectionsLogic(baseCollection, sub, result);
+
+			// searches in all sub-sub-collections ...
+			findIdenticalInSubcollectionsLogic(baseCollection, (RealPictureCollection) sub, result);
 		}
 	}
 
 	/**
-	 * Searches in two for duplicated real picture of one.
+	 * Searches in "two" for duplicated real picture of "one" (ignoring all {@link LinkedPicture}s!).
+	 * Works only in proper/expected way, if the "one" list does NOT contain identical pictures within itself!
 	 * @param one
 	 * @param two
+	 * @return
 	 */
-	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<Picture> one, List<Picture> two) {
-		if (one.isEmpty() || two.isEmpty()) {
-			return null;
-		}
+	public static List<Pair<RealPicture, RealPicture>> findIdenticalBetweenLists(List<? extends Picture> one, List<? extends Picture> two) {
 		List<Pair<RealPicture, RealPicture>> result = new ArrayList<>();
-		System.out.println("start");
-		for (Picture p : two) {
-			if (p instanceof LinkedPicture) {
+		if (one.isEmpty() || two.isEmpty()) {
+			return result;
+		}
+
+		// put all usable hashes of the pictures of the first list into a Map:
+		Map<String, RealPicture> hashesOne = new HashMap<>(one.size());
+		for (Picture onePic : one) {
+			if (onePic instanceof LinkedPicture) {
 				continue;
 			}
-			for (Picture o : one) {
-				if (o instanceof LinkedPicture) {
-					continue;
-				}
-				if (arePicturesIdentical(p, o)) {
-					System.out.println(p.getRelativePath() + " == " + o.getRelativePath());
-					result.add(new Pair<>((RealPicture) p, (RealPicture) o));
-				}
+
+			String hashOne = getOrLoadHashOfPicture(onePic, true);
+			if (hashOne == null || hashOne.isEmpty() || hashOne.equals(NO_HASH)) {
+				continue;
+			}
+
+			hashesOne.put(hashOne, (RealPicture) onePic); // ignores/hides identical pictures within list "one"
+		}
+
+		// check the second list ...
+		for (Picture twoPic : two) {
+			if (twoPic instanceof LinkedPicture) {
+				continue;
+			}
+
+			String hashTwo = getOrLoadHashOfPicture(twoPic, true);
+			if (hashTwo == null || hashTwo.isEmpty() || hashTwo.equals(NO_HASH)) {
+				continue;
+			}
+
+			RealPicture onePic = hashesOne.get(hashTwo);
+			if (onePic != null) {
+				System.out.println(onePic.getRelativePath() + " == " + twoPic.getRelativePath());
+				result.add(new Pair<>(onePic, (RealPicture) twoPic));
 			}
 		}
-		System.out.println("end");
+
 		return result;
 	}
 
-	public static void replaceIdenticalPicturesInSubcollectionsByLink(PictureCollection currentCollection) {
-		// linked collections => do nothing!
-		if (currentCollection instanceof LinkedPictureCollection) {
-			return;
-		}
-		// current collection is empty => link to pictures of sub-collections
+	/**
+	 * Searches for identical pictures recursively in sub-collections.
+	 * @param currentCollection
+	 * @return
+	 */
+	public static Map<RealPicture, List<RealPicture>> findIdenticalInSubcollectionsRecursive(RealPictureCollection currentCollection) {
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
+
 		if (currentCollection.getPictures().isEmpty()) {
+			// current collection is empty => link to pictures of sub-collections
 			for (PictureCollection sub : currentCollection.getSubCollections()) {
-				replaceIdenticalPicturesInSubcollectionsByLink(sub);
+				if (sub instanceof RealPictureCollection) {
+					result.putAll(findIdenticalInSubcollectionsRecursive((RealPictureCollection) sub));
+				}
 			}
-			return;
+		} else {
+			// current collection contains pictures:
+			Map<RealPicture, List<RealPicture>> resultLocal = Logic.findIdenticalInSubcollections(currentCollection);
+			result.putAll(resultLocal);
 		}
-		// current collection contains pictures:
-		List<Pair<RealPicture, RealPicture>> result = Logic.findIdenticalInSubcollections(currentCollection);
-		if (result.isEmpty()) {
-			return;
-		}
-		String files = "";
-		for (Pair<RealPicture, RealPicture> pair : result) {
-			files = files + pair.getKey().getRelativePath() + " ==> " + pair.getValue().getRelativePath() + "\n";
-		}
-		files = files.trim();
-		boolean replace = Logic.askForConfirmation("Find and replace duplications", "Replace duplicated pictures by links?", files);
-		if (replace) {
-			for (Pair<RealPicture, RealPicture> pair : result) {
-				Logic.replaceRealByLinkedPicture(pair.getKey(), pair.getValue());
+
+		return result;
+	}
+
+	public static Map<RealPicture, List<RealPicture>> findIdenticalBetweenAllCollections(RealPictureCollection baseCollection) {
+		// collect all collections
+		List<List<RealPicture>> allCollections = new ArrayList<>();
+		collectAllCollectionsLogic(allCollections, baseCollection);
+
+		// sort them by size descending (?)
+		allCollections.sort(new Comparator<List<RealPicture>>() {
+			@Override
+			public int compare(List<RealPicture> o1, List<RealPicture> o2) {
+				return Integer.compare(o2.size(), o1.size());
 			}
+		});
+
+		Map<RealPicture, List<RealPicture>> result = new HashMap<>();
+
+		while (allCollections.size() >= 2) {
+			// compare each picture of the first collection with all other collections
+			for (int i = 1; i < allCollections.size(); i++) {
+				List<Pair<RealPicture, RealPicture>> found = findIdenticalBetweenLists(
+						allCollections.get(0), allCollections.get(i));
+
+				// move the found items into the map
+				for (Pair<RealPicture, RealPicture> pair : found) {
+					List<RealPicture> item = result.get(pair.getKey());
+					if (item == null) {
+						item = new ArrayList<>();
+						result.put(pair.getKey(), item);
+					}
+					item.add(pair.getValue());
+
+					// remove found pictures to ignore them in future
+					// (the found picture of the first list will be ignored automatically, because the first list will not be used in future!)
+					allCollections.get(i).remove(pair.getValue());
+				}
+			}
+
+			// than repeat that with the second collection (but ignoring the first one), and so on!
+			allCollections.remove(0);
+		}
+
+		return result;
+	}
+
+	private static void collectAllCollectionsLogic(List<List<RealPicture>> allCollections, RealPictureCollection base) {
+		List<RealPicture> ne = getRealPicturesOf(base);
+		if (ne != null && !ne.isEmpty()) {
+			allCollections.add(ne);
+		}
+		for (PictureCollection sub : base.getSubCollections()) {
+			if (sub instanceof RealPictureCollection) {
+				collectAllCollectionsLogic(allCollections, (RealPictureCollection) sub);
+			}
+		}
+	}
+
+	public static List<RealPicture> findIdenticalDeletedPictures(PictureLibrary library, RealPictureCollection baseCollection, boolean recursive) {
+		List<RealPicture> result = new ArrayList<>();
+		int size = library.getDeletedPictures().size();
+		if (size <= 0) {
+			return result;
+		}
+
+		// put all deleted pictures into a map => much faster comparison possible!
+		Map<String, DeletedPicture> deletedMap = new HashMap<>(size);
+		for (DeletedPicture del : library.getDeletedPictures()) {
+			deletedMap.put(del.getHashFast(), del);
+		}
+
+		findIdenticalDeletedPicturesLogic(baseCollection, deletedMap, result, recursive);
+		return result;
+	}
+
+	private static void findIdenticalDeletedPicturesLogic(RealPictureCollection baseCollection,
+			Map<String, DeletedPicture> deletedMap, List<RealPicture> result, boolean recursive) {
+		// search for "deleted" pictures
+		for (Picture pic : baseCollection.getPictures()) {
+			if (pic instanceof RealPicture) {
+				if (deletedMap.containsKey(Logic.getOrLoadHashOfPicture(pic, true))) {
+					result.add((RealPicture) pic);
+				}
+			}
+		}
+
+		// handle the sub-collections, too
+		if (recursive) {
+			for (PictureCollection sub : baseCollection.getSubCollections()) {
+				if (sub instanceof RealPictureCollection) {
+					findIdenticalDeletedPicturesLogic((RealPictureCollection) sub, deletedMap, result, recursive);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Finds pictures of the second collection by the fast hash
+	 * which are not in the first collection.
+	 * @param keep
+	 * @param remove
+	 * @return
+	 */
+	public static List<RealPicture> findSinglePictures(RealPictureCollection keep, RealPictureCollection remove) {
+		// collect the real pictures
+		List<RealPicture> realMapped = getRealPicturesOf(keep);
+		List<RealPicture> realLoop = getRealPicturesOf(remove);
+		if (realMapped.isEmpty() || realLoop.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// put the elements into a map
+		Map<String, RealPicture> map = new HashMap<>(realMapped.size());
+		for (RealPicture real : realMapped) {
+			String hash = Logic.getOrLoadHashOfPicture(real, true);
+			if (hash == null || hash.isEmpty() || hash.equals(NO_HASH)) {
+				// bad hash => ignore this picture => will not deleted!
+				continue;
+			}
+			map.put(hash, real);
+		}
+
+		// search for single pictures
+		realMapped.clear(); // reuse memory (?)
+		for (RealPicture real : realLoop) {
+			String hash = Logic.getOrLoadHashOfPicture(real, true);
+			if (hash == null || hash.isEmpty() || hash.equals(NO_HASH)) {
+				// bad hash => delete this picture
+				realMapped.add(real);
+			} else if (! map.containsKey(hash)) {
+				// picture not available in the other list => delete it!
+				realMapped.add(real);
+			}
+		}
+
+		return realMapped;
+	}
+
+	/**
+	 * Computes the index at which the given picture should be inserted into the given list of pictures.
+	 * Does not have side-effects (read-only, no changes)!
+	 * @param pictureList
+	 * @param picture
+	 * @return
+	 */
+	public static int getIndexForPictureInsertion(List<? extends Picture> pictureList, Picture picture) {
+		int result = 0;
+		while (result < pictureList.size()
+				&& getComparable(picture).compareTo(getComparable(pictureList.get(result))) > 0) {
+			result++;
+		}
+		return result;
+	}
+
+	public static int getIndexForPictureAtWrongPositionMove(List<? extends Picture> pictureList, Picture picture) {
+		int result = pictureList.indexOf(picture);
+		if (result < 0) {
+			throw new IllegalArgumentException();
+		}
+		// move to the right?
+		while (result < (pictureList.size() - 1)
+				&& getComparable(picture).compareTo(getComparable(pictureList.get(result + 1))) > 0) {
+			result++;
+		}
+		// move to the left?
+		while (result > 0
+				&& getComparable(pictureList.get(result - 1)).compareTo(getComparable(picture)) > 0) {
+			result--;
+		}
+		return result;
+	}
+
+	/**
+	 * Computes the index at which the given collection should be inserted into the given list of collections.
+	 * Does not have side-effects (read-only, no changes)!
+	 * @param collectionList
+	 * @param collection
+	 * @return
+	 */
+	public static int getIndexForCollectionInsertion(List<? extends PictureCollection> collectionList, PictureCollection collection) {
+		int result = 0;
+		while (result < collectionList.size()
+				&& getComparable(collectionList.get(result)).compareTo(getComparable(collection)) < 0) {
+			result++;
+		}
+		return result;
+	}
+
+	/**
+	 * 
+	 * @param collectionList list which is sorted (exception: the given picture is inserted an any (wrong) position)
+	 * @param collection
+	 * @return the target index after moving the given picture to the correction position (see {@link MoveCommand})
+	 */
+	public static int getIndexForCollectionAtWrongPositionMove(List<? extends PictureCollection> collectionList, PictureCollection collection) {
+		int result = collectionList.indexOf(collection);
+		if (result < 0) {
+			throw new IllegalArgumentException();
+		}
+		// move to the right?
+		while (result < (collectionList.size() - 1)
+				&& getComparable(collectionList.get(result + 1)).compareTo(getComparable(collection)) < 0) {
+			result++;
+		}
+		// move to the left?
+		while (result > 0
+				&& getComparable(collectionList.get(result - 1)).compareTo(getComparable(collection)) > 0) {
+			result--;
+		}
+		return result;
+	}
+
+	public static String getComparable(PathElement element) {
+		return element.getName().toUpperCase().toLowerCase();
+	}
+
+	public static PictureCollection getCollectionByName(RealPictureCollection parent, String collectionName,
+			boolean searchReal, boolean searchLinked) {
+		// diese Methode könnte theoretisch auch durch eine Map beschleunigt werden, dürfte aber nur bei sehr vielen Unterordnern relevant sein!
+		if (!searchReal && !searchLinked) {
+			throw new IllegalArgumentException();
+		}
+		for (PictureCollection sub : parent.getSubCollections()) {
+			if (!searchLinked && sub instanceof LinkedPictureCollection) {
+				continue;
+			}
+			if (!searchReal && sub instanceof RealPictureCollection) {
+				continue;
+			}
+			if (sub.getName().equals(collectionName)) {
+				return sub;
+			}
+		}
+		return null;
+	}
+
+	public static Iterator<RealPicture> iteratorPictures(RealPictureCollection baseCollection) {
+		return new RealPictureIterator(baseCollection);
+	}
+
+	public static class RealPictureIterator implements Iterator<RealPicture> {
+		private final Iterator<RealPictureCollection> collections;
+		private Iterator<Picture> pictures;
+		private RealPicture nextPicture;
+
+		public RealPictureIterator(RealPictureCollection base) {
+			collections = iteratorCollection(base);
+			if (collections.hasNext()) {
+				pictures = collections.next().getPictures().iterator();
+			}
+			nextPicture = null;
+
+			/*
+			 * 1..* x hasNext()
+			 * 1 next()
+			 * ...
+			 */
+		}
+
+		@Override
+		public boolean hasNext() {
+			if (nextPicture != null) {
+				return true;
+			}
+			Picture next = null;
+			while (true) {
+				while (pictures.hasNext() && !(next instanceof RealPicture)) {
+					next = pictures.next();
+				}
+				if (next instanceof RealPicture) {
+					// found next within the current collection
+					nextPicture = (RealPicture) next;
+					return true;
+				}
+	
+				// check the next collection
+				if (collections.hasNext()) {
+					pictures = collections.next().getPictures().iterator();
+				} else {
+					return false;
+				}
+			}
+		}
+
+		@Override
+		public RealPicture next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			if (nextPicture == null) {
+				throw new IllegalStateException();
+			}
+			RealPicture result = nextPicture;
+			nextPicture = null;
+			return result;
+		}
+	}
+
+	public static Iterator<RealPictureCollection> iteratorCollection(RealPictureCollection baseCollection) {
+		return new RealPictureCollectionIterator(baseCollection);
+	}
+
+	public static class RealPictureCollectionIterator implements Iterator<RealPictureCollection> {
+		// https://stackoverflow.com/questions/30779515/recursive-iterator-for-composite-pattern
+		private final Deque<RealPictureCollection> stack;
+
+		public RealPictureCollectionIterator(RealPictureCollection base) {
+			stack = new LinkedList<>();
+			stack.push(base);
+		}
+
+		@Override
+		public boolean hasNext() {
+			return !stack.isEmpty();
+		}
+
+		@Override
+		public RealPictureCollection next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			RealPictureCollection result = stack.pop();
+			for (PictureCollection sub : result.getSubCollections()) {
+				if (sub instanceof RealPictureCollection) {
+					stack.push((RealPictureCollection) sub);
+				}
+			}
+			return result;
+		}
+	}
+
+	public static boolean isNumber(String value) {
+		// https://stackoverflow.com/questions/1102891/how-to-check-if-a-string-is-numeric-in-java
+		for (char c : value.toCharArray()) {
+			if ( ! Character.isDigit(c))
+				return false;
+		}
+		return true;
+	}
+
+	public static Map<String, AtomicInteger> getExtensionMap(PictureCollection collection) {
+		Map<String, AtomicInteger> extensionMap = new HashMap<>();
+
+		for (Picture pic : collection.getPictures()) {
+			if (pic == null) {
+				System.out.println(collection.getRelativePath() + " contains NULL as picture ?!");
+				continue;
+			}
+			RealPicture real = getRealPicture(pic);
+			if (real == null) {
+				System.out.println("The real picture of " + pic.getRelativePath() + " is null ?!");
+				continue;
+			}
+			String key = real.getFileExtension();
+			if (key == null || key.isEmpty()) {
+				System.out.println("missing file extension for " + real.getRelativePath());
+				continue;
+			}
+			key = key.toLowerCase();
+
+			AtomicInteger counter = extensionMap.get(key);
+			if (counter == null) {
+				counter = new AtomicInteger(0);
+				extensionMap.put(key, counter);
+			}
+
+			// count the different kinds of extensions!
+			counter.incrementAndGet();
+		}
+
+		return extensionMap;
+	}
+
+	public static void runOnUiThread(Runnable run) {
+		if (Platform.isFxApplicationThread()) {
+			run.run();
+		} else {
+			Platform.runLater(run);
+		}
+	}
+
+	public static void runNotOnUiThread(Runnable run) {
+		if (Platform.isFxApplicationThread()) {
+			Task<Void> task = new Task<Void>() {
+				@Override
+				protected Void call() throws Exception {
+					run.run();
+					return null;
+				}
+			};
+	        new Thread(task).start();
+		} else {
+			run.run();
 		}
 	}
 }

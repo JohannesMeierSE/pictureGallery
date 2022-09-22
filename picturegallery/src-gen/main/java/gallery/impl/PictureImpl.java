@@ -329,4 +329,12 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 		return getCollection().getRelativePath() + File.separator + getName() + "." + getFileExtension();
 	}
 
+	/**
+	 * user-defined code!
+	 */
+	@Override
+	public String getRelativePathWithoutBase() {
+		return getCollection().getRelativePathWithoutBase() + File.separator + getName() + "." + getFileExtension();
+	}
+
 } //PictureImpl

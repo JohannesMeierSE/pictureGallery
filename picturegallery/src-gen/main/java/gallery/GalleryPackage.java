@@ -104,13 +104,22 @@ public interface GalleryPackage extends EPackage {
 	int PATH_ELEMENT___GET_RELATIVE_PATH = 1;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE = 2;
+
+	/**
 	 * The number of operations of the '<em>Path Element</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int PATH_ELEMENT_OPERATION_COUNT = 2;
+	int PATH_ELEMENT_OPERATION_COUNT = 3;
 
 	/**
 	 * The meta object id for the '{@link gallery.impl.PictureCollectionImpl <em>Picture Collection</em>}' class.
@@ -166,6 +175,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int PICTURE_COLLECTION___GET_RELATIVE_PATH = PATH_ELEMENT___GET_RELATIVE_PATH;
+
+	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE = PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE;
 
 	/**
 	 * The operation id for the '<em>Get Pictures</em>' operation.
@@ -259,6 +277,15 @@ public interface GalleryPackage extends EPackage {
 	int PICTURE___GET_RELATIVE_PATH = PATH_ELEMENT___GET_RELATIVE_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE = PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE;
+
+	/**
 	 * The operation id for the '<em>Get Metadata</em>' operation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -332,31 +359,13 @@ public interface GalleryPackage extends EPackage {
 	int REAL_PICTURE__COLLECTION = PICTURE__COLLECTION;
 
 	/**
-	 * The feature id for the '<em><b>Linked By</b></em>' reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int REAL_PICTURE__LINKED_BY = PICTURE_FEATURE_COUNT + 0;
-
-	/**
-	 * The feature id for the '<em><b>Metadata</b></em>' containment reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int REAL_PICTURE__METADATA = PICTURE_FEATURE_COUNT + 1;
-
-	/**
 	 * The feature id for the '<em><b>Hash</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int REAL_PICTURE__HASH = PICTURE_FEATURE_COUNT + 2;
+	int REAL_PICTURE__HASH = PICTURE_FEATURE_COUNT + 0;
 
 	/**
 	 * The feature id for the '<em><b>Hash Fast</b></em>' attribute.
@@ -365,7 +374,25 @@ public interface GalleryPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int REAL_PICTURE__HASH_FAST = PICTURE_FEATURE_COUNT + 3;
+	int REAL_PICTURE__HASH_FAST = PICTURE_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Linked By</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE__LINKED_BY = PICTURE_FEATURE_COUNT + 2;
+
+	/**
+	 * The feature id for the '<em><b>Metadata</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE__METADATA = PICTURE_FEATURE_COUNT + 3;
 
 	/**
 	 * The number of structural features of the '<em>Real Picture</em>' class.
@@ -393,6 +420,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int REAL_PICTURE___GET_RELATIVE_PATH = PICTURE___GET_RELATIVE_PATH;
+
+	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE;
 
 	/**
 	 * The operation id for the '<em>Get Metadata</em>' operation.
@@ -504,6 +540,15 @@ public interface GalleryPackage extends EPackage {
 	int LINKED_PICTURE___GET_RELATIVE_PATH = PICTURE___GET_RELATIVE_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int LINKED_PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE___GET_RELATIVE_PATH_WITHOUT_BASE;
+
+	/**
 	 * The operation id for the '<em>Get Metadata</em>' operation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -577,13 +622,22 @@ public interface GalleryPackage extends EPackage {
 	int PICTURE_LIBRARY__BASE_COLLECTION = 2;
 
 	/**
+	 * The feature id for the '<em><b>Deleted Pictures</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_LIBRARY__DELETED_PICTURES = 3;
+
+	/**
 	 * The number of structural features of the '<em>Picture Library</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int PICTURE_LIBRARY_FEATURE_COUNT = 3;
+	int PICTURE_LIBRARY_FEATURE_COUNT = 4;
 
 	/**
 	 * The number of operations of the '<em>Picture Library</em>' class.
@@ -779,6 +833,15 @@ public interface GalleryPackage extends EPackage {
 	int REAL_PICTURE_COLLECTION___GET_RELATIVE_PATH = PICTURE_COLLECTION___GET_RELATIVE_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE;
+
+	/**
 	 * The operation id for the '<em>Get Pictures</em>' operation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -870,6 +933,15 @@ public interface GalleryPackage extends EPackage {
 	int LINKED_PICTURE_COLLECTION___GET_RELATIVE_PATH = PICTURE_COLLECTION___GET_RELATIVE_PATH;
 
 	/**
+	 * The operation id for the '<em>Get Relative Path Without Base</em>' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int LINKED_PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE = PICTURE_COLLECTION___GET_RELATIVE_PATH_WITHOUT_BASE;
+
+	/**
 	 * The operation id for the '<em>Get Pictures</em>' operation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -895,6 +967,117 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int LINKED_PICTURE_COLLECTION_OPERATION_COUNT = PICTURE_COLLECTION_OPERATION_COUNT + 0;
+
+
+	/**
+	 * The meta object id for the '{@link gallery.impl.PictureWithHashImpl <em>Picture With Hash</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see gallery.impl.PictureWithHashImpl
+	 * @see gallery.impl.GalleryPackageImpl#getPictureWithHash()
+	 * @generated
+	 */
+	int PICTURE_WITH_HASH = 10;
+
+	/**
+	 * The feature id for the '<em><b>Hash</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_WITH_HASH__HASH = 0;
+
+	/**
+	 * The feature id for the '<em><b>Hash Fast</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_WITH_HASH__HASH_FAST = 1;
+
+	/**
+	 * The number of structural features of the '<em>Picture With Hash</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_WITH_HASH_FEATURE_COUNT = 2;
+
+	/**
+	 * The number of operations of the '<em>Picture With Hash</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_WITH_HASH_OPERATION_COUNT = 0;
+
+	/**
+	 * The meta object id for the '{@link gallery.impl.DeletedPictureImpl <em>Deleted Picture</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see gallery.impl.DeletedPictureImpl
+	 * @see gallery.impl.GalleryPackageImpl#getDeletedPicture()
+	 * @generated
+	 */
+	int DELETED_PICTURE = 9;
+
+	/**
+	 * The feature id for the '<em><b>Hash</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELETED_PICTURE__HASH = PICTURE_WITH_HASH__HASH;
+
+	/**
+	 * The feature id for the '<em><b>Hash Fast</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELETED_PICTURE__HASH_FAST = PICTURE_WITH_HASH__HASH_FAST;
+
+	/**
+	 * The feature id for the '<em><b>Relative Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELETED_PICTURE__RELATIVE_PATH = PICTURE_WITH_HASH_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Library</b></em>' container reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELETED_PICTURE__LIBRARY = PICTURE_WITH_HASH_FEATURE_COUNT + 1;
+
+	/**
+	 * The number of structural features of the '<em>Deleted Picture</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELETED_PICTURE_FEATURE_COUNT = PICTURE_WITH_HASH_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of operations of the '<em>Deleted Picture</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELETED_PICTURE_OPERATION_COUNT = PICTURE_WITH_HASH_OPERATION_COUNT + 0;
 
 
 	/**
@@ -1033,28 +1216,6 @@ public interface GalleryPackage extends EPackage {
 	EReference getRealPicture_Metadata();
 
 	/**
-	 * Returns the meta object for the attribute '{@link gallery.RealPicture#getHash <em>Hash</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Hash</em>'.
-	 * @see gallery.RealPicture#getHash()
-	 * @see #getRealPicture()
-	 * @generated
-	 */
-	EAttribute getRealPicture_Hash();
-
-	/**
-	 * Returns the meta object for the attribute '{@link gallery.RealPicture#getHashFast <em>Hash Fast</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Hash Fast</em>'.
-	 * @see gallery.RealPicture#getHashFast()
-	 * @see #getRealPicture()
-	 * @generated
-	 */
-	EAttribute getRealPicture_HashFast();
-
-	/**
 	 * Returns the meta object for class '{@link gallery.LinkedPicture <em>Linked Picture</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1117,6 +1278,16 @@ public interface GalleryPackage extends EPackage {
 	EOperation getPathElement__GetRelativePath();
 
 	/**
+	 * Returns the meta object for the '{@link gallery.PathElement#getRelativePathWithoutBase() <em>Get Relative Path Without Base</em>}' operation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the '<em>Get Relative Path Without Base</em>' operation.
+	 * @see gallery.PathElement#getRelativePathWithoutBase()
+	 * @generated
+	 */
+	EOperation getPathElement__GetRelativePathWithoutBase();
+
+	/**
 	 * Returns the meta object for class '{@link gallery.PictureLibrary <em>Picture Library</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1147,6 +1318,17 @@ public interface GalleryPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getPictureLibrary_BaseCollection();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link gallery.PictureLibrary#getDeletedPictures <em>Deleted Pictures</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Deleted Pictures</em>'.
+	 * @see gallery.PictureLibrary#getDeletedPictures()
+	 * @see #getPictureLibrary()
+	 * @generated
+	 */
+	EReference getPictureLibrary_DeletedPictures();
 
 	/**
 	 * Returns the meta object for the attribute '{@link gallery.PictureLibrary#getName <em>Name</em>}'.
@@ -1322,6 +1504,70 @@ public interface GalleryPackage extends EPackage {
 	EReference getLinkedPictureCollection_RealCollection();
 
 	/**
+	 * Returns the meta object for class '{@link gallery.DeletedPicture <em>Deleted Picture</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Deleted Picture</em>'.
+	 * @see gallery.DeletedPicture
+	 * @generated
+	 */
+	EClass getDeletedPicture();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.DeletedPicture#getRelativePath <em>Relative Path</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Relative Path</em>'.
+	 * @see gallery.DeletedPicture#getRelativePath()
+	 * @see #getDeletedPicture()
+	 * @generated
+	 */
+	EAttribute getDeletedPicture_RelativePath();
+
+	/**
+	 * Returns the meta object for the container reference '{@link gallery.DeletedPicture#getLibrary <em>Library</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the container reference '<em>Library</em>'.
+	 * @see gallery.DeletedPicture#getLibrary()
+	 * @see #getDeletedPicture()
+	 * @generated
+	 */
+	EReference getDeletedPicture_Library();
+
+	/**
+	 * Returns the meta object for class '{@link gallery.PictureWithHash <em>Picture With Hash</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Picture With Hash</em>'.
+	 * @see gallery.PictureWithHash
+	 * @generated
+	 */
+	EClass getPictureWithHash();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.PictureWithHash#getHash <em>Hash</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Hash</em>'.
+	 * @see gallery.PictureWithHash#getHash()
+	 * @see #getPictureWithHash()
+	 * @generated
+	 */
+	EAttribute getPictureWithHash_Hash();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.PictureWithHash#getHashFast <em>Hash Fast</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Hash Fast</em>'.
+	 * @see gallery.PictureWithHash#getHashFast()
+	 * @see #getPictureWithHash()
+	 * @generated
+	 */
+	EAttribute getPictureWithHash_HashFast();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1455,22 +1701,6 @@ public interface GalleryPackage extends EPackage {
 		EReference REAL_PICTURE__METADATA = eINSTANCE.getRealPicture_Metadata();
 
 		/**
-		 * The meta object literal for the '<em><b>Hash</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute REAL_PICTURE__HASH = eINSTANCE.getRealPicture_Hash();
-
-		/**
-		 * The meta object literal for the '<em><b>Hash Fast</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute REAL_PICTURE__HASH_FAST = eINSTANCE.getRealPicture_HashFast();
-
-		/**
 		 * The meta object literal for the '{@link gallery.impl.LinkedPictureImpl <em>Linked Picture</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -1523,6 +1753,14 @@ public interface GalleryPackage extends EPackage {
 		EOperation PATH_ELEMENT___GET_RELATIVE_PATH = eINSTANCE.getPathElement__GetRelativePath();
 
 		/**
+		 * The meta object literal for the '<em><b>Get Relative Path Without Base</b></em>' operation.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EOperation PATH_ELEMENT___GET_RELATIVE_PATH_WITHOUT_BASE = eINSTANCE.getPathElement__GetRelativePathWithoutBase();
+
+		/**
 		 * The meta object literal for the '{@link gallery.impl.PictureLibraryImpl <em>Picture Library</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -1547,6 +1785,14 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EReference PICTURE_LIBRARY__BASE_COLLECTION = eINSTANCE.getPictureLibrary_BaseCollection();
+
+		/**
+		 * The meta object literal for the '<em><b>Deleted Pictures</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference PICTURE_LIBRARY__DELETED_PICTURES = eINSTANCE.getPictureLibrary_DeletedPictures();
 
 		/**
 		 * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
@@ -1681,6 +1927,58 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EReference LINKED_PICTURE_COLLECTION__REAL_COLLECTION = eINSTANCE.getLinkedPictureCollection_RealCollection();
+
+		/**
+		 * The meta object literal for the '{@link gallery.impl.DeletedPictureImpl <em>Deleted Picture</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see gallery.impl.DeletedPictureImpl
+		 * @see gallery.impl.GalleryPackageImpl#getDeletedPicture()
+		 * @generated
+		 */
+		EClass DELETED_PICTURE = eINSTANCE.getDeletedPicture();
+
+		/**
+		 * The meta object literal for the '<em><b>Relative Path</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute DELETED_PICTURE__RELATIVE_PATH = eINSTANCE.getDeletedPicture_RelativePath();
+
+		/**
+		 * The meta object literal for the '<em><b>Library</b></em>' container reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference DELETED_PICTURE__LIBRARY = eINSTANCE.getDeletedPicture_Library();
+
+		/**
+		 * The meta object literal for the '{@link gallery.impl.PictureWithHashImpl <em>Picture With Hash</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see gallery.impl.PictureWithHashImpl
+		 * @see gallery.impl.GalleryPackageImpl#getPictureWithHash()
+		 * @generated
+		 */
+		EClass PICTURE_WITH_HASH = eINSTANCE.getPictureWithHash();
+
+		/**
+		 * The meta object literal for the '<em><b>Hash</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute PICTURE_WITH_HASH__HASH = eINSTANCE.getPictureWithHash_Hash();
+
+		/**
+		 * The meta object literal for the '<em><b>Hash Fast</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute PICTURE_WITH_HASH__HASH_FAST = eINSTANCE.getPictureWithHash_HashFast();
 
 	}
 

@@ -62,6 +62,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 			case GalleryPackage.METADATA: return createMetadata();
 			case GalleryPackage.REAL_PICTURE_COLLECTION: return createRealPictureCollection();
 			case GalleryPackage.LINKED_PICTURE_COLLECTION: return createLinkedPictureCollection();
+			case GalleryPackage.DELETED_PICTURE: return createDeletedPicture();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -125,6 +126,16 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	public LinkedPictureCollection createLinkedPictureCollection() {
 		LinkedPictureCollectionImpl linkedPictureCollection = new LinkedPictureCollectionImpl();
 		return linkedPictureCollection;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public DeletedPicture createDeletedPicture() {
+		DeletedPictureImpl deletedPicture = new DeletedPictureImpl();
+		return deletedPicture;
 	}
 
 	/**

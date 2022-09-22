@@ -16,13 +16,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="collection" lowerBound="1"
         eType="#//RealPictureCollection" eOpposite="#//RealPictureCollection/pictures"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="RealPicture" eSuperTypes="#//Picture">
+  <eClassifiers xsi:type="ecore:EClass" name="RealPicture" eSuperTypes="#//Picture #//PictureWithHash">
     <eStructuralFeatures xsi:type="ecore:EReference" name="linkedBy" upperBound="-1"
         eType="#//LinkedPicture" eOpposite="#//LinkedPicture/realPicture"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="metadata" eType="#//Metadata"
         containment="true" eOpposite="#//Metadata/picture"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hash" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hashFast" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LinkedPicture" eSuperTypes="#//Picture">
     <eStructuralFeatures xsi:type="ecore:EReference" name="realPicture" lowerBound="1"
@@ -31,6 +29,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="PathElement" abstract="true">
     <eOperations name="getFullPath" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eOperations name="getRelativePath" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eOperations name="getRelativePathWithoutBase" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PictureLibrary">
@@ -39,6 +38,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="baseCollection" lowerBound="1"
         eType="#//RealPictureCollection" containment="true" eOpposite="#//RealPictureCollection/library"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="deletedPictures" upperBound="-1"
+        eType="#//DeletedPicture" containment="true" eOpposite="#//DeletedPicture/library"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Metadata">
     <eStructuralFeatures xsi:type="ecore:EReference" name="picture" lowerBound="1"
@@ -67,5 +68,14 @@
   <eClassifiers xsi:type="ecore:EClass" name="LinkedPictureCollection" eSuperTypes="#//PictureCollection">
     <eStructuralFeatures xsi:type="ecore:EReference" name="realCollection" lowerBound="1"
         eType="#//RealPictureCollection" eOpposite="#//RealPictureCollection/linkedBy"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DeletedPicture" eSuperTypes="#//PictureWithHash">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="relativePath" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="library" lowerBound="1"
+        eType="#//PictureLibrary" eOpposite="#//PictureLibrary/deletedPictures"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PictureWithHash" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hash" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hashFast" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

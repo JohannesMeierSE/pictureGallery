@@ -2,15 +2,20 @@
  */
 package gallery.impl;
 
+import gallery.DeletedPicture;
 import gallery.GalleryPackage;
 import gallery.PictureLibrary;
 import gallery.RealPictureCollection;
+import java.util.Collection;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+import org.eclipse.emf.ecore.util.EObjectContainmentWithInverseEList;
+import org.eclipse.emf.ecore.util.InternalEList;
 
 /**
  * <!-- begin-user-doc -->
@@ -22,6 +27,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *   <li>{@link gallery.impl.PictureLibraryImpl#getBasePath <em>Base Path</em>}</li>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getName <em>Name</em>}</li>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getBaseCollection <em>Base Collection</em>}</li>
+ *   <li>{@link gallery.impl.PictureLibraryImpl#getDeletedPictures <em>Deleted Pictures</em>}</li>
  * </ul>
  * </p>
  *
@@ -77,6 +83,16 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * @ordered
 	 */
 	protected RealPictureCollection baseCollection;
+
+	/**
+	 * The cached value of the '{@link #getDeletedPictures() <em>Deleted Pictures</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getDeletedPictures()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList<DeletedPicture> deletedPictures;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -166,6 +182,18 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EList<DeletedPicture> getDeletedPictures() {
+		if (deletedPictures == null) {
+			deletedPictures = new EObjectContainmentWithInverseEList<DeletedPicture>(DeletedPicture.class, this, GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES, GalleryPackage.DELETED_PICTURE__LIBRARY);
+		}
+		return deletedPictures;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getName() {
 		return name;
 	}
@@ -187,6 +215,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
@@ -194,6 +223,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				if (baseCollection != null)
 					msgs = ((InternalEObject)baseCollection).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION, null, msgs);
 				return basicSetBaseCollection((RealPictureCollection)otherEnd, msgs);
+			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
+				return ((InternalEList<InternalEObject>)(InternalEList<?>)getDeletedPictures()).basicAdd(otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -208,6 +239,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 		switch (featureID) {
 			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
 				return basicSetBaseCollection(null, msgs);
+			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
+				return ((InternalEList<?>)getDeletedPictures()).basicRemove(otherEnd, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
 	}
@@ -226,6 +259,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				return getName();
 			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
 				return getBaseCollection();
+			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
+				return getDeletedPictures();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -235,6 +270,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void eSet(int featureID, Object newValue) {
 		switch (featureID) {
@@ -246,6 +282,10 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				return;
 			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
 				setBaseCollection((RealPictureCollection)newValue);
+				return;
+			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
+				getDeletedPictures().clear();
+				getDeletedPictures().addAll((Collection<? extends DeletedPicture>)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -268,6 +308,9 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
 				setBaseCollection((RealPictureCollection)null);
 				return;
+			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
+				getDeletedPictures().clear();
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -286,6 +329,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
 			case GalleryPackage.PICTURE_LIBRARY__BASE_COLLECTION:
 				return baseCollection != null;
+			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
+				return deletedPictures != null && !deletedPictures.isEmpty();
 		}
 		return super.eIsSet(featureID);
 	}

@@ -63,4 +63,12 @@ public interface PathElement extends EObject {
 	 */
 	String getRelativePath();
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation" required="true"
+	 * @generated
+	 */
+	String getRelativePathWithoutBase();
+
 } // PathElement

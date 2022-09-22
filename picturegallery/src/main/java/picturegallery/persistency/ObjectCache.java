@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Loading priority: 1. number of requests descending, 2. time of last request (last time is more important)
@@ -14,15 +15,29 @@ import java.util.Queue;
  * @param <K> type of the key
  * @param <V> type of the value
  */
+// https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
 public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
+	/**
+	 * Will be used for listeners which want to be notified if the loading finished.
+	 * @author Johannes Meier
+	 *
+	 * @param <K>
+	 * @param <V>
+	 */
 	public interface CallBack<K, V> {
 		public void loaded(K key, V value);
+	}
+
+	public interface AlternativeWorker {
+		public boolean hasStillWork();
+		public void doSomeWork();
 	}
 
 	class Tripel {
 		public final K key;
 		public final List<CallBack<K, V>> callbacks;
 		public final WrappedInteger count;
+
 		public Tripel(K key) {
 			super();
 			this.key = key;
@@ -33,6 +48,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	class Double {
 		public final V value;
 		public final WrappedInteger count;
+
 		public Double(V value, int count) {
 			super();
 			this.value = value;
@@ -41,6 +57,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	}
 	class WrappedInteger {
 		private int value;
+
 		public WrappedInteger(int value) {
 			super();
 			this.value = value;
@@ -65,8 +82,17 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 	protected final int maxSize;
 
 	private Thread thread;
+	private final AtomicBoolean stopped;
 
+	protected AlternativeWorker alternativeWorker;
+
+	public ObjectCache() {
+		this(20, false);
+	}
 	public ObjectCache(int size) {
+		this(size, true);
+	}
+	private ObjectCache(int size, boolean freezeSize) {
 		super();
 		maxSize = size;
 		content = new HashMap<>(maxSize * 2);
@@ -74,28 +100,48 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 		loading = new ArrayList<>(2);
 		requested = new ArrayList<>(maxSize);
 
+		stopped = new AtomicBoolean(false);
 		thread = new Thread() {
 			@Override
 			public void run() {
-				while (!isInterrupted()) {
-					Tripel next = null;
-					synchronized (sync) {
-						while (requested.isEmpty()) {
+				while (!isInterrupted() && !stopped.get()) {
+					// wait, until there are requested pictures to load
+					while (isRequestedEmpty() && !stopped.get()) {
+						if (alternativeWorker != null && alternativeWorker.hasStillWork()) {
+							// instead of "waiting", do some other work!
+							alternativeWorker.doSomeWork();
+						} else {
 							try {
-								sync.wait();
+								synchronized (sync) {
+									sync.wait();
+								}
 							} catch (InterruptedException e) {
 							}
 						}
+					}
+					// loading was stopped (currently, no requests available)
+					if (stopped.get()) {
+						System.out.println("Loading thread: ready and stopped");
+						return;
+					}
+
+					// load the next element
+					Tripel next = null;
+					synchronized (sync) {
 						next = requested.remove(0);
 						loading.add(0, next);
 					}
 					V loadedValue = load(next.key);
 					if (loadedValue == null) {
-						// try it again!
+						// ignore this picture:
+						synchronized (sync) {
+							loading.remove(next);
+						}
 					} else {
+						// handle the loaded value
 						synchronized (sync) {
 							// Grenze berücksichtigen!! und Elemente wieder rauslöschen!
-							while (content.size() >= maxSize) {
+							while (freezeSize && content.size() >= maxSize) {
 								K keyToRemove = contentSorted.remove();
 								content.remove(keyToRemove);
 							}
@@ -105,29 +151,47 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 							// key is not loading anymore
 							loading.remove(next);
 						}
+						// notification for the listeners, that this picture was loaded successfully
 						for (CallBack<K, V> call : next.callbacks) {
 							call.loaded(next.key, loadedValue);
 						}
 					}
 				}
+				// there were still requests for loading ...
+				System.out.println("Loading thread: working, but stopped");
 			}
 		};
 		thread.start();
 	}
 
 	public void stop() {
+		stopped.set(true);
 		thread.interrupt();
 		synchronized (sync) {
 			content.clear();
 			contentSorted.clear();
 			loading.clear();
 			requested.clear();
+
+			sync.notifyAll(); // => activate the thread, if there was nothing to load!
 		}
 		// https://stackoverflow.com/questions/5690309/garbage-collector-in-java-set-an-object-null
 		System.gc();
 	}
 
 	protected abstract V load(K key);
+
+	/**
+	 * Checks, if there are requested pictures to load in a synchronized way!
+	 * @return
+	 */
+	private boolean isRequestedEmpty() {
+		boolean result = true;
+		synchronized (sync) {
+			result = requested.isEmpty();
+		}
+		return result;
+	}
 
 	public boolean isLoaded(K key) {
 		synchronized (sync) {
@@ -180,18 +244,23 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 				if (index >= 0) {
 					requested.remove(index);
 				} else {
-					// TODO: was ist mit gerade ladenden Objekten, die entfernt werden sollen??
+					// the ObjectCache is currently loading the element to remove => do not interrupt loading => reduces possible errors
 				}
 			}
 		}
 	}
 
 	public void request(K key, CallBack<K, V> callback) {
+		if (key == null) {
+			throw new IllegalArgumentException("key is null!");
+		}
+
 		Double value = null;
 		synchronized (sync) {
 			// already contained?
 			value = content.get(key);
 			if (value == null) {
+
 				// currently loading?
 				Tripel exist = contains(key, loading);
 				if (exist != null) {
@@ -200,6 +269,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 					}
 					return;
 				}
+
 				// request!
 				int oldIndex = indexOf(key, requested);
 				if (oldIndex >= 0) {
@@ -232,7 +302,20 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 		}
 		if (value != null) {
 			value.count.increment();
-			callback.loaded(key, value.value);
+			if (callback != null) {
+				callback.loaded(key, value.value);
+			}
+		}
+	}
+
+	public void setAlternativeWorker(AlternativeWorker alternativeWorker) {
+		synchronized (sync) {
+			this.alternativeWorker = alternativeWorker;
+
+			/* wakes the loading thread up to use this worker!
+			 * If the loading thread is currently loading, than nothing will happen!
+			 */
+			sync.notifyAll();
 		}
 	}
 }
