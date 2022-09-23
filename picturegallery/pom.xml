@@ -21,10 +21,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<javafx.version>18.0.2</javafx.version>
 		<apache.tika.version>2.4.1</apache.tika.version> <!-- 1.27 is the previously used version -->
+		<project.name>pictureGallery</project.name>
 	</properties>
 
 	<build>
-		<finalName>picturegallery</finalName>
+		<finalName>${project.name}</finalName>
 		<!-- https://stackoverflow.com/questions/270445/maven-compile-with-multiple-src-directories -->
 		<sourceDirectory>src/main/java/, src-gen/main/java/</sourceDirectory>
 
@@ -99,6 +100,42 @@
 					<!--argLine>fail</argLine-->
 					<!--add-exports>javafx.base/com.sun.javafx.runtime=ALL-UNNAMED</add-exports-->
 				</configuration>
+			</plugin>
+
+			<!-- ensures licence headers in Java source files -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<verbose>false</verbose>
+				</configuration>
+				<executions>
+					<execution>
+						<id>first</id>
+						<goals>
+							<goal>update-file-header</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<licenseName>gpl_v3</licenseName>
+							<roots>
+								<root>src/main/java</root>
+								<root>src-gen/main/java</root>
+								<root>src/test/java</root>
+							</roots>
+							<inceptionYear>2016</inceptionYear>
+							<organizationName>Johannes Meier</organizationName>
+							<copyrightOwners>Johannes Meier</copyrightOwners>
+							<emptyLineAfterHeader>true</emptyLineAfterHeader>
+							<canUpdateCopyright>true</canUpdateCopyright>
+							<canUpdateDescription>true</canUpdateDescription>
+							<canUpdateLicense>true</canUpdateLicense>
+							<processStartTag>BEGIN-LICENSE</processStartTag>
+							<processEndTag>END-LICENSE</processEndTag>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>
