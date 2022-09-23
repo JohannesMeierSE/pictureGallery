@@ -175,6 +175,14 @@ public class MainApp extends Application {
     	root.getChildren().add(labelKeys);
     	StackPane.setAlignment(labelKeys, Pos.CENTER_RIGHT);
 
+    	// Label for License hint
+    	Label labelLicense = new Label("Copyright (C) 2016-2022 Johannes Meier.\n"
+    			+ "This program is distributed under the terms of the GNU General Public License v3.0.");
+    	labelLicense.visibleProperty().bind(labelsVisible);
+    	styleLabel(labelLicense);
+    	root.getChildren().add(labelLicense);
+    	StackPane.setAlignment(labelLicense, Pos.BOTTOM_LEFT);
+
     	Scene scene = new Scene(root, 800, 600);
     	scene.getStylesheets().add("/styles/styles.css");
 
