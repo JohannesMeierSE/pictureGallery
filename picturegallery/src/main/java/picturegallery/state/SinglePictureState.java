@@ -42,6 +42,7 @@ import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpParticularPictureAction;
 import picturegallery.action.JumpRightAction;
 import picturegallery.action.RenamePictureAction;
+import picturegallery.action.SetTagPictureAction;
 import picturegallery.action.ZoomDecreaseAction;
 import picturegallery.action.ZoomIncreaseAction;
 import picturegallery.action.ZoomResetAction;
@@ -161,6 +162,7 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 		registerAction(new DetailsUpAction());
 		registerAction(new DetailsDownAction());
 		registerAction(new DetailsResetAction());
+		registerAction(new SetTagPictureAction());
 	}
 
 	public RealPictureCollection getLinktoCollection() {

@@ -1002,6 +1002,10 @@ public class MainApp extends Application {
 		return baseCollection;
 	}
 
+	public PictureLibrary getLibrary() {
+		return getBaseCollection().getLibrary();
+	}
+
 	public EditingDomain getModelDomain() {
 		return modelDomain;
 	}

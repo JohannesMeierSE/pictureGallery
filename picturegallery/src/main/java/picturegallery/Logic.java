@@ -83,6 +83,7 @@ import gallery.PictureCollection;
 import gallery.PictureLibrary;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
+import gallery.TagCategory;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -1024,6 +1025,10 @@ public class Logic {
 
 	public static int askForChoice(List<String> options, boolean allowNull,
 			String title, String header, String content) {
+		return askForChoice(options, allowNull, title, header, content, -1);
+	}
+	public static int askForChoice(List<String> options, boolean allowNull,
+			String title, String header, String content, int defaultIndex) {
 		if (options == null || options.size() < 2) {
 			throw new IllegalArgumentException();
 		}
@@ -1033,6 +1038,9 @@ public class Logic {
 			dialog.setTitle(title);
 			dialog.setHeaderText(header);
 			dialog.setContentText(content);
+			if (0 <= defaultIndex && defaultIndex < options.size()) {
+				dialog.setSelectedItem(options.get(defaultIndex));
+			}
 
 			Optional<String> answer = dialog.showAndWait();
 			if (answer.isPresent()){
@@ -2183,6 +2191,21 @@ public class Logic {
 		}
 
 		return extensionMap;
+	}
+
+	public static TagCategory getOrCreateTagCategory(String categoryName, PictureLibrary library) {
+		if (categoryName == null || categoryName.isBlank()) {
+			throw new IllegalArgumentException();
+		}
+		for (TagCategory c : library.getTagCategories()) {
+			if (categoryName.equals(c.getName())) {
+				return c;
+			}
+		}
+		TagCategory result = GalleryFactory.eINSTANCE.createTagCategory();
+		result.setName(categoryName);
+		library.getTagCategories().add(result);
+		return result;
 	}
 
 	public static void runOnUiThread(Runnable run) {
