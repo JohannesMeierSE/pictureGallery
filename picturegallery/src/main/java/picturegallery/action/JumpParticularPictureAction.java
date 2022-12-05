@@ -39,7 +39,7 @@ public class JumpParticularPictureAction extends Action {
 		// ask for the index of the wanted picture, index starts at 1 as shown in the GUI!
 		String newIndexString = Logic.askForString("Jump to Picture",
 				"Specify the picture to jump to by its index in the current collection!",
-				"Index of Picture: ", false, "");
+				"Index of Picture: ", false, (state.getCurrentIndex() + 1) + "");
 		if (newIndexString == null || newIndexString.isEmpty()) {
 			return;
 		}

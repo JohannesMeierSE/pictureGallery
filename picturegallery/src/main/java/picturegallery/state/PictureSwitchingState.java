@@ -446,6 +446,10 @@ public abstract class PictureSwitchingState extends State {
 		return currentPicture.get();
 	}
 
+	public int getCurrentIndex() {
+		return indexCurrentCollection;
+	}
+
 	@Override
 	public void onInit() {
 		super.onInit();
