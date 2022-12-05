@@ -64,6 +64,7 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 	private final Label labelIndex;
 	private final Label labelPictureName;
 	private final Label labelMeta;
+	private final Label labelTags;
 
 	public SinglePictureState() {
 		super();
@@ -104,8 +105,10 @@ public abstract class SinglePictureState extends PictureSwitchingState {
     	handleLabel(labelIndex);
     	labelPictureName = new Label("picture name");
     	handleLabel(labelPictureName);
-    	labelMeta= new Label("meta data");
+    	labelMeta = new Label("meta data");
     	handleLabel(labelMeta);
+    	labelTags = new Label("tags: key-value paris");
+    	handleLabel(labelTags);
 
     	root.getChildren().add(vBox);
     	vBox.toFront();
@@ -129,6 +132,11 @@ public abstract class SinglePictureState extends PictureSwitchingState {
 	@Override
 	protected void setLabelMeta(String newText) {
 		labelMeta.setText(newText);
+	}
+
+	@Override
+	protected void setLabelTags(String newText) {
+		labelTags.setText(newText);
 	}
 
 	@Override

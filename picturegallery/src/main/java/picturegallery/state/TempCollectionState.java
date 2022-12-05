@@ -62,6 +62,11 @@ public class TempCollectionState extends PictureSwitchingState {
 	}
 
 	@Override
+	protected void setLabelTags(String newText) {
+		getRealState().setLabelTags(newText);
+	}
+
+	@Override
 	protected void setLabelPictureName(String newText) {
 		getRealState().setLabelPictureName(newText);
 	}

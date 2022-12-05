@@ -111,14 +111,17 @@ public class SetTagPictureAction extends Action {
 			// create or update the Tag
 			if (tag == null) {
 				tag = GalleryFactory.eINSTANCE.createTag();
-				currentPicture.getTags().add(tag);
 				tag.setCategory(category);
+				tag.setValue(tagValue); // set the Tag value
+				currentPicture.getTags().add(tag);
+			} else {
+				tag.setValue(tagValue); // update the Tag value
 			}
-			tag.setValue(tagValue); // set or update the Tag value
 		}
 
 		// remember the chosen category as default value for the next Tag ... (only as convenience)
 		previousChoice = category;
+		state.updateLabels(); // update the GUI, since not all changes are always/directly visible via EMF notifications
 	}
 
 	@Override

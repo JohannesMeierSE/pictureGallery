@@ -28,6 +28,7 @@ import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
+import gallery.Tag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,6 +88,7 @@ public abstract class PictureSwitchingState extends State {
 
 	protected abstract void setLabelIndex(String newText);
 	protected abstract void setLabelMeta(String newText);
+	protected abstract void setLabelTags(String newText);
 	protected abstract void setLabelPictureName(String newText);
 	protected abstract void setLabelCollectionPath(String newText);
 
@@ -193,8 +195,7 @@ public abstract class PictureSwitchingState extends State {
 				Logic.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						updatePictureLabel();
-						updateMetadataLabel();
+						updateLabels();
 					}
 				});
 			}
@@ -213,8 +214,7 @@ public abstract class PictureSwitchingState extends State {
 				getImage().renderPicture(pictureProvider);
 
 				// update the labels for the new picture
-				updatePictureLabel();
-				updateMetadataLabel();
+				updateLabels();
 			}
 		};
 		currentPicture.addListener(currentPictureInvalidationListener);
@@ -252,7 +252,7 @@ public abstract class PictureSwitchingState extends State {
 						}
 					}
 					if (change) {
-						updatePictureLabel();
+						updateLabels();
 					}
 				}
 			});
@@ -334,11 +334,23 @@ public abstract class PictureSwitchingState extends State {
 		setLabelIndex((indexCurrentCollection + 1) + " / " + getSize());
 	}
 
+	public void updateLabels() {
+		if (tempState != null) {
+			tempState.updateLabels();
+		}
+		if (isVisible() == false) {
+			return;
+		}
+		updatePictureLabel();
+		updateMetadataLabel();
+		updateTagLabel();
+	}
+
 	protected void updateMetadataLabel() {
 		if (tempState != null) {
 			tempState.updateMetadataLabel();
 		}
-		if (!isVisible()) {
+		if (isVisible() == false) {
 			return;
 		}
 		if (currentPicture.get() == null) {
@@ -348,11 +360,35 @@ public abstract class PictureSwitchingState extends State {
 		}
 	}
 
+	protected void updateTagLabel() {
+		if (tempState != null) {
+			tempState.updateTagLabel();
+		}
+		if (isVisible() == false) {
+			return;
+		}
+		String tagsText;
+		if (currentPicture.get() == null) {
+			tagsText = "\nno tags of 'null' available";
+		} else {
+			if (currentPicture.get().getTags().isEmpty()) {
+				tagsText = "\n(this picture has no tags)";
+			} else {
+				tagsText = "";
+				for (int i = 0; i < currentPicture.get().getTags().size(); i++) {
+					Tag tag = currentPicture.get().getTags().get(i);
+					tagsText = tagsText + "\n" + tag.getCategory().getName() + "=" + tag.getValue();
+				}
+			}
+		}
+		setLabelTags(tagsText);
+	}
+
 	protected void updatePictureLabel() {
 		if (tempState != null) {
 			tempState.updatePictureLabel();
 		}
-		if (!isVisible()) {
+		if (isVisible() == false) {
 			return;
 		}
 		/*
