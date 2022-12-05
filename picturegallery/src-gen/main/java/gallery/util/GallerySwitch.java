@@ -69,7 +69,7 @@ public class GallerySwitch<T> extends Switch<T> {
 	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @parameter ePackage the package in question.
+	 * @param ePackage the package in question.
 	 * @return whether this is a switch for the given package.
 	 * @generated
 	 */
@@ -163,6 +163,18 @@ public class GallerySwitch<T> extends Switch<T> {
 			case GalleryPackage.PICTURE_WITH_HASH: {
 				PictureWithHash pictureWithHash = (PictureWithHash)theEObject;
 				T result = casePictureWithHash(pictureWithHash);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case GalleryPackage.TAG: {
+				Tag tag = (Tag)theEObject;
+				T result = caseTag(tag);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case GalleryPackage.TAG_CATEGORY: {
+				TagCategory tagCategory = (TagCategory)theEObject;
+				T result = caseTagCategory(tagCategory);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -332,6 +344,36 @@ public class GallerySwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T casePictureWithHash(PictureWithHash object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Tag</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Tag</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseTag(Tag object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Tag Category</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Tag Category</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseTagCategory(TagCategory object) {
 		return null;
 	}
 

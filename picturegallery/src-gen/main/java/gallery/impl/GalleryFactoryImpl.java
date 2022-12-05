@@ -85,6 +85,8 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 			case GalleryPackage.REAL_PICTURE_COLLECTION: return createRealPictureCollection();
 			case GalleryPackage.LINKED_PICTURE_COLLECTION: return createLinkedPictureCollection();
 			case GalleryPackage.DELETED_PICTURE: return createDeletedPicture();
+			case GalleryPackage.TAG: return createTag();
+			case GalleryPackage.TAG_CATEGORY: return createTagCategory();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -95,6 +97,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public RealPicture createRealPicture() {
 		RealPictureImpl realPicture = new RealPictureImpl();
 		return realPicture;
@@ -105,6 +108,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public LinkedPicture createLinkedPicture() {
 		LinkedPictureImpl linkedPicture = new LinkedPictureImpl();
 		return linkedPicture;
@@ -115,6 +119,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public PictureLibrary createPictureLibrary() {
 		PictureLibraryImpl pictureLibrary = new PictureLibraryImpl();
 		return pictureLibrary;
@@ -125,6 +130,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Metadata createMetadata() {
 		MetadataImpl metadata = new MetadataImpl();
 		return metadata;
@@ -135,6 +141,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public RealPictureCollection createRealPictureCollection() {
 		RealPictureCollectionImpl realPictureCollection = new RealPictureCollectionImpl();
 		return realPictureCollection;
@@ -145,6 +152,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public LinkedPictureCollection createLinkedPictureCollection() {
 		LinkedPictureCollectionImpl linkedPictureCollection = new LinkedPictureCollectionImpl();
 		return linkedPictureCollection;
@@ -155,6 +163,7 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public DeletedPicture createDeletedPicture() {
 		DeletedPictureImpl deletedPicture = new DeletedPictureImpl();
 		return deletedPicture;
@@ -165,6 +174,29 @@ public class GalleryFactoryImpl extends EFactoryImpl implements GalleryFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
+	public Tag createTag() {
+		TagImpl tag = new TagImpl();
+		return tag;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public TagCategory createTagCategory() {
+		TagCategoryImpl tagCategory = new TagCategoryImpl();
+		return tagCategory;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public GalleryPackage getGalleryPackage() {
 		return (GalleryPackage)getEPackage();
 	}

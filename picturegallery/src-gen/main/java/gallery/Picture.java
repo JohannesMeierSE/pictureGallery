@@ -2,6 +2,8 @@
  */
 package gallery;
 
+import org.eclipse.emf.common.util.EList;
+
 /*-
  * BEGIN-LICENSE
  * picturegallery
@@ -32,11 +34,12 @@ package gallery;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link gallery.Picture#getFileExtension <em>File Extension</em>}</li>
  *   <li>{@link gallery.Picture#getCollection <em>Collection</em>}</li>
+ *   <li>{@link gallery.Picture#getTags <em>Tags</em>}</li>
  * </ul>
- * </p>
  *
  * @see gallery.GalleryPackage#getPicture()
  * @model abstract="true"
@@ -70,6 +73,20 @@ public interface Picture extends PathElement {
 	 * @generated
 	 */
 	void setCollection(RealPictureCollection value);
+
+	/**
+	 * Returns the value of the '<em><b>Tags</b></em>' containment reference list.
+	 * The list contents are of type {@link gallery.Tag}.
+	 * It is bidirectional and its opposite is '{@link gallery.Tag#getPicture <em>Picture</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Tags</em>' containment reference list.
+	 * @see gallery.GalleryPackage#getPicture_Tags()
+	 * @see gallery.Tag#getPicture
+	 * @model opposite="picture" containment="true"
+	 * @generated
+	 */
+	EList<Tag> getTags();
 
 	/**
 	 * Returns the value of the '<em><b>File Extension</b></em>' attribute.

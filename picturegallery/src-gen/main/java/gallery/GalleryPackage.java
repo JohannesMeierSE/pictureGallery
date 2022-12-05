@@ -272,13 +272,22 @@ public interface GalleryPackage extends EPackage {
 	int PICTURE__COLLECTION = PATH_ELEMENT_FEATURE_COUNT + 1;
 
 	/**
+	 * The feature id for the '<em><b>Tags</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE__TAGS = PATH_ELEMENT_FEATURE_COUNT + 2;
+
+	/**
 	 * The number of structural features of the '<em>Picture</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int PICTURE_FEATURE_COUNT = PATH_ELEMENT_FEATURE_COUNT + 2;
+	int PICTURE_FEATURE_COUNT = PATH_ELEMENT_FEATURE_COUNT + 3;
 
 	/**
 	 * The operation id for the '<em>Get Full Path</em>' operation.
@@ -379,6 +388,15 @@ public interface GalleryPackage extends EPackage {
 	 * @ordered
 	 */
 	int REAL_PICTURE__COLLECTION = PICTURE__COLLECTION;
+
+	/**
+	 * The feature id for the '<em><b>Tags</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REAL_PICTURE__TAGS = PICTURE__TAGS;
 
 	/**
 	 * The feature id for the '<em><b>Hash</b></em>' attribute.
@@ -526,6 +544,15 @@ public interface GalleryPackage extends EPackage {
 	int LINKED_PICTURE__COLLECTION = PICTURE__COLLECTION;
 
 	/**
+	 * The feature id for the '<em><b>Tags</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int LINKED_PICTURE__TAGS = PICTURE__TAGS;
+
+	/**
 	 * The feature id for the '<em><b>Real Picture</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -653,13 +680,22 @@ public interface GalleryPackage extends EPackage {
 	int PICTURE_LIBRARY__DELETED_PICTURES = 3;
 
 	/**
+	 * The feature id for the '<em><b>Tag Categories</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PICTURE_LIBRARY__TAG_CATEGORIES = 4;
+
+	/**
 	 * The number of structural features of the '<em>Picture Library</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int PICTURE_LIBRARY_FEATURE_COUNT = 4;
+	int PICTURE_LIBRARY_FEATURE_COUNT = 5;
 
 	/**
 	 * The number of operations of the '<em>Picture Library</em>' class.
@@ -1103,6 +1139,117 @@ public interface GalleryPackage extends EPackage {
 
 
 	/**
+	 * The meta object id for the '{@link gallery.impl.TagImpl <em>Tag</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see gallery.impl.TagImpl
+	 * @see gallery.impl.GalleryPackageImpl#getTag()
+	 * @generated
+	 */
+	int TAG = 11;
+
+	/**
+	 * The feature id for the '<em><b>Value</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG__VALUE = 0;
+
+	/**
+	 * The feature id for the '<em><b>Picture</b></em>' container reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG__PICTURE = 1;
+
+	/**
+	 * The feature id for the '<em><b>Category</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG__CATEGORY = 2;
+
+	/**
+	 * The number of structural features of the '<em>Tag</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG_FEATURE_COUNT = 3;
+
+	/**
+	 * The number of operations of the '<em>Tag</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG_OPERATION_COUNT = 0;
+
+	/**
+	 * The meta object id for the '{@link gallery.impl.TagCategoryImpl <em>Tag Category</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see gallery.impl.TagCategoryImpl
+	 * @see gallery.impl.GalleryPackageImpl#getTagCategory()
+	 * @generated
+	 */
+	int TAG_CATEGORY = 12;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG_CATEGORY__NAME = 0;
+
+	/**
+	 * The feature id for the '<em><b>Library</b></em>' container reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG_CATEGORY__LIBRARY = 1;
+
+	/**
+	 * The feature id for the '<em><b>Tag Instances</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG_CATEGORY__TAG_INSTANCES = 2;
+
+	/**
+	 * The number of structural features of the '<em>Tag Category</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG_CATEGORY_FEATURE_COUNT = 3;
+
+	/**
+	 * The number of operations of the '<em>Tag Category</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TAG_CATEGORY_OPERATION_COUNT = 0;
+
+
+	/**
 	 * Returns the meta object for class '{@link gallery.PictureCollection <em>Picture Collection</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1163,6 +1310,17 @@ public interface GalleryPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getPicture_Collection();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link gallery.Picture#getTags <em>Tags</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Tags</em>'.
+	 * @see gallery.Picture#getTags()
+	 * @see #getPicture()
+	 * @generated
+	 */
+	EReference getPicture_Tags();
 
 	/**
 	 * Returns the meta object for the attribute '{@link gallery.Picture#getFileExtension <em>File Extension</em>}'.
@@ -1351,6 +1509,17 @@ public interface GalleryPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getPictureLibrary_DeletedPictures();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link gallery.PictureLibrary#getTagCategories <em>Tag Categories</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Tag Categories</em>'.
+	 * @see gallery.PictureLibrary#getTagCategories()
+	 * @see #getPictureLibrary()
+	 * @generated
+	 */
+	EReference getPictureLibrary_TagCategories();
 
 	/**
 	 * Returns the meta object for the attribute '{@link gallery.PictureLibrary#getName <em>Name</em>}'.
@@ -1590,6 +1759,92 @@ public interface GalleryPackage extends EPackage {
 	EAttribute getPictureWithHash_HashFast();
 
 	/**
+	 * Returns the meta object for class '{@link gallery.Tag <em>Tag</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Tag</em>'.
+	 * @see gallery.Tag
+	 * @generated
+	 */
+	EClass getTag();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.Tag#getValue <em>Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Value</em>'.
+	 * @see gallery.Tag#getValue()
+	 * @see #getTag()
+	 * @generated
+	 */
+	EAttribute getTag_Value();
+
+	/**
+	 * Returns the meta object for the container reference '{@link gallery.Tag#getPicture <em>Picture</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the container reference '<em>Picture</em>'.
+	 * @see gallery.Tag#getPicture()
+	 * @see #getTag()
+	 * @generated
+	 */
+	EReference getTag_Picture();
+
+	/**
+	 * Returns the meta object for the reference '{@link gallery.Tag#getCategory <em>Category</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Category</em>'.
+	 * @see gallery.Tag#getCategory()
+	 * @see #getTag()
+	 * @generated
+	 */
+	EReference getTag_Category();
+
+	/**
+	 * Returns the meta object for class '{@link gallery.TagCategory <em>Tag Category</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Tag Category</em>'.
+	 * @see gallery.TagCategory
+	 * @generated
+	 */
+	EClass getTagCategory();
+
+	/**
+	 * Returns the meta object for the attribute '{@link gallery.TagCategory#getName <em>Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Name</em>'.
+	 * @see gallery.TagCategory#getName()
+	 * @see #getTagCategory()
+	 * @generated
+	 */
+	EAttribute getTagCategory_Name();
+
+	/**
+	 * Returns the meta object for the container reference '{@link gallery.TagCategory#getLibrary <em>Library</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the container reference '<em>Library</em>'.
+	 * @see gallery.TagCategory#getLibrary()
+	 * @see #getTagCategory()
+	 * @generated
+	 */
+	EReference getTagCategory_Library();
+
+	/**
+	 * Returns the meta object for the reference list '{@link gallery.TagCategory#getTagInstances <em>Tag Instances</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference list '<em>Tag Instances</em>'.
+	 * @see gallery.TagCategory#getTagInstances()
+	 * @see #getTagCategory()
+	 * @generated
+	 */
+	EReference getTagCategory_TagInstances();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1663,6 +1918,14 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EReference PICTURE__COLLECTION = eINSTANCE.getPicture_Collection();
+
+		/**
+		 * The meta object literal for the '<em><b>Tags</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference PICTURE__TAGS = eINSTANCE.getPicture_Tags();
 
 		/**
 		 * The meta object literal for the '<em><b>File Extension</b></em>' attribute feature.
@@ -1815,6 +2078,14 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EReference PICTURE_LIBRARY__DELETED_PICTURES = eINSTANCE.getPictureLibrary_DeletedPictures();
+
+		/**
+		 * The meta object literal for the '<em><b>Tag Categories</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference PICTURE_LIBRARY__TAG_CATEGORIES = eINSTANCE.getPictureLibrary_TagCategories();
 
 		/**
 		 * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
@@ -2001,6 +2272,74 @@ public interface GalleryPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute PICTURE_WITH_HASH__HASH_FAST = eINSTANCE.getPictureWithHash_HashFast();
+
+		/**
+		 * The meta object literal for the '{@link gallery.impl.TagImpl <em>Tag</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see gallery.impl.TagImpl
+		 * @see gallery.impl.GalleryPackageImpl#getTag()
+		 * @generated
+		 */
+		EClass TAG = eINSTANCE.getTag();
+
+		/**
+		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute TAG__VALUE = eINSTANCE.getTag_Value();
+
+		/**
+		 * The meta object literal for the '<em><b>Picture</b></em>' container reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TAG__PICTURE = eINSTANCE.getTag_Picture();
+
+		/**
+		 * The meta object literal for the '<em><b>Category</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TAG__CATEGORY = eINSTANCE.getTag_Category();
+
+		/**
+		 * The meta object literal for the '{@link gallery.impl.TagCategoryImpl <em>Tag Category</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see gallery.impl.TagCategoryImpl
+		 * @see gallery.impl.GalleryPackageImpl#getTagCategory()
+		 * @generated
+		 */
+		EClass TAG_CATEGORY = eINSTANCE.getTagCategory();
+
+		/**
+		 * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute TAG_CATEGORY__NAME = eINSTANCE.getTagCategory_Name();
+
+		/**
+		 * The meta object literal for the '<em><b>Library</b></em>' container reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TAG_CATEGORY__LIBRARY = eINSTANCE.getTagCategory_Library();
+
+		/**
+		 * The meta object literal for the '<em><b>Tag Instances</b></em>' reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TAG_CATEGORY__TAG_INSTANCES = eINSTANCE.getTagCategory_TagInstances();
 
 	}
 

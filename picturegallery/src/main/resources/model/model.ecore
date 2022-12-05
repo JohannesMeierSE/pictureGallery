@@ -15,6 +15,8 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="collection" lowerBound="1"
         eType="#//RealPictureCollection" eOpposite="#//RealPictureCollection/pictures"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tags" upperBound="-1" eType="#//Tag"
+        containment="true" eOpposite="#//Tag/picture"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RealPicture" eSuperTypes="#//Picture #//PictureWithHash">
     <eStructuralFeatures xsi:type="ecore:EReference" name="linkedBy" upperBound="-1"
@@ -40,6 +42,8 @@
         eType="#//RealPictureCollection" containment="true" eOpposite="#//RealPictureCollection/library"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="deletedPictures" upperBound="-1"
         eType="#//DeletedPicture" containment="true" eOpposite="#//DeletedPicture/library"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tagCategories" upperBound="-1"
+        eType="#//TagCategory" containment="true" eOpposite="#//TagCategory/library"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Metadata">
     <eStructuralFeatures xsi:type="ecore:EReference" name="picture" lowerBound="1"
@@ -77,5 +81,19 @@
   <eClassifiers xsi:type="ecore:EClass" name="PictureWithHash" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="hash" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="hashFast" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Tag">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="picture" lowerBound="1"
+        eType="#//Picture" eOpposite="#//Picture/tags"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="category" lowerBound="1"
+        eType="#//TagCategory" eOpposite="#//TagCategory/tagInstances"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TagCategory">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="library" lowerBound="1"
+        eType="#//PictureLibrary" eOpposite="#//PictureLibrary/tagCategories"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tagInstances" upperBound="-1"
+        eType="#//Tag" eOpposite="#//Tag/category"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -29,16 +29,20 @@ import gallery.Metadata;
 import gallery.Picture;
 import gallery.RealPictureCollection;
 
+import gallery.Tag;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
+import java.util.Collection;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
+import org.eclipse.emf.ecore.util.EObjectContainmentWithInverseEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.util.InternalEList;
 
 /**
  * <!-- begin-user-doc -->
@@ -46,11 +50,12 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link gallery.impl.PictureImpl#getFileExtension <em>File Extension</em>}</li>
  *   <li>{@link gallery.impl.PictureImpl#getCollection <em>Collection</em>}</li>
+ *   <li>{@link gallery.impl.PictureImpl#getTags <em>Tags</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -76,6 +81,16 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	protected String fileExtension = FILE_EXTENSION_EDEFAULT;
 
 	/**
+	 * The cached value of the '{@link #getTags() <em>Tags</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getTags()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList<Tag> tags;
+
+	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -99,6 +114,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public RealPictureCollection getCollection() {
 		if (eContainerFeatureID() != GalleryPackage.PICTURE__COLLECTION) return null;
 		return (RealPictureCollection)eInternalContainer();
@@ -119,6 +135,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setCollection(RealPictureCollection newCollection) {
 		if (newCollection != eInternalContainer() || (eContainerFeatureID() != GalleryPackage.PICTURE__COLLECTION && newCollection != null)) {
 			if (EcoreUtil.isAncestor(this, newCollection))
@@ -140,6 +157,20 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
+	public EList<Tag> getTags() {
+		if (tags == null) {
+			tags = new EObjectContainmentWithInverseEList<Tag>(Tag.class, this, GalleryPackage.PICTURE__TAGS, GalleryPackage.TAG__PICTURE);
+		}
+		return tags;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public String getFileExtension() {
 		return fileExtension;
 	}
@@ -149,6 +180,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setFileExtension(String newFileExtension) {
 		String oldFileExtension = fileExtension;
 		fileExtension = newFileExtension;
@@ -161,6 +193,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Metadata getMetadata() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -172,6 +205,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getHash() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -183,6 +217,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getHashFast() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -194,6 +229,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
@@ -201,6 +237,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 				if (eInternalContainer() != null)
 					msgs = eBasicRemoveFromContainer(msgs);
 				return basicSetCollection((RealPictureCollection)otherEnd, msgs);
+			case GalleryPackage.PICTURE__TAGS:
+				return ((InternalEList<InternalEObject>)(InternalEList<?>)getTags()).basicAdd(otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -215,6 +253,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 		switch (featureID) {
 			case GalleryPackage.PICTURE__COLLECTION:
 				return basicSetCollection(null, msgs);
+			case GalleryPackage.PICTURE__TAGS:
+				return ((InternalEList<?>)getTags()).basicRemove(otherEnd, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
 	}
@@ -245,6 +285,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 				return getFileExtension();
 			case GalleryPackage.PICTURE__COLLECTION:
 				return getCollection();
+			case GalleryPackage.PICTURE__TAGS:
+				return getTags();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -254,6 +296,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void eSet(int featureID, Object newValue) {
 		switch (featureID) {
@@ -262,6 +305,10 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 				return;
 			case GalleryPackage.PICTURE__COLLECTION:
 				setCollection((RealPictureCollection)newValue);
+				return;
+			case GalleryPackage.PICTURE__TAGS:
+				getTags().clear();
+				getTags().addAll((Collection<? extends Tag>)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -281,6 +328,9 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 			case GalleryPackage.PICTURE__COLLECTION:
 				setCollection((RealPictureCollection)null);
 				return;
+			case GalleryPackage.PICTURE__TAGS:
+				getTags().clear();
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -297,6 +347,8 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 				return FILE_EXTENSION_EDEFAULT == null ? fileExtension != null : !FILE_EXTENSION_EDEFAULT.equals(fileExtension);
 			case GalleryPackage.PICTURE__COLLECTION:
 				return getCollection() != null;
+			case GalleryPackage.PICTURE__TAGS:
+				return tags != null && !tags.isEmpty();
 		}
 		return super.eIsSet(featureID);
 	}
@@ -328,7 +380,7 @@ public abstract class PictureImpl extends PathElementImpl implements Picture {
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (fileExtension: ");
 		result.append(fileExtension);
 		result.append(')');

@@ -28,6 +28,7 @@ import gallery.DeletedPicture;
 import gallery.GalleryPackage;
 import gallery.PictureLibrary;
 import gallery.RealPictureCollection;
+import gallery.TagCategory;
 import java.util.Collection;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -45,13 +46,14 @@ import org.eclipse.emf.ecore.util.InternalEList;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getBasePath <em>Base Path</em>}</li>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getName <em>Name</em>}</li>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getBaseCollection <em>Base Collection</em>}</li>
  *   <li>{@link gallery.impl.PictureLibraryImpl#getDeletedPictures <em>Deleted Pictures</em>}</li>
+ *   <li>{@link gallery.impl.PictureLibraryImpl#getTagCategories <em>Tag Categories</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -117,6 +119,16 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	protected EList<DeletedPicture> deletedPictures;
 
 	/**
+	 * The cached value of the '{@link #getTagCategories() <em>Tag Categories</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getTagCategories()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList<TagCategory> tagCategories;
+
+	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -140,6 +152,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getBasePath() {
 		return basePath;
 	}
@@ -149,6 +162,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setBasePath(String newBasePath) {
 		String oldBasePath = basePath;
 		basePath = newBasePath;
@@ -161,6 +175,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public RealPictureCollection getBaseCollection() {
 		return baseCollection;
 	}
@@ -185,6 +200,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setBaseCollection(RealPictureCollection newBaseCollection) {
 		if (newBaseCollection != baseCollection) {
 			NotificationChain msgs = null;
@@ -204,6 +220,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EList<DeletedPicture> getDeletedPictures() {
 		if (deletedPictures == null) {
 			deletedPictures = new EObjectContainmentWithInverseEList<DeletedPicture>(DeletedPicture.class, this, GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES, GalleryPackage.DELETED_PICTURE__LIBRARY);
@@ -216,6 +233,20 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
+	public EList<TagCategory> getTagCategories() {
+		if (tagCategories == null) {
+			tagCategories = new EObjectContainmentWithInverseEList<TagCategory>(TagCategory.class, this, GalleryPackage.PICTURE_LIBRARY__TAG_CATEGORIES, GalleryPackage.TAG_CATEGORY__LIBRARY);
+		}
+		return tagCategories;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -225,6 +256,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setName(String newName) {
 		String oldName = name;
 		name = newName;
@@ -247,6 +279,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				return basicSetBaseCollection((RealPictureCollection)otherEnd, msgs);
 			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
 				return ((InternalEList<InternalEObject>)(InternalEList<?>)getDeletedPictures()).basicAdd(otherEnd, msgs);
+			case GalleryPackage.PICTURE_LIBRARY__TAG_CATEGORIES:
+				return ((InternalEList<InternalEObject>)(InternalEList<?>)getTagCategories()).basicAdd(otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -263,6 +297,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				return basicSetBaseCollection(null, msgs);
 			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
 				return ((InternalEList<?>)getDeletedPictures()).basicRemove(otherEnd, msgs);
+			case GalleryPackage.PICTURE_LIBRARY__TAG_CATEGORIES:
+				return ((InternalEList<?>)getTagCategories()).basicRemove(otherEnd, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
 	}
@@ -283,6 +319,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				return getBaseCollection();
 			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
 				return getDeletedPictures();
+			case GalleryPackage.PICTURE_LIBRARY__TAG_CATEGORIES:
+				return getTagCategories();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -309,6 +347,10 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				getDeletedPictures().clear();
 				getDeletedPictures().addAll((Collection<? extends DeletedPicture>)newValue);
 				return;
+			case GalleryPackage.PICTURE_LIBRARY__TAG_CATEGORIES:
+				getTagCategories().clear();
+				getTagCategories().addAll((Collection<? extends TagCategory>)newValue);
+				return;
 		}
 		super.eSet(featureID, newValue);
 	}
@@ -333,6 +375,9 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
 				getDeletedPictures().clear();
 				return;
+			case GalleryPackage.PICTURE_LIBRARY__TAG_CATEGORIES:
+				getTagCategories().clear();
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -353,6 +398,8 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 				return baseCollection != null;
 			case GalleryPackage.PICTURE_LIBRARY__DELETED_PICTURES:
 				return deletedPictures != null && !deletedPictures.isEmpty();
+			case GalleryPackage.PICTURE_LIBRARY__TAG_CATEGORIES:
+				return tagCategories != null && !tagCategories.isEmpty();
 		}
 		return super.eIsSet(featureID);
 	}
@@ -366,7 +413,7 @@ public class PictureLibraryImpl extends MinimalEObjectImpl.Container implements 
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (basePath: ");
 		result.append(basePath);
 		result.append(", name: ");

@@ -7,17 +7,21 @@
   <foreignModel>model.ecore</foreignModel>
   <genPackages prefix="Gallery" disposableProviderFactory="true" ecorePackage="model.ecore#/">
     <genClasses ecoreClass="model.ecore#//PictureCollection">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PictureCollection/subCollections"/>
       <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//PictureCollection/superCollection"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PictureCollection/pictures"/>
-      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//PictureCollection/library"/>
+      <genOperations ecoreOperation="model.ecore#//PictureCollection/getPictures"/>
+      <genOperations ecoreOperation="model.ecore#//PictureCollection/getSubCollections"/>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//Picture">
-      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//Picture/collection"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Picture/fileExtension"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//Picture/collection"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Picture/tags"/>
+      <genOperations ecoreOperation="model.ecore#//Picture/getMetadata"/>
+      <genOperations ecoreOperation="model.ecore#//Picture/getHash"/>
+      <genOperations ecoreOperation="model.ecore#//Picture/getHashFast"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//RealPicture">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//RealPicture/linkedBy"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//RealPicture/metadata"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//LinkedPicture">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//LinkedPicture/realPicture"/>
@@ -25,11 +29,51 @@
     <genClasses image="false" ecoreClass="model.ecore#//PathElement">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//PathElement/name"/>
       <genOperations ecoreOperation="model.ecore#//PathElement/getFullPath"/>
+      <genOperations ecoreOperation="model.ecore#//PathElement/getRelativePath"/>
+      <genOperations ecoreOperation="model.ecore#//PathElement/getRelativePathWithoutBase"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//PictureLibrary">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//PictureLibrary/basePath"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PictureLibrary/baseCollection"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//PictureLibrary/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PictureLibrary/baseCollection"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PictureLibrary/deletedPictures"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PictureLibrary/tagCategories"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//Metadata">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//Metadata/picture"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Metadata/size"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Metadata/landscape"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Metadata/created"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Metadata/height"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Metadata/width"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Metadata/camera"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//RealPictureCollection">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//RealPictureCollection/linkedBy"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//RealPictureCollection/library"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//RealPictureCollection/pictures"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//RealPictureCollection/subCollections"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//LinkedPictureCollection">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//LinkedPictureCollection/realCollection"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//DeletedPicture">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//DeletedPicture/relativePath"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//DeletedPicture/library"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="model.ecore#//PictureWithHash">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//PictureWithHash/hash"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//PictureWithHash/hashFast"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//Tag">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Tag/value"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//Tag/picture"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Tag/category"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//TagCategory">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//TagCategory/name"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//TagCategory/library"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//TagCategory/tagInstances"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

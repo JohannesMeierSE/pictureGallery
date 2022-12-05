@@ -34,13 +34,14 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link gallery.PictureLibrary#getBasePath <em>Base Path</em>}</li>
  *   <li>{@link gallery.PictureLibrary#getName <em>Name</em>}</li>
  *   <li>{@link gallery.PictureLibrary#getBaseCollection <em>Base Collection</em>}</li>
  *   <li>{@link gallery.PictureLibrary#getDeletedPictures <em>Deleted Pictures</em>}</li>
+ *   <li>{@link gallery.PictureLibrary#getTagCategories <em>Tag Categories</em>}</li>
  * </ul>
- * </p>
  *
  * @see gallery.GalleryPackage#getPictureLibrary()
  * @model
@@ -118,6 +119,20 @@ public interface PictureLibrary extends EObject {
 	 * @generated
 	 */
 	EList<DeletedPicture> getDeletedPictures();
+
+	/**
+	 * Returns the value of the '<em><b>Tag Categories</b></em>' containment reference list.
+	 * The list contents are of type {@link gallery.TagCategory}.
+	 * It is bidirectional and its opposite is '{@link gallery.TagCategory#getLibrary <em>Library</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Tag Categories</em>' containment reference list.
+	 * @see gallery.GalleryPackage#getPictureLibrary_TagCategories()
+	 * @see gallery.TagCategory#getLibrary
+	 * @model opposite="library" containment="true"
+	 * @generated
+	 */
+	EList<TagCategory> getTagCategories();
 
 	/**
 	 * Returns the value of the '<em><b>Name</b></em>' attribute.
