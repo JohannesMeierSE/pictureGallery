@@ -40,6 +40,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class CreateNewCollection extends Action {
 
@@ -56,7 +57,7 @@ public class CreateNewCollection extends Action {
 		RealPictureCollection parentOfNewCollection = (RealPictureCollection) state.getSelection();
 
 		// get the name of the new collection
-	    String newName = Logic.askForString("Name of the new collection",
+	    String newName = JavafxHelper.askForString("Name of the new collection",
 	    		"Select a (unique) name for the new real collection!", "Name of new collection:", false, null);
 	    if (newName == null || newName.isEmpty()) {
 	    	return;

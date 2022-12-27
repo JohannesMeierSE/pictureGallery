@@ -29,13 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.input.KeyCode;
-import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.fix.FirstNumberInUnderscoreFixer;
 import picturegallery.fix.NumberAtEndFixer;
 import picturegallery.fix.NumberFixer;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class FixPictureNumbersAction extends Action {
 
@@ -64,7 +64,7 @@ public class FixPictureNumbersAction extends Action {
 			fixerNames.add(i, fixer.get(i).getName());
 		}
 
-		int option = Logic.askForChoice(fixerNames, true, "Select fix mechanism",
+		int option = JavafxHelper.askForChoice(fixerNames, true, "Select fix mechanism",
 				"There are different patterns for numbers with missing leading zeros.", "Select one pattern:");
 		if (option < 0) {
 			return;
@@ -104,7 +104,7 @@ public class FixPictureNumbersAction extends Action {
 			return;
 		}
 
-		if (!Logic.askForConfirmation("Fix picture names: running number",
+		if (!JavafxHelper.askForConfirmation("Fix picture names: running number",
 				"From the " + size + " pictures, " + (size - noNumberAtTheEnd) + " have a number at the specified position, "
 						+ toFix.size() + " of them need a fix (missing leading zeros up to " + digits + " digits OR other fixes), "
 						+ "and " + noNumberAtTheEnd + " do not match the number pattern.",
@@ -117,7 +117,7 @@ public class FixPictureNumbersAction extends Action {
 		// TODO: remove renamed pictures from the cache??
 
 		final int finalDigits = digits;
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				for (Picture pic : toFix) {

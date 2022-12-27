@@ -25,10 +25,10 @@ package picturegallery.action;
 import gallery.Picture;
 import gallery.RealPicture;
 import javafx.scene.input.KeyCode;
-import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class DeletePictureAction extends Action {
 	private boolean askUser;
@@ -55,7 +55,7 @@ public class DeletePictureAction extends Action {
 
 		// ask the user for confirmation
 		if (askUser) {
-			if (!Logic.askForConfirmation("Delete picture",
+			if (!JavafxHelper.askForConfirmation("Delete picture",
 					"You selected the picture " + pictureToDelete.getRelativePath() + " for deletion.",
 					"Do you really want to delete this file?")) {
 				return;
@@ -64,7 +64,7 @@ public class DeletePictureAction extends Action {
 
 		// ask the user (again), if this picture is linked by others!
 		if (pictureToDelete instanceof RealPicture && !((RealPicture) pictureToDelete).getLinkedBy().isEmpty()) {
-			if (!Logic.askForConfirmation("Delete picture",
+			if (!JavafxHelper.askForConfirmation("Delete picture",
 					"The selected picture " + pictureToDelete.getRelativePath() + " is linked by other pictures.",
 					"Do you really want to delete this picture with links?")) {
 				return;
@@ -82,7 +82,7 @@ public class DeletePictureAction extends Action {
 		// ask always or never?
 		if (!initiallyAsked) {
 			initiallyAsked = true;
-			if (Logic.askForConfirmation("Delete picture", "Do want to be asked any time you delete a picture?",
+			if (JavafxHelper.askForConfirmation("Delete picture", "Do want to be asked any time you delete a picture?",
 					"If you confirm, than you will never be asked again, if you cancel, than you will be asked always!")) {
 				askUser = false;
 			}

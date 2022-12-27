@@ -64,6 +64,7 @@ import picturegallery.persistency.MediaRenderBase;
 import picturegallery.persistency.MediaRenderBase.PictureProvider;
 import picturegallery.persistency.ObservablePicture;
 import picturegallery.persistency.SpecialSortedList;
+import picturegallery.ui.JavafxHelper;
 
 /**
  * This state shows one picture out of a list of (sorted) pictures.
@@ -192,7 +193,7 @@ public abstract class PictureSwitchingState extends State {
 					return;
 				}
 				// all other changes may have an impact on the rendering:
-				Logic.runOnUiThread(new Runnable() {
+				JavafxHelper.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						updateLabels();

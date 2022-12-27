@@ -30,9 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.input.KeyCode;
-import picturegallery.Logic;
 import picturegallery.state.SingleCollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class JumpRelatedPictureAction extends Action {
 
@@ -62,7 +62,7 @@ public class JumpRelatedPictureAction extends Action {
 					options.add(i, realPicture.getLinkedBy().get(i).getRelativePathWithoutBase());
 				}
 
-				int selectedOption = Logic.askForChoice(options, true, "Select the jump target", "There are several links to this picture.", "Select the target to jump to:");
+				int selectedOption = JavafxHelper.askForChoice(options, true, "Select the jump target", "There are several links to this picture.", "Select the target to jump to:");
 				if (selectedOption < 0) {
 					return;
 				}

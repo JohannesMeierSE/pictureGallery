@@ -42,6 +42,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class RenameCollectionAction extends Action {
 
@@ -62,7 +63,7 @@ public class RenameCollectionAction extends Action {
 			// it is not allowed to rename the base collection! (TODO: why?)
 			return;
 		}
-		String newName = Logic.askForString("Rename collection",
+		String newName = JavafxHelper.askForString("Rename collection",
 				"Select a new name for the collection " + collectionToRename.getName() + "!",
 				"New name: ", false, collectionToRename.getName());
 		if (newName == null || newName.isEmpty()) {

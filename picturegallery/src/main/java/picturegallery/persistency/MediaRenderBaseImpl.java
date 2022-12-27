@@ -41,8 +41,8 @@ import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
-import picturegallery.Logic;
 import picturegallery.persistency.ObjectCache.CallBack;
+import picturegallery.ui.JavafxHelper;
 
 public class MediaRenderBaseImpl implements MediaRenderBase {
 	private final ObjectCache<RealPicture, Image> cache;
@@ -358,7 +358,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		RealPicture realCurrentPicture = currentProvider.get();
 		if (realCurrentPicture == null) {
 			// show no picture
-			Logic.runOnUiThread(new Runnable() {
+			JavafxHelper.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
 					getImageView().setImage(null);
@@ -398,7 +398,7 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 		RealPicture realCurrentPicture = currentProvider.get();
 		if (realCurrentPicture == null) {
 			// show no picture
-			Logic.runOnUiThread(new Runnable() {
+			JavafxHelper.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
 					renderCanvas(null, null);

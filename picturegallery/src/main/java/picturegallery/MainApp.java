@@ -87,6 +87,7 @@ import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
 import picturegallery.state.WaitingState;
+import picturegallery.ui.JavafxHelper;
 
 public class MainApp extends Application {
 	public final static int SPACE = 25;
@@ -188,7 +189,7 @@ public class MainApp extends Application {
 
     	root = new StackPane();
 
-    	final String baseDir = Logic.askForDirectory("Choose the base directory of the library to work with!", false);
+    	final String baseDir = JavafxHelper.askForDirectory("Choose the base directory of the library to work with!", false);
 
     	// Label for showing keys
     	labelKeys = new Label("keys");
@@ -630,7 +631,7 @@ public class MainApp extends Application {
 				content = content + "<= " + link.getRelativePath() + "\n";
 			}
 			content = content.trim();
-			if (!Logic.askForConfirmation("Move picture", "This (real) picture " + picture.getRelativePath()
+			if (!JavafxHelper.askForConfirmation("Move picture", "This (real) picture " + picture.getRelativePath()
 					+ " is linked by the following pictures:\nDo you really want to move the picture?\n"
 					+ "The links will be changed accordingly.", content)) {
 				return;
@@ -638,7 +639,7 @@ public class MainApp extends Application {
 		}
 
 		// do the long-running moving in another thread!
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				if (picture instanceof RealPicture) {
@@ -658,7 +659,7 @@ public class MainApp extends Application {
 
 					// update the EMF model
 					movePictureInModel(picture, newCollection);
-					
+
 					// ... and create them all again with changed target
 					for (LinkedPicture linked : pictureToMove.getLinkedBy()) {
 						Logic.createSymlinkPicture(linked);
@@ -830,7 +831,7 @@ public class MainApp extends Application {
 		}
 
 		// do the long-running moving in another thread!
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				/* collect problematic links:
@@ -902,7 +903,7 @@ public class MainApp extends Application {
 				}
 
 				if (jump) {
-					Logic.runOnUiThread(new Runnable() {
+					JavafxHelper.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
 							((CollectionState) getCurrentState()).jumpToCollection(collectionToMove);
@@ -1035,7 +1036,7 @@ public class MainApp extends Application {
 
 	public void switchCloseWaitingState() {
 		// close the waiting state!
-		Logic.runOnUiThread(new Runnable() {
+		JavafxHelper.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				switchToPreviousState();

@@ -40,6 +40,7 @@ import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
 import picturegallery.Logic;
 import picturegallery.filter.CollectionFilter;
+import picturegallery.ui.JavafxHelper;
 
 public class ObservablePictureCollection extends ObservableBase<PictureCollection> {
 	private final Adapter adapter;
@@ -99,7 +100,7 @@ public class ObservablePictureCollection extends ObservableBase<PictureCollectio
 					return;
 				}
 				if (isColEqual(msg.getNotifier()) || isColEqual(msg.getNewValue()) || isColEqual(msg.getOldValue())) {
-					Logic.runOnUiThread(new Runnable() {
+					JavafxHelper.runOnUiThread(new Runnable() {
 						// I am not sure, if the UI thread is really required ...
 						@Override
 						public void run() {

@@ -32,6 +32,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class MergeCollectionsAction extends Action {
 
@@ -59,7 +60,7 @@ public class MergeCollectionsAction extends Action {
 		ignoredCollections.add(collectionToDelete);
 		ignoredCollections.addAll(Logic.getAllSuperCollections(collectionToDelete));
 		ignoredCollections.addAll(Logic.getAllSubCollections(collectionToDelete, false));
-		RealPictureCollection target = (RealPictureCollection) Logic.selectCollection(state, true, true, false, ignoredCollections);
+		RealPictureCollection target = (RealPictureCollection) JavafxHelper.selectCollection(state, true, true, false, ignoredCollections);
 		if (target == null) {
 			return;
 		}
@@ -68,7 +69,7 @@ public class MergeCollectionsAction extends Action {
 		// do the long-running merging in another thread!
 		MainApp.get().switchToWaitingState();
 
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				MainApp.get().mergeCollections(collectionToDelete, target);
@@ -76,7 +77,7 @@ public class MergeCollectionsAction extends Action {
 				MainApp.get().switchCloseWaitingState();
 
 				// jump to the target collection
-				Logic.runOnUiThread(new Runnable() {
+				JavafxHelper.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						state.jumpToCollection(target);

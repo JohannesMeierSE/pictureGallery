@@ -34,6 +34,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class ExportLinkedPicturesAction extends Action {
 
@@ -58,7 +59,7 @@ public class ExportLinkedPicturesAction extends Action {
 			options.add(0, "real and linked pictures");
 			options.add(1, "only linked pictures");
 			options.add(2, "only real pictures");
-			int answer = Logic.askForChoice(options, true, "Export pictures",
+			int answer = JavafxHelper.askForChoice(options, true, "Export pictures",
 					"Which kind of pictures do you want to export?", "Select the kind of exported pictures:");
 			answer = Math.max(0, answer);
 			if (answer == 1) {
@@ -70,7 +71,7 @@ public class ExportLinkedPicturesAction extends Action {
 			}
 		}
 
-		String path = Logic.askForDirectory("Select a directory to export the linked pictures", true);
+		String path = JavafxHelper.askForDirectory("Select a directory to export the linked pictures", true);
 		if (path == null || path.startsWith(MainApp.get().getBaseCollection().getFullPath())) {
 			return;
 		}
@@ -78,7 +79,7 @@ public class ExportLinkedPicturesAction extends Action {
 		// the user has to wait and must not do other things (long running process)
 		MainApp.get().switchToWaitingState();
 
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				// copy each linked picture

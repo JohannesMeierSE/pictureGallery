@@ -40,6 +40,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class LinkPictureAction extends Action {
 
@@ -54,7 +55,7 @@ public class LinkPictureAction extends Action {
 		PictureCollection currentCollection = state.getCurrentCollection();
 
 		if (linktoCollection == null) {
-			linktoCollection = (RealPictureCollection) Logic.selectCollection(
+			linktoCollection = (RealPictureCollection) JavafxHelper.selectCollection(
 					currentState,
 					true, true, false, Collections.singletonList(currentCollection));
 			if (linktoCollection == currentCollection) {
@@ -102,7 +103,7 @@ public class LinkPictureAction extends Action {
 			Logic.createSymlinkPicture(newLink);
 		} else {
 			// => remove existing link
-			if (Logic.askForConfirmation("Link current picture", "The current picture is already linked into the selected collection:",
+			if (JavafxHelper.askForConfirmation("Link current picture", "The current picture is already linked into the selected collection:",
 					"Confirm to remove the existing link from the collection.")) {
 				// ask before removing the link
 				MainApp.get().deletePicture(existingLink, false);

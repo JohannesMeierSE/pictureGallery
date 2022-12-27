@@ -32,9 +32,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javafx.scene.input.KeyCode;
-import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class DeleteAndMoveMappedPicturesAction extends Action {
 	private final Map<RealPicture, List<RealPicture>> map;
@@ -47,13 +47,13 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 	@Override
 	public void run(State currentState) {
 		// the key will not be deleted => one picture will be kept!!
-		if (!Logic.askForConfirmation("Delete and move?",
+		if (!JavafxHelper.askForConfirmation("Delete and move?",
 				"Now, all the mapped values will be removed and all the keys will be moved into one single collection.",
 				"Do you really want to proceed?")) {
 			return;
 		}
 
-		RealPictureCollection movetoCollection = (RealPictureCollection) Logic.selectCollection(
+		RealPictureCollection movetoCollection = (RealPictureCollection) JavafxHelper.selectCollection(
 				currentState,
 				true, true, false, Collections.emptyList());
 		if (movetoCollection == null) {
@@ -64,7 +64,7 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 		MainApp.get().switchToWaitingState();
 		currentState.onClose();
 
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				// 1. delete all mapped values

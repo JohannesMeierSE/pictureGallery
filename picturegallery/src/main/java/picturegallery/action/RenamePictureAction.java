@@ -28,6 +28,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 /**
  * Renames the currently selected picture.
@@ -48,7 +49,7 @@ public class RenamePictureAction extends Action {
 			return;
 		}
 
-		String newName = Logic.askForString("Rename Picture",
+		String newName = JavafxHelper.askForString("Rename Picture",
 				"Select a new name for the picture " + currentPicture.getRelativePath() + "!",
 				"New name: ", false, currentPicture.getName());
 		if (newName == null || newName.isEmpty()) {

@@ -24,12 +24,11 @@ package picturegallery.persistency;
 
 import gallery.LinkedPicture;
 import gallery.Picture;
+import picturegallery.ui.JavafxHelper;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
-
-import picturegallery.Logic;
 
 public class ObservablePicture extends ObservableBase<Picture> {
 	private final Adapter adapter;
@@ -47,7 +46,7 @@ public class ObservablePicture extends ObservableBase<Picture> {
 				if (msg.getEventType() == Notification.MOVE) {
 					return;
 				}
-				Logic.runOnUiThread(new Runnable() {
+				JavafxHelper.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						updateAll();

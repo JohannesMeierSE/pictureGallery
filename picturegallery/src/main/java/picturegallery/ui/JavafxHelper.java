@@ -1,0 +1,359 @@
+package picturegallery.ui;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import gallery.LinkedPictureCollection;
+import gallery.PictureCollection;
+import gallery.RealPictureCollection;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
+import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.stage.DirectoryChooser;
+import javafx.util.Callback;
+import picturegallery.MainApp;
+import picturegallery.persistency.Settings;
+import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.State;
+
+public class JavafxHelper {
+
+	public static String askForString(String title, String header, String content,
+			boolean nullAndEmptyAreForbidden, String defaultValue) {
+		while (true) {
+			final TextInputDialog dialog;
+			if (defaultValue == null || defaultValue.isEmpty()) {
+				dialog = new TextInputDialog();
+			} else {
+				dialog = new TextInputDialog(defaultValue);
+			}
+			dialog.setTitle(title);
+			dialog.setHeaderText(header);
+			dialog.setContentText(content);
+			Optional<String> result = dialog.showAndWait();
+			if (result.isPresent()) {
+				String res = result.get();
+				if (nullAndEmptyAreForbidden && (res == null || res.isEmpty())) {
+					// next iteration
+				} else {
+					return result.get();
+				}
+			} else {
+				if (nullAndEmptyAreForbidden) {
+					// next iteration
+				} else {
+					return null;
+				}
+			}
+		}
+	}
+
+	public static boolean askForConfirmation(String title, String header, String content) {
+		// http://code.makery.ch/blog/javafx-dialogs-official/
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle(title);
+		alert.setHeaderText(header);
+		alert.setContentText(content);
+	
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == ButtonType.OK){
+		    // ... user chose OK
+			return true;
+		} else {
+		    // ... user chose CANCEL or closed the dialog
+			return false;
+		}
+	}
+
+	public static String askForDirectory(String title, boolean allowNull) {
+		// https://docs.oracle.com/javafx/2/ui_controls/file-chooser.htm
+		String baseDir = null;
+		while (baseDir == null) {
+			DirectoryChooser dialog = new DirectoryChooser();
+			dialog.setTitle(title);
+			dialog.setInitialDirectory(new File(Settings.getBasePath()));
+			File choosenLibrary = dialog.showDialog(MainApp.get().getStage());
+	    	if (choosenLibrary != null) {
+	    		baseDir = choosenLibrary.getAbsolutePath();
+	    	} else if (allowNull) {
+	    		break;
+	    	} else {
+	    		// ask the user again
+	    	}
+		}
+		return baseDir;
+	}
+
+	public static int askForChoice(List<String> options, boolean allowNull,
+			String title, String header, String content) {
+		return JavafxHelper.askForChoice(options, allowNull, title, header, content, -1);
+	}
+
+	public static int askForChoice(List<String> options, boolean allowNull,
+			String title, String header, String content, int defaultIndex) {
+		if (options == null || options.size() < 2) {
+			throw new IllegalArgumentException();
+		}
+		int result = -1;
+		while (result < 0) {
+			ChoiceDialog<String> dialog = new ChoiceDialog<>(options.get(0), options);
+			dialog.setTitle(title);
+			dialog.setHeaderText(header);
+			dialog.setContentText(content);
+			if (0 <= defaultIndex && defaultIndex < options.size()) {
+				dialog.setSelectedItem(options.get(defaultIndex));
+			}
+	
+			Optional<String> answer = dialog.showAndWait();
+			if (answer.isPresent()){
+				result = options.indexOf(answer.get());
+			} else if (allowNull) {
+				break;
+			} else {
+				// next iteration
+			}
+		}
+		return result;
+	}
+
+	public static PictureCollection selectCollection(
+			State currentState,
+			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections) {
+		return JavafxHelper.selectCollection(currentState,
+				allowNull, allowEmptyCollectionForSelection, allowLinkedCollections,
+				Collections.emptyList());
+	}
+
+	public static PictureCollection selectCollection(
+			State currentState,
+			boolean allowNull, boolean allowEmptyCollectionForSelection, boolean allowLinkedCollections,
+			List<? extends PictureCollection> ignoredCollections) {
+		final PictureCollection currentCollection;
+		final PictureCollection movetoCollection;
+		final PictureCollection linktoCollection;
+		if (currentState != null && currentState instanceof PictureSwitchingState) {
+			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
+			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection();
+			linktoCollection = ((PictureSwitchingState) currentState).getLinktoCollection();
+		} else {
+			currentCollection = null;
+			movetoCollection = null;
+			linktoCollection = null;
+		}
+		PictureCollection result = null;
+		boolean found = false;
+	
+		while (!found) {
+			// create the dialog
+			// http://code.makery.ch/blog/javafx-dialogs-official/
+			Dialog<PictureCollection> dialog = new Dialog<>();
+			dialog.setTitle("Select picture collection");
+			dialog.setHeaderText("Select one existing picture collection out of the following ones!");
+	
+			// select button
+			ButtonType selectType = new ButtonType("Select", ButtonData.OK_DONE);
+			dialog.getDialogPane().getButtonTypes().add(selectType);
+			Button selectButton = (Button) dialog.getDialogPane().lookupButton(selectType);
+			selectButton.setDisable(true);
+	
+			// cancel button: handle the "null collection" (1)
+			Button cButton = null;
+			ButtonType cancelType = ButtonType.CANCEL;
+			if (allowNull) {
+				dialog.getDialogPane().getButtonTypes().add(cancelType);
+				cButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
+			}
+			Button cancelButton = cButton;
+	
+			// create the tree view
+			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
+			rootItem.setExpanded(true);
+			JavafxHelper.handleTreeItem(rootItem, allowLinkedCollections);
+			TreeView<PictureCollection> tree = new TreeView<>(rootItem);
+			tree.setCellFactory(new Callback<TreeView<PictureCollection>, TreeCell<PictureCollection>>() {
+				@Override
+				public TreeCell<PictureCollection> call(TreeView<PictureCollection> param) {
+					return new TreeCell<PictureCollection>() {
+						@Override
+						protected void updateItem(PictureCollection item, boolean empty) {
+							super.updateItem(item, empty);
+							if (empty) {
+								setText(null);
+								setGraphic(null);
+							} else {
+								setText(null);
+								final Label label = new Label();
+								setGraphic(label);
+								String textToShow = item.getName() + " (" + item.getPictures().size() + ")";
+								if (item == currentCollection) {
+									textToShow = textToShow + " [currently shown]";
+								}
+								if (item == movetoCollection) {
+									textToShow = textToShow + " [currently moving into]";
+								}
+								if (item == linktoCollection) {
+									textToShow = textToShow + " [currently linking into]";
+								}
+								// show the source of this link
+								if (item instanceof LinkedPictureCollection) {
+									textToShow = textToShow + " [=> " + ((LinkedPictureCollection) item).getRealCollection().getRelativePath() + "]";
+								}
+								boolean disabled = item.getPictures().isEmpty() && !allowEmptyCollectionForSelection;
+								boolean ignore = disabled || ignoredCollections.contains(item);
+								// https://stackoverflow.com/questions/32370394/javafx-combobox-change-value-causes-indexoutofboundsexception
+								setDisable(ignore);
+								label.setDisable(ignore);
+								if (disabled) {
+									textToShow = textToShow + " [empty]";
+								}
+								label.setText(textToShow);
+							}
+						}
+					};
+				}
+			});
+			dialog.getDialogPane().setOnKeyReleased(new EventHandler<KeyEvent>() {
+				@Override
+				public void handle(KeyEvent event) {
+					// closes the dialog with "ENTER"
+					if (event.getCode() == KeyCode.ENTER && !selectButton.isDisabled()) {
+						selectButton.fire();
+					}
+					// cancel the dialog with "Esc"
+					if (event.getCode() == KeyCode.ESCAPE && cancelButton != null) {
+						cancelButton.fire();
+					}
+				}
+			});
+	
+			// handle the "null collection" (2)
+			tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends TreeItem<PictureCollection>> observable,
+						TreeItem<PictureCollection> oldValue,
+						TreeItem<PictureCollection> newValue) {
+					selectButton.setDisable(newValue == null || newValue.getValue() == null ||
+							// benötigt, da man auch nicht-wählbare Einträge auswählen kann, diese Abfrage funktioniert aber auch nicht!!
+							(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
+				}
+			});
+	
+			// finish the dialog
+			tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+			tree.getSelectionModel().clearSelection();
+			dialog.getDialogPane().setContent(tree);
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					// request focus on the tree view by default
+					tree.requestFocus();
+				}
+			});
+			dialog.setResultConverter(new Callback<ButtonType, PictureCollection>() {
+				@Override
+				public PictureCollection call(ButtonType param) {
+					if (param == selectType) {
+						return tree.getSelectionModel().getSelectedItem().getValue();
+					}
+					return null;
+				}
+			});
+	
+			// jump to the currently selected item!
+			if (currentCollection != null) {
+				TreeItem<PictureCollection> currentSelectedItem = JavafxHelper.searchForEntry(currentCollection, rootItem);
+				if (currentSelectedItem != null) {
+					// https://stackoverflow.com/questions/17413206/listview-not-showing-selected-item-when-selected-programatically
+					tree.getSelectionModel().select(currentSelectedItem);
+					int row = tree.getRow(currentSelectedItem);
+					tree.getFocusModel().focus(row);
+					tree.scrollTo(row);
+				}
+			}
+	
+			// run the dialog
+			Optional<PictureCollection> dialogResult = dialog.showAndWait();
+			if (dialogResult.isPresent()) {
+				result = dialogResult.get();
+				if (result.getPictures().isEmpty() && !allowEmptyCollectionForSelection) {
+					result = null;
+				}
+			}
+	
+			// handle the result
+			if (result != null || allowNull) {
+				found = true;
+			}
+		}
+		return result;
+	}
+
+	public static void handleTreeItem(TreeItem<PictureCollection> item, boolean showLinkedCollections) {
+		for (PictureCollection subCol : item.getValue().getSubCollections()) {
+			if (subCol instanceof LinkedPictureCollection && !showLinkedCollections) {
+				continue;
+			}
+			TreeItem<PictureCollection> newItem = new TreeItem<PictureCollection>(subCol);
+			newItem.setExpanded(subCol instanceof RealPictureCollection); // expand only not-linked collections == expand only real collections
+			item.getChildren().add(newItem);
+			handleTreeItem(newItem, showLinkedCollections);
+		}
+	}
+
+	private static <T> TreeItem<T> searchForEntry(T element, TreeItem<T> root) {
+		if (root.getValue().equals(element)) {
+			return root;
+		}
+		for (TreeItem<T> sub : root.getChildren()) {
+			TreeItem<T> result = searchForEntry(element, sub);
+			if (result != null) {
+				return result;
+			}
+		}
+		return null;
+	}
+
+	public static void runOnUiThread(Runnable run) {
+		if (Platform.isFxApplicationThread()) {
+			run.run();
+		} else {
+			Platform.runLater(run);
+		}
+	}
+
+	public static void runNotOnUiThread(Runnable run) {
+		if (Platform.isFxApplicationThread()) {
+			Task<Void> task = new Task<Void>() {
+				@Override
+				protected Void call() throws Exception {
+					run.run();
+					return null;
+				}
+			};
+	        new Thread(task).start();
+		} else {
+			run.run();
+		}
+	}
+
+}

@@ -34,6 +34,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class MoveCollectionAction extends Action {
 
@@ -70,7 +71,7 @@ public class MoveCollectionAction extends Action {
 			ignoredCollections.add(collectionToMoveReal);
 			ignoredCollections.addAll(Logic.getAllSubCollections(collectionToMoveReal, false));
 		}
-		RealPictureCollection target = (RealPictureCollection) Logic.selectCollection(state, true, true, false, ignoredCollections);
+		RealPictureCollection target = (RealPictureCollection) JavafxHelper.selectCollection(state, true, true, false, ignoredCollections);
 		if (target == null) {
 			return;
 		}

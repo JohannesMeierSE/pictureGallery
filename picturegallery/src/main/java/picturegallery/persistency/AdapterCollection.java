@@ -28,7 +28,7 @@ import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import gallery.GalleryPackage;
 import gallery.Picture;
 import gallery.PictureCollection;
-import picturegallery.Logic;
+import picturegallery.ui.JavafxHelper;
 
 public abstract class AdapterCollection extends AdapterImpl {
 
@@ -37,7 +37,7 @@ public abstract class AdapterCollection extends AdapterImpl {
 		if (msg.getEventType() == Notification.REMOVING_ADAPTER || msg.getEventType() == Notification.RESOLVE) {
 			return;
 		}
-		Logic.runOnUiThread(new Runnable() {
+		JavafxHelper.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				// changes of the name of this collection

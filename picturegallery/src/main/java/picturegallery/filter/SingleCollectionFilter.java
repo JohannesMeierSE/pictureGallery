@@ -37,6 +37,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import picturegallery.Logic;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class SingleCollectionFilter extends CollectionFilter {
 	private final State state;
@@ -82,7 +83,7 @@ public class SingleCollectionFilter extends CollectionFilter {
 		collectionButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				RealPictureCollection selected = (RealPictureCollection) Logic
+				RealPictureCollection selected = (RealPictureCollection) JavafxHelper
 						.selectCollection(SingleCollectionFilter.this.state, true, true, false);
 				if (selected == null) {
 					return;

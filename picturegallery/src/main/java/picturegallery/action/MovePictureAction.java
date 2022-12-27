@@ -29,11 +29,11 @@ import gallery.RealPictureCollection;
 import java.util.Collections;
 
 import javafx.scene.input.KeyCode;
-import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.PictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.state.TempCollectionState;
+import picturegallery.ui.JavafxHelper;
 
 public class MovePictureAction extends Action {
 
@@ -49,7 +49,7 @@ public class MovePictureAction extends Action {
 		Picture currentPicture = state.getCurrentPicture();
 
 		if (movetoCollection == null) {
-			movetoCollection = (RealPictureCollection) Logic.selectCollection(
+			movetoCollection = (RealPictureCollection) JavafxHelper.selectCollection(
 					currentState,
 					true, true, false, Collections.singletonList(currentCollection));
 			if (movetoCollection == currentCollection) {

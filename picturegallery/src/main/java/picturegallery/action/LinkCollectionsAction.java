@@ -44,6 +44,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class LinkCollectionsAction extends Action {
 
@@ -61,7 +62,7 @@ public class LinkCollectionsAction extends Action {
 		// determine the target of the new link
 		RealPictureCollection collectionWithNewLinks = state.getCollectionWithNewLinks();
 		if (collectionWithNewLinks == null) {
-			collectionWithNewLinks = (RealPictureCollection) Logic.selectCollection(
+			collectionWithNewLinks = (RealPictureCollection) JavafxHelper.selectCollection(
 					state, true, true, false, Collections.singletonList(selectedCollection));
 			state.setCollectionWithNewLinks(collectionWithNewLinks);
 		}
@@ -101,7 +102,7 @@ public class LinkCollectionsAction extends Action {
 	
 			// get name of new link
 			String newName = target.getRelativePathWithoutBase().replaceAll(File.separator, "-");
-			newName = Logic.askForString("Select name of linked collection",
+			newName = JavafxHelper.askForString("Select name of linked collection",
 					"Select a name for the new collection linking on " + target.getRelativePath() + " within " + collectionWithNewLinks.getRelativePath(),
 					"New name:", false, newName);
 			if (newName == null || newName.isEmpty()) {
@@ -142,7 +143,7 @@ public class LinkCollectionsAction extends Action {
 		    }
 		} else {
 			// ask for deletion of the existing link
-			if (Logic.askForConfirmation("Link current collection", "The current collection is already linked into the selected collection:",
+			if (JavafxHelper.askForConfirmation("Link current collection", "The current collection is already linked into the selected collection:",
 					"Confirm to remove the existing link from the collection.")) {
 				// => remove existing link
 				MainApp.get().deleteCollection(existingLink);

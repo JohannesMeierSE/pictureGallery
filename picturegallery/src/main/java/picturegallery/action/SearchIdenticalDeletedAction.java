@@ -38,6 +38,7 @@ import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class SearchIdenticalDeletedAction extends Action {
 
@@ -55,7 +56,7 @@ public class SearchIdenticalDeletedAction extends Action {
 
 		boolean recursive = targetCollection.getSubCollections().isEmpty() == false;
 		if (recursive) {
-			if (!Logic.askForConfirmation("Search for deleted pictures",
+			if (!JavafxHelper.askForConfirmation("Search for deleted pictures",
 					"The selected collections has sub-collection:",
 					"Confirm, to search in recursive sub-collections, too!")) {
 				recursive = false;

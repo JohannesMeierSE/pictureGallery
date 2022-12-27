@@ -43,6 +43,7 @@ import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class SearchIdenticalAction extends Action {
 
@@ -60,7 +61,7 @@ public class SearchIdenticalAction extends Action {
 		// search in sub-collections, too?
 		final boolean searchInSubcollectionsToo;
 		if (!selection.getSubCollections().isEmpty()) {
-			if (Logic.askForConfirmation("Search for identical pictures",
+			if (JavafxHelper.askForConfirmation("Search for identical pictures",
 					"The selected collection has sub-collections.",
 					"If you confirm, in each (recursive) sub-collection will be searched, too (independent from all other collections).")) {
 				searchInSubcollectionsToo = true;

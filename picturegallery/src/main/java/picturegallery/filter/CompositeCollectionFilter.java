@@ -44,8 +44,8 @@ import javafx.scene.control.Slider;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import picturegallery.Logic;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class CompositeCollectionFilter extends CollectionFilter {
 	private final State state;
@@ -135,7 +135,7 @@ public class CompositeCollectionFilter extends CollectionFilter {
 				options.add(0, "Single Collection Filter");
 				options.add(1, "Picture Number Filter");
 				options.add(2, "Composite Filter");
-				int choice = Logic.askForChoice(options, true, "Add new Filter", "Which kind of filter do you want to add?", "Please select:");
+				int choice = JavafxHelper.askForChoice(options, true, "Add new Filter", "Which kind of filter do you want to add?", "Please select:");
 				if (choice == 0) {
 					SingleCollectionFilter filter = new SingleCollectionFilter(null,
 							CompositeCollectionFilter.this.state, CompositeCollectionFilter.this);

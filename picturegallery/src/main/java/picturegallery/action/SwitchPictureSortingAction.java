@@ -33,6 +33,7 @@ import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class SwitchPictureSortingAction extends Action {
 	private final Comparator<Picture> byNameAscending;
@@ -56,7 +57,7 @@ public class SwitchPictureSortingAction extends Action {
 		options.add(1, "Sort by name descending");
 		options.add(2, "Sort by 1. month, 2. day 3. year ascending");
 		options.add(3, "Sort by size descending");
-		int answer = Logic.askForChoice(options, true, "Order of shown pictures",
+		int answer = JavafxHelper.askForChoice(options, true, "Order of shown pictures",
 				"Select and change the order of the shown pictures", "Select one of the order options:");
 		if (answer < 0) {
 			return;

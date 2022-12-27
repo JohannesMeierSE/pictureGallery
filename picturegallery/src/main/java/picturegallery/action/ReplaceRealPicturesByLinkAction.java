@@ -32,6 +32,7 @@ import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class ReplaceRealPicturesByLinkAction extends Action {
 	private final Map<RealPicture, List<RealPicture>> replaceMap;
@@ -52,7 +53,7 @@ public class ReplaceRealPicturesByLinkAction extends Action {
 	@Override
 	public void run(State currentState) {
 		// the key will not be replaced => one real picture will be kept!!
-		if (!Logic.askForConfirmation(title + "?", description,
+		if (!JavafxHelper.askForConfirmation(title + "?", description,
 				"Do you really want to replace all the selected pictures by links?")) {
 			return;
 		}
@@ -60,7 +61,7 @@ public class ReplaceRealPicturesByLinkAction extends Action {
 		// the user has to wait and must not do other things (long running process)
 		MainApp.get().switchToWaitingState();
 
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				for (Entry<RealPicture, List<RealPicture>> e : replaceMap.entrySet()) {

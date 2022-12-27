@@ -39,6 +39,7 @@ import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class DiffCollectionDeleteAction extends Action {
 
@@ -53,7 +54,7 @@ public class DiffCollectionDeleteAction extends Action {
 			return;
 		}
 		RealPictureCollection first = (RealPictureCollection) selection;
-		RealPictureCollection second = (RealPictureCollection) Logic.selectCollection(
+		RealPictureCollection second = (RealPictureCollection) JavafxHelper.selectCollection(
 				currentState, true, false, false, Collections.singletonList(first));
 		if (second == null) {
 			return;

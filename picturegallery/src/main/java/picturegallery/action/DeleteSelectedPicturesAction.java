@@ -27,9 +27,9 @@ import gallery.Picture;
 import java.util.List;
 
 import javafx.scene.input.KeyCode;
-import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class DeleteSelectedPicturesAction extends Action {
 	private final List<? extends Picture> picturesToDelete;
@@ -46,7 +46,7 @@ public class DeleteSelectedPicturesAction extends Action {
 	@Override
 	public void run(State currentState) {
 		// the key will not be deleted => one picture will be kept!!
-		if (!Logic.askForConfirmation(title + "?", description,
+		if (!JavafxHelper.askForConfirmation(title + "?", description,
 				"Do you really want to delete all the selected pictures?")) {
 			return;
 		}
@@ -55,7 +55,7 @@ public class DeleteSelectedPicturesAction extends Action {
 		MainApp.get().switchToWaitingState();
 		currentState.onClose();
 
-		Logic.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				// delete the pictures

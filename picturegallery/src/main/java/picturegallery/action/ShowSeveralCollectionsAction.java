@@ -34,6 +34,7 @@ import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.MultiCollectionState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class ShowSeveralCollectionsAction extends Action {
 
@@ -59,14 +60,14 @@ public class ShowSeveralCollectionsAction extends Action {
 		}
 
 		// ask for some more collections to show
-		RealPictureCollection additionalCollection = (RealPictureCollection) Logic.selectCollection(currentState, true, false, false, shownCollections);
+		RealPictureCollection additionalCollection = (RealPictureCollection) JavafxHelper.selectCollection(currentState, true, false, false, shownCollections);
 		while (additionalCollection != null) {
 			// handle current select
 			nextState.addCollection(additionalCollection);
 			shownCollections.add(additionalCollection);
 
 			// ask for the next collection to show
-			additionalCollection = (RealPictureCollection) Logic.selectCollection(currentState, true, false, false, shownCollections);
+			additionalCollection = (RealPictureCollection) JavafxHelper.selectCollection(currentState, true, false, false, shownCollections);
 		}
 
 		MainApp.get().switchState(nextState);

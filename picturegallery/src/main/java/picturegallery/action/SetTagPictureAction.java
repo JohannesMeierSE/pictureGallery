@@ -38,6 +38,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.SinglePictureState;
 import picturegallery.state.State;
+import picturegallery.ui.JavafxHelper;
 
 public class SetTagPictureAction extends Action {
 	protected TagCategory previousChoice = null; // for convenience only ...
@@ -69,7 +70,7 @@ public class SetTagPictureAction extends Action {
 			} else {
 				defaultChoice = library.getTagCategories().indexOf(previousChoice);
 			}
-			int choice = Logic.askForChoice(options, true, "Select a Category for the Tag",
+			int choice = JavafxHelper.askForChoice(options, true, "Select a Category for the Tag",
 					"Tags are classified with named categories (tags are key-value pairs).\n"
 					+ "If you select no existing category, a new one will be created in the next step.", "Select one of the options corresponding to existing categories:", defaultChoice);
 			if (0 <= choice && choice < library.getTagCategories().size()) {
@@ -78,7 +79,7 @@ public class SetTagPictureAction extends Action {
 		}
 		if (category == null) {
 			// create a new category for tags
-			String newName = Logic.askForString("Create a new Tag Category", "A new category for tags will be created, for which pictures could get corresponding tags", "Insert the name of the new category:", false, null);
+			String newName = JavafxHelper.askForString("Create a new Tag Category", "A new category for tags will be created, for which pictures could get corresponding tags", "Insert the name of the new category:", false, null);
 			if (newName == null || newName.isBlank()) {
 				return;
 			}
@@ -96,7 +97,7 @@ public class SetTagPictureAction extends Action {
 				break;
 			}
 		}
-		tagValue = Logic.askForString("Insert the Tag for the current Picture",
+		tagValue = JavafxHelper.askForString("Insert the Tag for the current Picture",
 				"Specify the value for the tag for the current picture.\n"
 				+ "If there is a previous value for this tag, it is shown as default value and will be overridden.\n"
 				+ "If you specify no (or an empty) value, the tag will be removed.", "Insert the value for the tag:", false, tagValue);

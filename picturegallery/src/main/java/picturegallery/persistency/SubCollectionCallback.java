@@ -36,7 +36,7 @@ import gallery.RealPictureCollection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Callback;
-import picturegallery.Logic;
+import picturegallery.ui.JavafxHelper;
 
 public class SubCollectionCallback implements Callback<PictureCollection, ObservableList<PictureCollection>> {
 	/**
@@ -72,7 +72,7 @@ public class SubCollectionCallback implements Callback<PictureCollection, Observ
 				if (msg.getFeature() != GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections()) {
 					return;
 				}
-				Logic.runOnUiThread(new Runnable() {
+				JavafxHelper.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						// only sub/super collections are relevant:
