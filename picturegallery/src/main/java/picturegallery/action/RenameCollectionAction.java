@@ -47,7 +47,7 @@ public class RenameCollectionAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof CollectionState)) {
+		if (currentState instanceof CollectionState == false) {
 			throw new IllegalStateException();
 		}
 		CollectionState state = (CollectionState) currentState;
@@ -72,21 +72,24 @@ public class RenameCollectionAction extends Action {
 			return; // same name like before => nothing to do!
 		}
 		// check for uniqueness
-		if (!Logic.isCollectionNameUnique(collectionToRename.getSuperCollection(), newName)) {
-			throw new IllegalArgumentException("The new name " + newName + " is not unique!");
+		if (Logic.isCollectionNameUnique(collectionToRename.getSuperCollection(), newName) == false) {
+			throw new IllegalArgumentException("The new name " + newName + " is not unique!"); // TODO Dialog anzeigen statt Exception!
 		}
 
 		if (collectionToRename instanceof RealPictureCollection) {
 			// after testing all pre-conditions, start with the renaming itself ...
-			List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
+
 			// remove all links linking on pictures contained (recursively) in the collection to rename
+			List<LinkedPicture> linksToReGenerate = Logic.findLinksOnPicturesIn(collectionToRename);
 			for (LinkedPicture link : linksToReGenerate) {
 				Logic.deleteSymlinkPicture(link);
 			}
-			// remove all links on the collection to rename
-			RealPictureCollection realCollectionToRename = (RealPictureCollection) collectionToRename;
-			for (LinkedPictureCollection link : realCollectionToRename.getLinkedBy()) {
-				Logic.deleteSymlinkCollection(link);
+			// remove all links on the collection to rename (and on its sub-collections!)
+			List<RealPictureCollection> foldersWithSymlinksToFix = Logic.getAllSubCollections((RealPictureCollection) collectionToRename, true);
+			for (RealPictureCollection col : foldersWithSymlinksToFix) {
+				for (LinkedPictureCollection link : col.getLinkedBy()) {
+					Logic.deleteSymlinkCollection(link);
+				}
 			}
 			// rename in file system
 			// http://www.java-examples.com/rename-file-or-directory
@@ -101,8 +104,10 @@ public class RenameCollectionAction extends Action {
 				Logic.createSymlinkPicture(link);
 			}
 			// create all deleted links on the renamed collection again
-			for (LinkedPictureCollection link : realCollectionToRename.getLinkedBy()) {
-				Logic.createSymlinkCollection(link);
+			for (RealPictureCollection col : foldersWithSymlinksToFix) {
+				for (LinkedPictureCollection link : col.getLinkedBy()) {
+					Logic.createSymlinkCollection(link);
+				}
 			}
 		} else {
 			// rename in file system
@@ -120,13 +125,13 @@ public class RenameCollectionAction extends Action {
 	private void renameModel(PictureCollection collectionToRename, String newName) {
 		// old version
 		// collectionToRename.setName(newName);
+		// Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
 
 		EditingDomain domain = MainApp.get().getModelDomain();
 		Command set = SetCommand.create(domain, collectionToRename, GalleryPackage.eINSTANCE.getPathElement_Name(), newName);
 		domain.getCommandStack().execute(set);
 
 		// sort the collections within the parent collection => by moving the wrong element to the correct position
-//		Logic.sortSubCollections(collectionToRename.getSuperCollection(), false);
 		domain.getCommandStack().execute(MoveCommand.create(domain,
 				collectionToRename.getSuperCollection(), GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(),
 				collectionToRename, Logic.getIndexForCollectionAtWrongPositionMove(
