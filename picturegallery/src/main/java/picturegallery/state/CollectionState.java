@@ -66,6 +66,7 @@ import picturegallery.action.SearchIdenticalAndReplaceAction;
 import picturegallery.action.SearchIdenticalDeletedAction;
 import picturegallery.action.ShowSeveralCollectionsAction;
 import picturegallery.action.ShowSingleCollectionAction;
+import picturegallery.action.ShowSingleCollectionOverviewAction;
 import picturegallery.filter.CompositeCollectionFilter;
 import picturegallery.persistency.ObservablePictureCollection;
 import picturegallery.persistency.PictureCollectionTreeTableCell;
@@ -278,6 +279,7 @@ public class CollectionState extends State {
 	public void onInit() {
 		super.onInit();
 		registerAction(new ShowSingleCollectionAction());
+		registerAction(new ShowSingleCollectionOverviewAction());
 		registerAction(new ShowSeveralCollectionsAction());
 		registerAction(new RenameCollectionAction());
 		registerAction(new CreateNewCollection());

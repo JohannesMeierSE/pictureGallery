@@ -42,7 +42,7 @@ public abstract class AdapterCollection extends AdapterImpl {
 			public void run() {
 				// changes of the name of this collection
 				if (msg.getFeature() == GalleryPackage.eINSTANCE.getPathElement_Name()) {
-					onNameChanged((PictureCollection) msg.getNotifier());
+					onCollectionNameChanged((PictureCollection) msg.getNotifier());
 					return;
 				}
 				// add or remove pictures
@@ -68,7 +68,7 @@ public abstract class AdapterCollection extends AdapterImpl {
 		});
 	}
 
-	public abstract void onNameChanged(PictureCollection collection);
+	public abstract void onCollectionNameChanged(PictureCollection collection);
 	public abstract void onPictureAdded(PictureCollection collection, Picture addedPicture);
 	public abstract void onPictureRemoved(PictureCollection collection, Picture removedPicture);
 }

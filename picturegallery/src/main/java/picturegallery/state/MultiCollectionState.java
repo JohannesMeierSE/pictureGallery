@@ -36,6 +36,7 @@ import org.eclipse.emf.common.notify.Adapter;
 import picturegallery.persistency.AdapterCollection;
 
 public class MultiCollectionState extends SinglePictureState {
+	// check real collections, not linked collections (because only real collections detect new/removed pictures)!
 	public final ObservableList<RealPictureCollection> collections = FXCollections.observableArrayList();
 	private final Adapter adapterCollection;
 
@@ -51,12 +52,11 @@ public class MultiCollectionState extends SinglePictureState {
 					} else if (c.wasUpdated()) {
 						// update item => is done by the adapterCollection
 					} else {
-						// check the real collection, not the linked collection (because only real collections detect new/removed pictures)!
 						for (RealPictureCollection removedCollection : c.getRemoved()) {
 							removedCollection.eAdapters().remove(adapterCollection);
 							picturesToShow.removeAll(removedCollection.getPictures());
 						}
-						// 1. add 2. remove => otherwise, this state will be closed, because there are no pictures to show!
+						// 1. add, 2. remove => otherwise, this state will be closed, because there are no pictures to show!
 						for (RealPictureCollection addedCollection : c.getAddedSubList()) {
 							addedCollection.eAdapters().add(adapterCollection);
 							picturesToShow.addAll(addedCollection.getPictures());
@@ -80,9 +80,9 @@ public class MultiCollectionState extends SinglePictureState {
 			public void onPictureRemoved(PictureCollection collection, Picture removedPicture) {
 				picturesToShow.remove(removedPicture);
 			}
-			
+
 			@Override
-			public void onNameChanged(PictureCollection collection) {
+			public void onCollectionNameChanged(PictureCollection collection) {
 				updateCollectionLabel();
 			}
 		};

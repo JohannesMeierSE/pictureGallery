@@ -24,12 +24,14 @@ package picturegallery.action;
 
 import gallery.PictureCollection;
 import javafx.scene.input.KeyCode;
+import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
-import picturegallery.state.SingleCollectionState;
+import picturegallery.state.MultiPictureSingleCollectionState;
+import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
 
-public class ShowSingleCollectionAction extends Action {
+public class ShowSingleCollectionOverviewAction extends Action {
 
 	@Override
 	public void run(State currentState) {
@@ -37,15 +39,21 @@ public class ShowSingleCollectionAction extends Action {
 			throw new IllegalStateException();
 		}
 		CollectionState state = (CollectionState) currentState;
-		PictureCollection collection = state.getSelection();
 		// could be a LINKED collection, too!
+		PictureCollection collection = state.getSelection();
 		if (collection == null || collection.getPictures().isEmpty()) {
 			return;
 		}
 
-		SingleCollectionState nextState = state.getSingleState();
-		nextState.setCurrentCollection(collection);
+		MultiPictureState nextState = new MultiPictureSingleCollectionState(Logic.getRealCollection(collection));
+		nextState.setNextAfterClosed(state);
+		nextState.onInit();
 		MainApp.get().switchState(nextState);
+	}
+
+	@Override
+	public boolean requiresShift() {
+		return true;
 	}
 
 	@Override
@@ -55,6 +63,6 @@ public class ShowSingleCollectionAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "shows the pictures of the currently selected collection (one picture after another)";
+		return "shows the pictures of the currently selected collection (multiple pictures as overview about the collection)";
 	}
 }

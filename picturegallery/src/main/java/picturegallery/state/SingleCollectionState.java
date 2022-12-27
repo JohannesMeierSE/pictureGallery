@@ -52,9 +52,9 @@ public class SingleCollectionState extends SinglePictureState {
 			public void onPictureRemoved(PictureCollection collection, Picture removedPicture) {
 				picturesToShow.remove(removedPicture);
 			}
-			
+
 			@Override
-			public void onNameChanged(PictureCollection collection) {
+			public void onCollectionNameChanged(PictureCollection collection) {
 				updateCollectionLabel();
 			}
 		};
