@@ -38,7 +38,7 @@ public class JumpRelatedCollectionAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof CollectionState)) {
+		if (currentState instanceof CollectionState == false) {
 			throw new IllegalStateException();
 		}
 		CollectionState state = (CollectionState) currentState;
@@ -58,7 +58,7 @@ public class JumpRelatedCollectionAction extends Action {
 			}
 
 			LinkedPictureCollection jumpTarget = realCollection.getLinkedBy().get(0);
-			if (realCollection.getLinkedBy().size() > 1) {
+			if (realCollection.getLinkedBy().size() >= 2) {
 				// select the jump target (if there are more than one link)
 				List<String> options = new ArrayList<>();
 				for (int i = 0; i < realCollection.getLinkedBy().size(); i++) {

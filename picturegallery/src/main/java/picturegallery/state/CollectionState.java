@@ -371,9 +371,20 @@ public class CollectionState extends State {
 			throw new IllegalArgumentException();
 		}
 		// search for the TreeItem of the collection
-		TreeItem<PictureCollection> item = getCollectionItem(jumpTo);
+		final TreeItem<PictureCollection> item = getCollectionItem(jumpTo);
 		if (item == null) {
 			throw new IllegalArgumentException(jumpTo.getRelativePath());
+		}
+
+		// expand the item  to jump to (and all its parent items!)
+		List<TreeItem<PictureCollection>> itemsToExpand = new ArrayList<>(); // order: top-parent, ..., item to jump to
+		TreeItem<PictureCollection> itemCurrent = item;
+		while (itemCurrent != null) {
+			itemsToExpand.add(0, itemCurrent); // add to the begin
+			itemCurrent = itemCurrent.getParent();
+		}
+		for (int i = 0; i < itemsToExpand.size(); i++) {
+			itemsToExpand.get(i).setExpanded(true); // open the parents first
 		}
 
 		// scroll and select it
