@@ -1,5 +1,10 @@
 package picturegallery.action;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import gallery.LinkedPictureCollection;
+
 /*-
  * BEGIN-LICENSE
  * picturegallery
@@ -24,10 +29,6 @@ package picturegallery.action;
 
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
@@ -39,7 +40,7 @@ public class MoveCollectionAction extends Action {
 	@Override
 	public void run(State currentState) {
 		// calculate the collection to move
-		if (!(currentState instanceof CollectionState)) {
+		if (currentState instanceof CollectionState == false) {
 			throw new IllegalStateException();
 		}
 		CollectionState state = (CollectionState) currentState;
@@ -47,31 +48,46 @@ public class MoveCollectionAction extends Action {
 		if (selection == null) {
 			return;
 		}
-		if (!(selection instanceof RealPictureCollection)) {
-			return;
-		}
-		RealPictureCollection collectionToMove = (RealPictureCollection) selection;
-		if (MainApp.get().getBaseCollection().equals(collectionToMove)) {
-			return; // do not move the base collection
+		boolean isReal = selection instanceof RealPictureCollection;
+
+		RealPictureCollection collectionToMoveReal;
+		LinkedPictureCollection collectionToMoveLinked;
+		if (isReal) {
+			collectionToMoveReal = (RealPictureCollection) selection;
+			if (MainApp.get().getBaseCollection().equals(collectionToMoveReal)) {
+				return; // do not move the base collection
+			}
+			collectionToMoveLinked = null;
+		} else {
+			collectionToMoveReal = null;
+			collectionToMoveLinked = (LinkedPictureCollection) selection;
 		}
 
 		// select the target real collection
 		List<PictureCollection> ignoredCollections = new ArrayList<>();
-		ignoredCollections.add(collectionToMove);
-		ignoredCollections.add(collectionToMove.getSuperCollection());
-		ignoredCollections.addAll(Logic.getAllSubCollections(collectionToMove, false));
+		ignoredCollections.add(selection.getSuperCollection());
+		if (isReal) {
+			ignoredCollections.add(collectionToMoveReal);
+			ignoredCollections.addAll(Logic.getAllSubCollections(collectionToMoveReal, false));
+		}
 		RealPictureCollection target = (RealPictureCollection) Logic.selectCollection(state, true, true, false, ignoredCollections);
 		if (target == null) {
 			return;
 		}
 
 		// check uniqueness
-		if (Logic.getCollectionByName(target, collectionToMove.getName(), true, true) != null) {
+		if (Logic.getCollectionByName(target, selection.getName(), true, true) != null) {
 			return;
 		}
 
 		// do the logic
-		MainApp.get().moveCollectionReal(collectionToMove, target, true, true);
+		if (isReal) {
+			MainApp.get().moveCollectionReal(collectionToMoveReal, target, true, true);
+		} else {
+			Logic.deleteSymlinkCollection(collectionToMoveLinked);
+			MainApp.get().moveCollectionInEmf(collectionToMoveLinked, target);
+			Logic.createSymlinkCollection(collectionToMoveLinked);
+		}
 	}
 
 	@Override
@@ -81,6 +97,6 @@ public class MoveCollectionAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "move the current real collection into another real collection (within the library)";
+		return "move the current (real or linked) collection into another real collection (within the library)";
 	}
 }

@@ -913,7 +913,7 @@ public class MainApp extends Application {
 		});
 	}
 
-	private void moveCollectionInEmf(PictureCollection collectionToMove, RealPictureCollection target) {
+	public void moveCollectionInEmf(PictureCollection collectionToMove, RealPictureCollection target) {
     	EditingDomain domain = MainApp.get().getModelDomain();
 
     	domain.getCommandStack().execute(RemoveCommand.create(domain,
