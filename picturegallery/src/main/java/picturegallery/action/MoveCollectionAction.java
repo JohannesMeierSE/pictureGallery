@@ -59,7 +59,7 @@ public class MoveCollectionAction extends Action {
 		List<PictureCollection> ignoredCollections = new ArrayList<>();
 		ignoredCollections.add(collectionToMove);
 		ignoredCollections.add(collectionToMove.getSuperCollection());
-		ignoredCollections.addAll(Logic.getAllSubCollections(collectionToMove));
+		ignoredCollections.addAll(Logic.getAllSubCollections(collectionToMove, false));
 		RealPictureCollection target = (RealPictureCollection) Logic.selectCollection(state, true, true, false, ignoredCollections);
 		if (target == null) {
 			return;

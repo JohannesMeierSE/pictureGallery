@@ -58,7 +58,7 @@ public class MergeCollectionsAction extends Action {
 		List<PictureCollection> ignoredCollections = new ArrayList<>();
 		ignoredCollections.add(collectionToDelete);
 		ignoredCollections.addAll(Logic.getAllSuperCollections(collectionToDelete));
-		ignoredCollections.addAll(Logic.getAllSubCollections(collectionToDelete));
+		ignoredCollections.addAll(Logic.getAllSubCollections(collectionToDelete, false));
 		RealPictureCollection target = (RealPictureCollection) Logic.selectCollection(state, true, true, false, ignoredCollections);
 		if (target == null) {
 			return;

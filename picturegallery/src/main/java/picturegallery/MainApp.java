@@ -276,7 +276,7 @@ public class MainApp extends Application {
         			baseCollection = ((PictureLibrary) modelResource.getContents().get(0)).getBaseCollection();
 
         			/* the following lines allow to move the complete library (with symlinks), because
-        			 * the hard coded path of the library will changed to the currently used!
+        			 * the hard coded path of the library will be changed to the currently used!
         			 */
         			String parentDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
         	        baseCollection.getLibrary().setBasePath(parentDir);

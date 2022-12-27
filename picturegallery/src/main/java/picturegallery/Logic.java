@@ -121,7 +121,7 @@ public class Logic {
 	/** (absolute path -> real collection) */
 	private static Map<String, RealPictureCollection> findByPathMap = new HashMap<>();
 
-	private static void findByNameInit(RealPictureCollection currentCollection) {
+	private static void findByNamePutCollection(RealPictureCollection currentCollection) {
 		Map<String, Picture> map = new HashMap<>(currentCollection.getPictures().size());
 		findByNameMap.put(currentCollection, map);
 		findByPathMap.put(currentCollection.getFullPath(), currentCollection);
@@ -133,18 +133,16 @@ public class Logic {
 		// handle all sub-collections
 		for (PictureCollection sub : currentCollection.getSubCollections()) {
 			if (sub instanceof RealPictureCollection) {
-				findByNameInit((RealPictureCollection) sub);
+				findByNamePutCollection((RealPictureCollection) sub);
 			}
 		}
 	}
-	@SuppressWarnings("unused")
-	private static void findByNamePut(Picture newPicture) {
-		Map<String, Picture> map = findByNameMap.get(newPicture.getCollection());
+	private static void findByNamePutPicture(RealPicture currentPicture) {
+		Map<String, Picture> map = findByNameMap.get(currentPicture.getCollection());
 		if (map == null) {
-			map = new HashMap<>();
-			findByNameMap.put(newPicture.getCollection(), map);
+			throw new IllegalStateException("for " + currentPicture + ", its collection is not registered: " + currentPicture.getCollection());
 		}
-		map.put(newPicture.getName() + "." + newPicture.getFileExtension(), newPicture);
+		map.put(currentPicture.getName() + "." + currentPicture.getFileExtension(), currentPicture);
 	}
 	private static Picture findByNameGet(RealPictureCollection parent, String pictureNameWithExtension) {
 		Map<String, Picture> map = findByNameMap.get(parent);
@@ -175,7 +173,7 @@ public class Logic {
 		long startTime = System.currentTimeMillis();
 		extensionMap.clear();
 		findByNameMap = new HashMap<>(baseCollection.getSubCollections().size());
-		findByNameInit(baseCollection);
+		findByNamePutCollection(baseCollection); // initializes only the folders and pictures stored/known in EMF ...
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>(); // Path -> Collection in which the Path was found
 
     	loadDirectoryLogic(baseCollection, symlinks);
@@ -210,8 +208,7 @@ public class Logic {
 					System.err.println(message);
 				} else {
 					String linkedCollectionName = name.substring(name.lastIndexOf(File.separator) + 1, name.length());
-					LinkedPictureCollection linkedCollection = (LinkedPictureCollection) getCollectionByName(symlink.getValue(),
-							linkedCollectionName, false, true);
+					LinkedPictureCollection linkedCollection = (LinkedPictureCollection) getCollectionByName(symlink.getValue(), linkedCollectionName, false, true);
 					if (linkedCollection == null) {
 						// linked collection is in file system, but not in model.xmi
 						linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
@@ -260,8 +257,7 @@ public class Logic {
 		// init time: 124 seconds, 752 ms
 	}
 
-	private static void loadDirectoryLogic(RealPictureCollection currentCollection,
-			List<Pair<Path, RealPictureCollection>> symlinks) {
+	private static void loadDirectoryLogic(RealPictureCollection currentCollection, List<Pair<Path, RealPictureCollection>> symlinks) {
 		String baseDir = currentCollection.getFullPath();
         try {
 	        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
@@ -283,6 +279,7 @@ public class Logic {
 		    			sub.setSuperCollection(currentCollection);
 		    			currentCollection.getSubCollections().add(sub);
 		    			sub.setName(childName);
+		    			findByNamePutCollection(sub);
 		    		} else {
 		    			// folder is in file system AND in model.xmi
 		    		}
@@ -296,7 +293,7 @@ public class Logic {
 					String nameLower = name.toLowerCase();
 		        	if (FileUtils.isSymlink(new File(name))) {
 		        		// found symlink in file system: both, picture or collection!
-		        		symlinks.add(new Pair<Path, RealPictureCollection>(file, currentCollection));
+		        		symlinks.add(new Pair<>(file, currentCollection));
 		        	} else if (nameLower.endsWith(".png") || nameLower.endsWith(".jpg") || nameLower.endsWith(".jpeg")
 		        			|| nameLower.endsWith(".gif") || nameLower.endsWith(".arw")
 		        			|| nameLower.endsWith(".mp4") || nameLower.endsWith(".mts")) {
@@ -317,6 +314,7 @@ public class Logic {
 		        			// found real picture in file system, but not in model.xmi
 		        			pic = GalleryFactory.eINSTANCE.createRealPicture();
 		        			initPicture(currentCollection, name, pic);
+			    			findByNamePutPicture(pic);
 		        		} else {
 		        			// found real picture, both in file system and model.xmi
 		        		}
@@ -335,7 +333,7 @@ public class Logic {
         // handle all sub-collections
     	List<PictureCollection> collectionsToRemove = new ArrayList<>();
     	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
-    		if (!new File(newSubCollection.getFullPath()).exists()) { // detect removed real and linked collections!
+    		if (new File(newSubCollection.getFullPath()).exists() == false) { // detect removed real and linked collections!
     			collectionsToRemove.add(newSubCollection);
     			continue;
     		}
@@ -346,7 +344,7 @@ public class Logic {
     	}
 
     	// remove collections with all its children which do not exist anymore
-    	while (!collectionsToRemove.isEmpty()) {
+    	while (collectionsToRemove.isEmpty() == false) {
     		PictureCollection removed = collectionsToRemove.remove(0);
 
     		findByPathMap.remove(removed.getFullPath());
@@ -357,11 +355,11 @@ public class Logic {
     	// remove all deleted pictures of this collection
     	List<Picture> picturesToRemove = new ArrayList<>();
     	for (Picture pic : currentCollection.getPictures()) {
-    		if (!new File(pic.getFullPath()).exists()) {
+    		if (new File(pic.getFullPath()).exists() == false) {
     			picturesToRemove.add(pic);
     		}
     	}
-    	while (!picturesToRemove.isEmpty()) {
+    	while (picturesToRemove.isEmpty() == false) {
     		System.out.println("removed picture " + picturesToRemove.get(0).getRelativePath());
     		deletePictureEmfSimple(picturesToRemove.remove(0));
     	}
@@ -1509,10 +1507,14 @@ public class Logic {
 	/**
 	 * Returns all direct and indirect sub-{@link RealPictureCollection}s of the given collection.
 	 * @param baseCollection
-	 * @return The given collection itself is NOT contained in the resulting list.
+	 * @param includingTheGivenCollection if true, the given collection is the first element in the list, otherwise the collection is NOT contained in the resulting list
+	 * @return all real sub collections (depth-first search)
 	 */
-	public static List<RealPictureCollection> getAllSubCollections(RealPictureCollection baseCollection) {
+	public static List<RealPictureCollection> getAllSubCollections(RealPictureCollection baseCollection, boolean includingTheGivenCollection) {
 		List<RealPictureCollection> result = new ArrayList<>();
+		if (includingTheGivenCollection) {
+			result.add(baseCollection);
+		}
 		getAllSubCollectionsLogic(baseCollection, result, null);
 		return result;
 	}
@@ -1521,8 +1523,8 @@ public class Logic {
 	 * of the given collection.
 	 * The given collection itself is NOT used/part of the filled lists.
 	 * @param baseCollection
-	 * @param resultReal list to store the found real sub-collections
-	 * @param resultLink list to store the found linked sub-collections
+	 * @param resultReal list to store the found real sub-collections (must not be null)
+	 * @param resultLink list to store the found linked sub-collections (might be null)
 	 */
 	public static void getAllSubCollectionsLogic(RealPictureCollection baseCollection,
 			List<RealPictureCollection> resultReal, List<LinkedPictureCollection> resultLink) {
