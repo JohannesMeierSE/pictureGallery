@@ -74,7 +74,9 @@ public class RenameCollectionAction extends Action {
 		}
 		// check for uniqueness
 		if (Logic.isCollectionNameUnique(collectionToRename.getSuperCollection(), newName) == false) {
-			throw new IllegalArgumentException("The new name " + newName + " is not unique!"); // TODO Dialog anzeigen statt Exception!
+			JavafxHelper.showNotification("Rename collection", "You are trying to renamed the collection'" + collectionToRename.getFullPath() + "':",
+					"The new name '" + newName + "' is not unique, since there is already another element with this name! Therefore, this action is cancelled.", false);
+			return;
 		}
 
 		if (collectionToRename instanceof RealPictureCollection) {

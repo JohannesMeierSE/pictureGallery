@@ -95,11 +95,11 @@ public class LinkCollectionsAction extends Action {
 			for (PictureCollection sub : collectionWithNewLinks.getSubCollections()) {
 				collectionsToIgnore.add(Logic.getRealCollection(sub)); // prevents real sub collections and already linked collections!!
 			}
-	
+
 			if (collectionsToIgnore.contains(target)) {
 				return;
 			}
-	
+
 			// get name of new link
 			String newName = target.getRelativePathWithoutBase().replaceAll(File.separator, "-");
 			newName = JavafxHelper.askForString("Select name of linked collection",
@@ -108,38 +108,40 @@ public class LinkCollectionsAction extends Action {
 			if (newName == null || newName.isEmpty()) {
 				return; // => allows to cancel this operation!
 			}
-	
+
 			// check for uniqueness
 		    if (Logic.isCollectionNameUnique(collectionWithNewLinks, newName)) {
 		    	EditingDomain domain = MainApp.get().getModelDomain();
-	
+
 		    	// update EMF model
 		    	LinkedPictureCollection newLink = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
 		    	newLink.setName(newName);
 		    	newLink.setRealCollection(target);
 		    	newLink.setSuperCollection(collectionWithNewLinks);
-	
+
 	//			target.getLinkedBy().add(newLink);
 				Command command = AddCommand.create(domain, target,
 						GalleryPackage.eINSTANCE.getRealPictureCollection_LinkedBy(),
 						newLink, Logic.getIndexForCollectionInsertion(target.getLinkedBy(), newLink));
-	
+
 	//			collectionWithNewLinks.getSubCollections().add(newLink);
 	//			Logic.sortSubCollections(collectionWithNewLinks, false);
 				Command command2 = AddCommand.create(domain, collectionWithNewLinks,
 						GalleryPackage.eINSTANCE.getRealPictureCollection_SubCollections(),
 						newLink, Logic.getIndexForCollectionInsertion(collectionWithNewLinks.getSubCollections(), newLink));
-	
+
 				CompoundCommand allCommands = new CompoundCommand();
 				allCommands.append(command);
 				allCommands.append(command2);
 				domain.getCommandStack().execute(allCommands);
-	
+
 		    	// create link in file system
 		    	Logic.createSymlinkCollection(newLink);
 		    } else {
 		    	// ignore this request
-		    	// TODO: show information to the user!
+				JavafxHelper.showNotification("Link collection", "You are trying to link the collection'" + collectionWithNewLinks.getFullPath() + "':",
+						"The selected name '" + newName + "' is not unique, since there is already another element with this name! Therefore, this action is cancelled.", false);
+				return;
 		    }
 		} else {
 			// ask for deletion of the existing link

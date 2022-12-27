@@ -97,7 +97,7 @@ public class FindSimilarPicturesAction extends Action {
 			public void handle(WorkerStateEvent event) {
 				List<Picture> picturesToDelete = task.getValue();
 				if (picturesToDelete.isEmpty()) {
-					// TODO: add information dialog!
+					JavafxHelper.showNotification("Find similar pictures", "Calculation is completed:", "There are no similar pictures.", false);
 					return;
 				}
 				MultiPictureState nextState = new MultiPictureState();
