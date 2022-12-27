@@ -70,7 +70,7 @@ import picturegallery.ui.JavafxHelper;
  * This state shows one picture out of a list of (sorted) pictures.
  * @author Johannes Meier
  */
-public abstract class PictureSwitchingState extends State {
+public abstract class SinglePictureSwitchingState extends State {
 	protected final ObservableList<Picture> picturesToShow;
 	protected final SpecialSortedList<Picture> picturesSorted;
 	protected final SimpleObjectProperty<Picture> currentPicture;
@@ -99,7 +99,7 @@ public abstract class PictureSwitchingState extends State {
 	public abstract RealPictureCollection getLinktoCollection();
 	public abstract void setLinktoCollection(RealPictureCollection linktoCollection);
 
-	public PictureSwitchingState() {
+	public SinglePictureSwitchingState() {
 		super();
 		currentPicture = new SimpleObjectProperty<>();
 		indexCurrentCollection = -1;

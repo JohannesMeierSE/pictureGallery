@@ -85,16 +85,16 @@ public class CollectionState extends State {
 	private SimpleObjectProperty<RealPictureCollection> collectionWithNewLinks = new SimpleObjectProperty<>();
 	private final CompositeCollectionFilter collectionFilter;
 
-	private final SingleCollectionState singleState;
-	private final MultiCollectionState multiState;
+	private final SinglePictureSingleCollectionState singleState;
+	private final SinglePictureMultiCollectionState multiState;
 
 	public CollectionState() {
 		super();
-		singleState = new SingleCollectionState();
+		singleState = new SinglePictureSingleCollectionState();
 		singleState.setNextAfterClosed(this);
 		singleState.onInit();
 
-		multiState = new MultiCollectionState();
+		multiState = new SinglePictureMultiCollectionState();
 		multiState.setNextAfterClosed(this);
 		multiState.onInit();
 
@@ -340,10 +340,10 @@ public class CollectionState extends State {
 		this.collectionWithNewLinks.set(collectionWithNewLinks);
 	}
 
-	public SingleCollectionState getSingleState() {
+	public SinglePictureSingleCollectionState getSingleState() {
 		return singleState;
 	}
-	public MultiCollectionState getMultiState() {
+	public SinglePictureMultiCollectionState getMultiState() {
 		return multiState;
 	}
 

@@ -35,11 +35,11 @@ import picturegallery.Logic;
 import picturegallery.action.JumpRelatedPictureAction;
 import picturegallery.persistency.AdapterCollection;
 
-public class SingleCollectionState extends SinglePictureState {
+public class SinglePictureSingleCollectionState extends SinglePictureState {
 	public final SimpleObjectProperty<PictureCollection> currentCollection;
 	private final Adapter adapterCurrentCollection;
 
-	public SingleCollectionState() {
+	public SinglePictureSingleCollectionState() {
 		super();
 
 		adapterCurrentCollection = new AdapterCollection() {

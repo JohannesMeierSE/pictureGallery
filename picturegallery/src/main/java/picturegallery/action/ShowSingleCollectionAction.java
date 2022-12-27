@@ -26,7 +26,7 @@ import gallery.PictureCollection;
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
-import picturegallery.state.SingleCollectionState;
+import picturegallery.state.SinglePictureSingleCollectionState;
 import picturegallery.state.State;
 
 public class ShowSingleCollectionAction extends Action {
@@ -43,7 +43,7 @@ public class ShowSingleCollectionAction extends Action {
 			return;
 		}
 
-		SingleCollectionState nextState = state.getSingleState();
+		SinglePictureSingleCollectionState nextState = state.getSingleState();
 		nextState.setCurrentCollection(collection);
 		MainApp.get().switchState(nextState);
 	}

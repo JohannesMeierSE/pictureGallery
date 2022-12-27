@@ -32,7 +32,7 @@ import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
-import picturegallery.state.MultiCollectionState;
+import picturegallery.state.SinglePictureMultiCollectionState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
@@ -45,7 +45,7 @@ public class ShowSeveralCollectionsAction extends Action {
 		}
 		CollectionState state = (CollectionState) currentState;
 
-		MultiCollectionState nextState = state.getMultiState();
+		SinglePictureMultiCollectionState nextState = state.getMultiState();
 		nextState.clearCollections();
 		List<RealPictureCollection> shownCollections = new ArrayList<>();
 

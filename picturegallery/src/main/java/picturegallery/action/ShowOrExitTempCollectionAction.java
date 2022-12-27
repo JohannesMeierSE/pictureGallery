@@ -24,17 +24,17 @@ package picturegallery.action;
 
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.state.TempCollectionState;
 
 public class ShowOrExitTempCollectionAction extends Action {
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		final PictureSwitchingState state = (PictureSwitchingState) currentState;
+		final SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 
 		if (state.getTempState().getSize() > 0) {
 

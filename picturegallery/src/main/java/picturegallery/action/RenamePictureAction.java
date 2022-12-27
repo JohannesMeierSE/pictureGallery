@@ -26,7 +26,7 @@ import gallery.Picture;
 import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
@@ -40,10 +40,10 @@ public class RenamePictureAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 		Picture currentPicture = state.getCurrentPicture();
 		if (currentPicture == null) {
 			return;

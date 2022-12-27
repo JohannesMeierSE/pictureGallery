@@ -28,14 +28,14 @@ import gallery.RealPictureCollection;
 import javafx.scene.layout.Region;
 import picturegallery.persistency.MediaRenderBase;
 
-public class TempCollectionState extends PictureSwitchingState {
+public class TempCollectionState extends SinglePictureSwitchingState {
 	public TempCollectionState() {
 		super();
 	}
 
-	private PictureSwitchingState getRealState() {
-		if (getNextAfterClosed() instanceof PictureSwitchingState) {
-			return (PictureSwitchingState) getNextAfterClosed();
+	private SinglePictureSwitchingState getRealState() {
+		if (getNextAfterClosed() instanceof SinglePictureSwitchingState) {
+			return (SinglePictureSwitchingState) getNextAfterClosed();
 		} else {
 			throw new IllegalStateException();
 		}

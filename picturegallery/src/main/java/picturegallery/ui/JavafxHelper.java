@@ -54,7 +54,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import picturegallery.MainApp;
 import picturegallery.persistency.Settings;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 
 public class JavafxHelper {
@@ -185,10 +185,10 @@ public class JavafxHelper {
 		final PictureCollection currentCollection;
 		final PictureCollection movetoCollection;
 		final PictureCollection linktoCollection;
-		if (currentState != null && currentState instanceof PictureSwitchingState) {
-			currentCollection = ((PictureSwitchingState) currentState).getCurrentCollection();
-			movetoCollection = ((PictureSwitchingState) currentState).getMovetoCollection();
-			linktoCollection = ((PictureSwitchingState) currentState).getLinktoCollection();
+		if (currentState != null && currentState instanceof SinglePictureSwitchingState) {
+			currentCollection = ((SinglePictureSwitchingState) currentState).getCurrentCollection();
+			movetoCollection = ((SinglePictureSwitchingState) currentState).getMovetoCollection();
+			linktoCollection = ((SinglePictureSwitchingState) currentState).getLinktoCollection();
 		} else {
 			currentCollection = null;
 			movetoCollection = null;

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.input.KeyCode;
-import picturegallery.state.SingleCollectionState;
+import picturegallery.state.SinglePictureSingleCollectionState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
@@ -38,10 +38,10 @@ public class JumpRelatedPictureAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof SingleCollectionState)) {
+		if (!(currentState instanceof SinglePictureSingleCollectionState)) {
 			throw new IllegalStateException();
 		}
-		SingleCollectionState state = (SingleCollectionState) currentState;
+		SinglePictureSingleCollectionState state = (SinglePictureSingleCollectionState) currentState;
 
 		Picture currentPicture = state.getCurrentPicture();
 		if (currentPicture == null) {
@@ -72,7 +72,7 @@ public class JumpRelatedPictureAction extends Action {
 		}
 	}
 
-	private void jumpLogic(SingleCollectionState state, Picture fromPicture, Picture toPicture) {
+	private void jumpLogic(SinglePictureSingleCollectionState state, Picture fromPicture, Picture toPicture) {
 		if (toPicture.getCollection() == fromPicture.getCollection()) {
 			// linked and real picture are in the same collection
 			state.gotoPicture(toPicture, true);

@@ -23,17 +23,17 @@ package picturegallery.action;
  */
 
 import javafx.scene.input.KeyCode;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 
 public class ClearLinktoCollectionAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 
 		state.setLinktoCollection(null);
 	}

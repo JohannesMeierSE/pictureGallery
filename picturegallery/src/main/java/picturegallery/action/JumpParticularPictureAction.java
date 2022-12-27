@@ -23,7 +23,7 @@ package picturegallery.action;
  */
 
 import javafx.scene.input.KeyCode;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
@@ -31,10 +31,10 @@ public class JumpParticularPictureAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 
 		// ask for the index of the wanted picture, index starts at 1 as shown in the GUI!
 		String newIndexString = JavafxHelper.askForString("Jump to Picture",

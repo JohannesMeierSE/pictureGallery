@@ -35,12 +35,12 @@ import org.eclipse.emf.common.notify.Adapter;
 
 import picturegallery.persistency.AdapterCollection;
 
-public class MultiCollectionState extends SinglePictureState {
+public class SinglePictureMultiCollectionState extends SinglePictureState {
 	// check real collections, not linked collections (because only real collections detect new/removed pictures)!
 	public final ObservableList<RealPictureCollection> collections = FXCollections.observableArrayList();
 	private final Adapter adapterCollection;
 
-	public MultiCollectionState() {
+	public SinglePictureMultiCollectionState() {
 		super();
 
 		collections.addListener(new ListChangeListener<RealPictureCollection>() {

@@ -38,7 +38,7 @@ import org.eclipse.emf.edit.domain.EditingDomain;
 
 import picturegallery.Logic;
 import picturegallery.MainApp;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
@@ -46,10 +46,10 @@ public class LinkPictureAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 
 		RealPictureCollection linktoCollection = state.getLinktoCollection();
 		PictureCollection currentCollection = state.getCurrentCollection();

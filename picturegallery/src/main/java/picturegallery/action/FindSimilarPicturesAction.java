@@ -35,7 +35,7 @@ import javafx.scene.input.KeyCode;
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.MultiPictureState;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
@@ -43,10 +43,10 @@ public class FindSimilarPicturesAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 		final Picture currentPicture = state.getCurrentPicture();
 		if (currentPicture == null) {
 			return;

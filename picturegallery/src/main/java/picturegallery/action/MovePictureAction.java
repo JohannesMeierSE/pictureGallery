@@ -30,7 +30,7 @@ import java.util.Collections;
 
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.state.TempCollectionState;
 import picturegallery.ui.JavafxHelper;
@@ -39,10 +39,10 @@ public class MovePictureAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 
 		PictureCollection currentCollection = state.getCurrentCollection();
 		RealPictureCollection movetoCollection = state.getMovetoCollection();

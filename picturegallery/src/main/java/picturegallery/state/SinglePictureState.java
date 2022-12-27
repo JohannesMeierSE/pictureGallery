@@ -49,7 +49,7 @@ import picturegallery.action.ZoomResetAction;
 import picturegallery.persistency.MediaRenderBase;
 import picturegallery.persistency.MediaRenderBaseImpl;
 
-public abstract class SinglePictureState extends PictureSwitchingState {
+public abstract class SinglePictureState extends SinglePictureSwitchingState {
 	public final SimpleObjectProperty<RealPictureCollection> movetoCollection = new SimpleObjectProperty<>();
 	public final SimpleObjectProperty<RealPictureCollection> linktoCollection = new SimpleObjectProperty<>();
 

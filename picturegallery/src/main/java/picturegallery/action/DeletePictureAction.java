@@ -26,7 +26,7 @@ import gallery.Picture;
 import gallery.RealPicture;
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
-import picturegallery.state.PictureSwitchingState;
+import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
@@ -44,10 +44,10 @@ public class DeletePictureAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof PictureSwitchingState)) {
+		if (!(currentState instanceof SinglePictureSwitchingState)) {
 			throw new IllegalStateException();
 		}
-		PictureSwitchingState state = (PictureSwitchingState) currentState;
+		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 		Picture pictureToDelete = state.getCurrentPicture();
 		if (pictureToDelete == null) {
 			return;
