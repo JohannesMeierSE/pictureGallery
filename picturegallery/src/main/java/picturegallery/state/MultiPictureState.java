@@ -49,7 +49,8 @@ public class MultiPictureState extends State {
 	public static final double WIDTH = 200.0;
 	public static final double HEIGHT = 100.0;
 	private static final double SPACING = 8.0;
-	public static final Border BORDER_MARKING = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(4), Insets.EMPTY));
+	public static final Border BORDER_MARKED = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5), Insets.EMPTY));
+	public static final Border BORDER_UNMARKED = new Border(new BorderStroke(Color.TRANSPARENT, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5), Insets.EMPTY));
 
 	public final ObservableList<Picture> pictures;
 	public final SimpleBooleanProperty pathVisible;

@@ -29,6 +29,8 @@ import org.controlsfx.control.GridCell;
 import gallery.Picture;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -42,8 +44,10 @@ import picturegallery.persistency.MediaRenderBaseImpl;
 import picturegallery.state.MultiPictureState;
 
 public class PictureGridCell extends GridCell<Picture> {
-	protected final MediaRenderBase render;
 	protected final SimpleBooleanProperty pathVisible;
+
+	protected final MediaRenderBase render;
+	protected final ChangeListener<Boolean> initializationListener;
 
 	protected Label labelText;
 	protected Label labelPath;
@@ -54,6 +58,13 @@ public class PictureGridCell extends GridCell<Picture> {
 	public PictureGridCell(SimpleBooleanProperty pathVisible) {
 		super();
 		this.pathVisible = Objects.requireNonNull(pathVisible);
+		initializationListener = new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
+				initLabelPath();
+			}
+		};
+		this.pathVisible.addListener(initializationListener);
 
 		render = new MediaRenderBaseImpl(MainApp.get().getImageCacheSmall(), MultiPictureState.WIDTH, MultiPictureState.HEIGHT);
 
@@ -65,18 +76,23 @@ public class PictureGridCell extends GridCell<Picture> {
 		});
 	}
 
+	public void destroy() {
+		// TODO: diese Methode zum aufräumen muss noch irgendwann aufgerufen werden!
+		this.pathVisible.removeListener(initializationListener);
+	}
+
 	public void mark() {
 		if (marked) {
 			return;
 		}
-		stack.setBorder(MultiPictureState.BORDER_MARKING);
+		stack.setBorder(MultiPictureState.BORDER_MARKED);
 		marked = true;
 	}
 	public void unmark() {
 		if (marked == false) {
 			return;
 		}
-		stack.setBorder(null);
+		stack.setBorder(MultiPictureState.BORDER_UNMARKED);
 		marked = false;
 	}
 	public void switchMarking() {
@@ -102,15 +118,12 @@ public class PictureGridCell extends GridCell<Picture> {
 				labelText.visibleProperty().bind(MainApp.get().labelsVisible);
 				MainApp.styleLabel(labelText);
 
-				labelPath = new Label();
-				labelPath.visibleProperty().bind(Bindings.and(
-						MainApp.get().labelsVisible, pathVisible)); // TODO Performanz: erst initialisieren, wenn es auch gefordert wird!!
-				MainApp.styleLabel(labelPath);
-
-				labelBox = new VBox(labelText, labelPath);
+				labelBox = new VBox(labelText);
 				stack = new StackPane();
-				stack.setPadding(new Insets(1));
+				stack.setPadding(Insets.EMPTY);
+				stack.setBorder(MultiPictureState.BORDER_UNMARKED);
 			}
+			initLabelPath();
 
 
 			// update the shown information
@@ -129,10 +142,23 @@ public class PictureGridCell extends GridCell<Picture> {
 			}
 			labelText.setText(text.trim());
 
-			labelPath.setText(Logic.getShortRelativePath(item));
+			if (labelPath != null) {
+				labelPath.setText(Logic.getShortRelativePath(item));
+			}
 
+
+			// update the GUI elements to show
 			stack.getChildren().setAll(render.getShownNode(), labelBox);
 			setGraphic(stack);
+		}
+	}
+
+	private void initLabelPath() {
+		if (pathVisible.get() && labelPath == null) { // this late initialization improves performance
+			labelPath = new Label();
+			labelPath.visibleProperty().bind(Bindings.and(MainApp.get().labelsVisible, pathVisible));
+			MainApp.styleLabel(labelPath);
+			labelBox.getChildren().add(labelPath);
 		}
 	}
 }
