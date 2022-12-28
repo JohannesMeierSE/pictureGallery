@@ -378,13 +378,19 @@ public class JavafxHelper {
 
 	public static void runNotOnUiThread(Runnable run) {
 		if (Platform.isFxApplicationThread()) {
-			Task<Void> task = new Task<Void>() {
-				@Override
-				protected Void call() throws Exception {
-					run.run();
-					return null;
-				}
-			};
+			Task<?> task;
+			if (run instanceof Task<?>) {
+				// since Task implements Runnable, reuse the Task directly instead of creating an additional Task and of nesting Tasks ...
+				task = (Task<?>) run;
+			} else {
+				task = new Task<Void>() {
+					@Override
+					protected Void call() throws Exception {
+						run.run();
+						return null;
+					}
+				};
+			}
 	        new Thread(task).start();
 		} else {
 			run.run();

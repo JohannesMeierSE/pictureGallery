@@ -35,12 +35,13 @@ import picturegallery.MainApp;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
+import picturegallery.ui.TaskWithProgress;
 
 public class ExportLinkedPicturesAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof CollectionState)) {
+		if (currentState instanceof CollectionState == false) {
 			throw new IllegalStateException();
 		}
 		CollectionState state = (CollectionState) currentState;
@@ -79,21 +80,27 @@ public class ExportLinkedPicturesAction extends Action {
 		// the user has to wait and must not do other things (long running process)
 		MainApp.get().switchToWaitingState();
 
-		JavafxHelper.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {
 			@Override
-			public void run() {
+			protected Void call() throws Exception {
+				progress.updateProgressTitle(getDescription());
+				progress.updateProgressMax(linked.size() + real.size());
+
 				// copy each linked picture
 				for (LinkedPicture link : linked) {
 					Logic.copyPicture(path, link);
+					progress.updateProgressDetails(link.getRelativePath(), +1);
 				}
 
 				// copy each real picture
 				for (RealPicture realPicture : real) {
 					Logic.copyPicture(path, realPicture);
+					progress.updateProgressDetails(realPicture.getRelativePath(), +1);
 				}
 
 				// close the waiting state!
 				MainApp.get().switchCloseWaitingState();
+				return null;
 			}
 		});
 	}

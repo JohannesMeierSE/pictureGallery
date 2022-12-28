@@ -147,26 +147,7 @@ public class Logic {
 	public static void loadDirectory(RealPictureCollection baseCollection, ProgressUpdate progress) {
 		long startTime = System.currentTimeMillis();
 		if (progress == null) {
-			progress = new ProgressUpdate() { // do nothing => prevents null-checks before
-				@Override
-				public void updateProgressTitle(String currentTitle) { }
-				@Override
-				public void updateProgressDetails(String currentDetails, double diffProgress) { }
-				@Override
-				public void updateProgressValue(double currentProgress) { }
-				@Override
-				public void updateProgressMax(double maxProgress) { }
-				@Override
-				public void setProgressIndeterminate() { }
-				@Override
-				public double getProgressCurrentValue() {
-					return 0;
-				}
-				@Override
-				public double getProgressCurrentMax() {
-					return 0;
-				}
-			};
+			progress = ProgressUpdate.createNoUpdate(); // do nothing => prevents null-checks before
 		}
 		extensionMap.clear();
 		findByNameMap = new HashMap<>(baseCollection.getSubCollections().size());

@@ -41,4 +41,32 @@ public interface ProgressUpdate {
 
 	public double getProgressCurrentValue();
 	public double getProgressCurrentMax();
+
+
+	/**
+	 * Returns an implementation which ignores all calls to the methods of the API in order to provide no progress updates at all.
+	 * @return not null
+	 */
+	public static ProgressUpdate createNoUpdate() {
+		return new ProgressUpdate() {
+			@Override
+			public void updateProgressTitle(String currentTitle) { }
+			@Override
+			public void updateProgressDetails(String currentDetails, double diffProgress) { }
+			@Override
+			public void updateProgressValue(double currentProgress) { }
+			@Override
+			public void updateProgressMax(double maxProgress) { }
+			@Override
+			public void setProgressIndeterminate() { }
+			@Override
+			public double getProgressCurrentValue() {
+				return 0;
+			}
+			@Override
+			public double getProgressCurrentMax() {
+				return 0;
+			}
+		};
+	}
 }

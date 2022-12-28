@@ -63,18 +63,22 @@ public class WaitingState extends State {
 		return progress.progressProperty();
 	}
 
-	public void synchronizeValuesWithTask(Task<?> task) {
+	public void bindValuesToTask(Task<?> task) {
 		progress.progressProperty().bind(task.progressProperty());
 		labelTitle.textProperty().bind(task.titleProperty());
 		labelDetails.textProperty().bind(task.messageProperty());
 	}
 
-	@Override
-	public void onExit(State nextState) {
-		super.onExit(nextState);
+	private void unbindValues() {
 		progress.progressProperty().unbind();
 		labelTitle.textProperty().unbind();
 		labelDetails.textProperty().unbind();
+	}
+
+	@Override
+	public void onExit(State nextState) {
+		super.onExit(nextState);
+		unbindValues();
 	}
 
 	@Override

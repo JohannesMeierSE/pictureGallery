@@ -88,7 +88,7 @@ import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
 import picturegallery.state.WaitingState;
 import picturegallery.ui.JavafxHelper;
-import picturegallery.ui.ProgressUpdate;
+import picturegallery.ui.TaskWithProgress;
 
 public class MainApp extends Application {
 	public final static int SPACE = 25;
@@ -259,62 +259,9 @@ public class MainApp extends Application {
 		switchToWaitingState();
 
 		// load the picture library
-		Task<Void> task = new Task<Void>() {
+		Task<Void> task = new TaskWithProgress<Void>(waitingState) {
         	@Override
         	protected Void call() throws Exception {
-        		ProgressUpdate progress = new ProgressUpdate() {
-        			double lastProgress = 0.0;
-        			double lastMax = 0.0;
-
-        			@Override
-        			public void updateProgressTitle(String currentTitle) {
-        				updateTitle(currentTitle);
-        			}
-
-        			@Override
-        			public void updateProgressDetails(String currentDetails, double diffProgress) {
-        				updateMessage(currentDetails);
-        				updateProgressValue(getProgressCurrentValue() + diffProgress);
-        			}
-
-        			@Override
-					public void updateProgressValue(double currentProgress) {
-        				updateProgress(currentProgress, getProgressCurrentMax());
-        				lastProgress = currentProgress;
-					}
-
-					@Override
-        			public void updateProgressMax(double maxProgress) {
-        				updateProgress(getProgressCurrentValue(), maxProgress);
-        				lastMax = maxProgress;
-        			}
-
-					@Override
-					public void updateProgressValueMax(double currentProgress, double maxProgress) {
-						updateProgress(currentProgress, maxProgress);
-						lastProgress = currentProgress;
-						lastMax = maxProgress;
-					}
-
-        			@Override
-        			public void setProgressIndeterminate() {
-        				updateProgress(-1, 0);
-        				lastProgress = -1;
-        				lastMax = 0;
-        			}
-
-        			@Override
-        			public double getProgressCurrentValue() {
-//        				return getProgress(); // this method seems not to work ...
-        				return lastProgress;
-        			}
-
-        			@Override
-        			public double getProgressCurrentMax() {
-//        				return getTotalWork(); // this method seems not to work ...
-        				return lastMax;
-        			}
-        		};
         		progress.updateProgressTitle("load database");
         		progress.setProgressIndeterminate();
 
@@ -387,7 +334,6 @@ public class MainApp extends Application {
         		switchState(newState);
         	}
         });
-        waitingState.synchronizeValuesWithTask(task);
         new Thread(task).start();
     }
 
