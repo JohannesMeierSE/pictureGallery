@@ -51,7 +51,7 @@ public abstract class State {
 
 	/**
 	 * 
-	 * @param previousState could be null, if this state is the first on within the application life
+	 * @param previousState could be null, if this state is the first one within the application life
 	 */
 	public void onEntry(State previousState) {
 		if (wasClosed) {

@@ -78,6 +78,12 @@ public class MultiPictureState extends State {
 						} else {
 							render.renderPicture(Logic.getRealPicture(item));
 
+							/*
+							 * name.jpg
+							 * 100 x 200
+							 * 350 KB
+							 * parent/child/path/
+							 */
 							String text = item.getName() + "\n";
 							if (item.getMetadata() != null) {
 								text = text + item.getMetadata().getWidth() + " x " + item.getMetadata().getHeight() + "\n";
@@ -118,17 +124,17 @@ public class MultiPictureState extends State {
 
 	@Override
 	public void onExit(State nextState) {
+		grid.setItems(FXCollections.emptyObservableList());
 		super.onExit(nextState);
-		grid.setItems(null);
 	}
 
 	@Override
 	public void onClose() {
-		super.onClose();
 		for (Picture pic : pictures) {
 			MainApp.get().getImageCacheSmall().remove(Logic.getRealPicture(pic));
 		}
 		pictures.clear();
+		super.onClose();
 	}
 
 	@Override
