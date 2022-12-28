@@ -1,5 +1,8 @@
 package picturegallery.state;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.concurrent.Task;
+
 /*-
  * BEGIN-LICENSE
  * picturegallery
@@ -23,19 +26,59 @@ package picturegallery.state;
  */
 
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 public class WaitingState extends State {
-	private final Label label;
+	protected final Label labelTitle;
+	protected final Label labelDetails;
+	protected final ProgressIndicator progress;
+	protected final VBox box;
 
 	public WaitingState() {
 		super();
-		label = new Label("please wait!");
-		// TODO: rotate!
+
+		box = new VBox(20.0);
+		labelTitle = new Label("<title of the action>");
+		labelDetails = new Label("<details of the action>");
+
+		/*
+		 * progress visualization:
+		 * - JavaFX ProgressIndicator: https://www.geeksforgeeks.org/javafx-progressindicator/
+		 * - https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/ProgressIndicator.html
+		 * - bind progress directly to task progress: https://stackoverflow.com/questions/55850441/javafx-update-progress-bar-and-wait-for-threads-to-complete
+		 * - https://openjfx.io/javadoc/11/javafx.graphics/javafx/concurrent/Worker.html#totalWorkProperty()
+		 */
+		progress = new ProgressIndicator();
+		setProgressIndeterminate();
+
+		box.getChildren().addAll(new Label("please wait for the action to complete ..."), labelTitle, progress, labelDetails);
+	}
+
+	public void setProgressIndeterminate() {
+		progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+	}
+	public DoubleProperty progressProperty() {
+		return progress.progressProperty();
+	}
+
+	public void synchronizeValuesWithTask(Task<?> task) {
+		progress.progressProperty().bind(task.progressProperty());
+		labelTitle.textProperty().bind(task.titleProperty());
+		labelDetails.textProperty().bind(task.messageProperty());
+	}
+
+	@Override
+	public void onExit(State nextState) {
+		super.onExit(nextState);
+		progress.progressProperty().unbind();
+		labelTitle.textProperty().unbind();
+		labelDetails.textProperty().unbind();
 	}
 
 	@Override
 	public Region getRootNode() {
-		return label;
+		return box;
 	}
 }

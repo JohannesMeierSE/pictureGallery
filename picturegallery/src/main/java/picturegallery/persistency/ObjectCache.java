@@ -122,7 +122,7 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 		loading = new ArrayList<>(2);
 		requested = new ArrayList<>(maxSize);
 
-		stopped = new AtomicBoolean(false);
+		stopped = new AtomicBoolean(true);
 		thread = new Thread() {
 			@Override
 			public void run() {
@@ -183,6 +183,10 @@ public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
 				System.out.println("Loading thread: working, but stopped");
 			}
 		};
+	}
+
+	public void start() {
+		stopped.set(false);
 		thread.start();
 	}
 

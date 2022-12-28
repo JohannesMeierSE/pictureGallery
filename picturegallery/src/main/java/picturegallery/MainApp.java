@@ -88,6 +88,7 @@ import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
 import picturegallery.state.WaitingState;
 import picturegallery.ui.JavafxHelper;
+import picturegallery.ui.ProgressUpdate;
 
 public class MainApp extends Application {
 	public final static int SPACE = 25;
@@ -213,7 +214,7 @@ public class MainApp extends Application {
     	root.minWidthProperty().bind(scene.widthProperty());
 
     	/*
-    	 * general information about event pprocessing: https://docs.oracle.com/javafx/2/events/processing.htm
+    	 * general information about event processing: https://docs.oracle.com/javafx/2/events/processing.htm
     	 * handling vs. filtering: does not make a difference here!
     	 * scene.addEventFilter(KeyEvent.KEY_RELEASED, keyHandler);
     	 * the next possibility does not work because: the default buttons do not consume the KeyReleased events, only the KeyPressed events in dialogs!
@@ -245,13 +246,82 @@ public class MainApp extends Application {
 		});
         stage.show();
 
-        Task<Void> task = new Task<Void>() {
+    	initCache();
+
+    	// set-up the GUI
+    	globalActions.add(new FullScreenAction());
+		globalActions.add(new HideInformationAction());
+		globalActions.add(new SwitchPictureSortingAction());
+
+		// wait for the initialization
+		waitingState = new WaitingState();
+		waitingState.onInit();
+		switchToWaitingState();
+
+		// load the picture library
+		Task<Void> task = new Task<Void>() {
         	@Override
         	protected Void call() throws Exception {
+        		ProgressUpdate progress = new ProgressUpdate() {
+        			double lastProgress = 0.0;
+        			double lastMax = 0.0;
+
+        			@Override
+        			public void updateProgressTitle(String currentTitle) {
+        				updateTitle(currentTitle);
+        			}
+
+        			@Override
+        			public void updateProgressDetails(String currentDetails, double diffProgress) {
+        				updateMessage(currentDetails);
+        				updateProgressValue(getProgressCurrentValue() + diffProgress);
+        			}
+
+        			@Override
+					public void updateProgressValue(double currentProgress) {
+        				updateProgress(currentProgress, getProgressCurrentMax());
+        				lastProgress = currentProgress;
+					}
+
+					@Override
+        			public void updateProgressMax(double maxProgress) {
+        				updateProgress(getProgressCurrentValue(), maxProgress);
+        				lastMax = maxProgress;
+        			}
+
+					@Override
+					public void updateProgressValueMax(double currentProgress, double maxProgress) {
+						updateProgress(currentProgress, maxProgress);
+						lastProgress = currentProgress;
+						lastMax = maxProgress;
+					}
+
+        			@Override
+        			public void setProgressIndeterminate() {
+        				updateProgress(-1, 0);
+        				lastProgress = -1;
+        				lastMax = 0;
+        			}
+
+        			@Override
+        			public double getProgressCurrentValue() {
+//        				return getProgress(); // this method seems not to work ...
+        				return lastProgress;
+        			}
+
+        			@Override
+        			public double getProgressCurrentMax() {
+//        				return getTotalWork(); // this method seems not to work ...
+        				return lastMax;
+        			}
+        		};
+        		progress.updateProgressTitle("load database");
+        		progress.setProgressIndeterminate();
+
         		String emfModelPath = baseDir + "/model.xmi";
 
         		// http://www.vogella.com/tutorials/EclipseEMFPersistence/article.html
-        		GalleryPackage.eINSTANCE.eClass(); // init the EMF stuff
+        		GalleryPackage.eINSTANCE.eClass(); // initialize the EMF stuff
         		ResourceSet rset = new ResourceSetImpl();
         		rset.getResourceFactoryRegistry().getExtensionToFactoryMap().putIfAbsent("xmi", new XMIResourceFactoryImpl());
         		URI uri = URI.createFileURI(emfModelPath);
@@ -284,7 +354,7 @@ public class MainApp extends Application {
         		}
 
         		// fill the base collection using the selected folder in the file system
-        		Logic.loadDirectory(baseCollection);
+				Logic.loadDirectory(baseCollection, progress);
 
         		modelDomain = new AdapterFactoryEditingDomain(new GalleryAdapterFactory(), new BasicCommandStack(), rset);
 
@@ -307,23 +377,17 @@ public class MainApp extends Application {
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
         	@Override
         	public void handle(WorkerStateEvent event) {
-            	initCache();
+            	startCache();
 
-            	globalActions.add(new FullScreenAction());
-        		globalActions.add(new HideInformationAction());
-        		globalActions.add(new SwitchPictureSortingAction());
-
-        		// start with the first/initial state:
+            	// start with the collection state (the waiting state was before, but does not count as real first state ...):
         		CollectionState newState = new CollectionState();
         		newState.onInit();
-
-        		waitingState = new WaitingState();
+        		newState.setNextAfterClosed(null);
         		waitingState.setNextAfterClosed(newState);
-        		waitingState.onInit();
-
-				switchState(newState);
+        		switchState(newState);
         	}
         });
+        waitingState.synchronizeValuesWithTask(task);
         new Thread(task).start();
     }
 
@@ -392,6 +456,31 @@ public class MainApp extends Application {
 				return null;
 			}
 		};
+		imageCacheSmall = new ObjectCache<RealPicture, Image>() {
+			@Override
+			protected Image load(RealPicture key) {
+				// löst anscheinend selbstständig SymLinks auf !!
+				try {
+					/*
+					 * this is an optimization: load pictures only in the required size!
+					 * https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
+					 */
+					Image loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString(),
+							MultiPictureState.WIDTH, MultiPictureState.HEIGHT, true, true);
+					return loaded;
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (OutOfMemoryError e) {
+					e.printStackTrace();
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+					// it seems, that this picture is not contained in a collection anymore!
+				}
+				return null;
+			}
+		};
+	}
+	private void startCache() {
 		imageCache.setAlternativeWorker(new AlternativeWorker() {
 			private Iterator<RealPicture> pictures = Logic.iteratorPictures(baseCollection);
 			private int iteration = 0;
@@ -441,29 +530,8 @@ public class MainApp extends Application {
 				}
 			}
 		});
-		imageCacheSmall = new ObjectCache<RealPicture, Image>() {
-			@Override
-			protected Image load(RealPicture key) {
-				// löst anscheinend selbstständig SymLinks auf !!
-				try {
-					/*
-					 * this is an optimization: load pictures only in the required size!
-					 * https://stackoverflow.com/questions/26398888/how-to-crop-and-resize-javafx-image
-					 */
-					Image loaded = new Image(new File(key.getFullPath()).toURI().toURL().toString(),
-							MultiPictureState.WIDTH, MultiPictureState.HEIGHT, true, true);
-					return loaded;
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				} catch (OutOfMemoryError e) {
-					e.printStackTrace();
-				} catch (NullPointerException e) {
-					e.printStackTrace();
-					// it seems, that this picture is not contained in a collection anymore!
-				}
-				return null;
-			}
-		};
+		imageCache.start();
+		imageCacheSmall.start();
 	}
 
 	/**
@@ -1017,9 +1085,7 @@ public class MainApp extends Application {
 		}
 		return stateStack.get(stateStack.size() - 1);
 	}
-
-	@SuppressWarnings("unused")
-	private State getPreviousState() {
+	public State getPreviousState() {
 		if (stateStack.size() <= 1) {
 			return null;
 		}
@@ -1029,11 +1095,9 @@ public class MainApp extends Application {
 	public WaitingState getWaitingState() {
 		return waitingState;
 	}
-
 	public void switchToWaitingState() {
 		switchState(waitingState);
 	}
-
 	public void switchCloseWaitingState() {
 		// close the waiting state!
 		JavafxHelper.runOnUiThread(new Runnable() {

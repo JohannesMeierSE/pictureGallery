@@ -84,6 +84,7 @@ import gallery.RealPicture;
 import gallery.RealPictureCollection;
 import gallery.TagCategory;
 import javafx.util.Pair;
+import picturegallery.ui.ProgressUpdate;
 
 public class Logic {
 	public static final String NO_HASH = "nohash!";
@@ -143,20 +144,49 @@ public class Logic {
 		return findByPathMap.get(path);
 	}
 
-	public static void loadDirectory(RealPictureCollection baseCollection) {
+	public static void loadDirectory(RealPictureCollection baseCollection, ProgressUpdate progress) {
 		long startTime = System.currentTimeMillis();
+		if (progress == null) {
+			progress = new ProgressUpdate() { // do nothing => prevents null-checks before
+				@Override
+				public void updateProgressTitle(String currentTitle) { }
+				@Override
+				public void updateProgressDetails(String currentDetails, double diffProgress) { }
+				@Override
+				public void updateProgressValue(double currentProgress) { }
+				@Override
+				public void updateProgressMax(double maxProgress) { }
+				@Override
+				public void setProgressIndeterminate() { }
+				@Override
+				public double getProgressCurrentValue() {
+					return 0;
+				}
+				@Override
+				public double getProgressCurrentMax() {
+					return 0;
+				}
+			};
+		}
 		extensionMap.clear();
 		findByNameMap = new HashMap<>(baseCollection.getSubCollections().size());
 		findByNamePutCollection(baseCollection); // initializes only the folders and pictures stored/known in EMF ...
     	List<Pair<Path, RealPictureCollection>> symlinks = new ArrayList<>(); // Path -> Collection in which the Path was found
 
-    	loadDirectoryLogic(baseCollection, symlinks);
+    	progress.updateProgressTitle("analyze file system");
+    	progress.updateProgressValueMax(0.0, Math.max(1.0, findByNameMap.size()));
+    	loadDirectoryLogic(baseCollection, symlinks, progress);
 
     	String baseFullPath = baseCollection.getFullPath();
 
     	// handle symlinks
+    	if (symlinks.isEmpty() == false) {
+    		progress.updateProgressTitle("resolve symlinks");
+    		progress.updateProgressValueMax(0.0, symlinks.size());
+    	}
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
 		for (Pair<Path, RealPictureCollection> symlink : symlinks) {
+			progress.updateProgressDetails(symlink.getValue().getFullPath(), +1.0);
 			Path real = null;
 			try {
 				real = symlink.getKey().toRealPath();
@@ -218,10 +248,13 @@ public class Logic {
 			}
 		}
 
+		progress.updateProgressTitle("post processing");
+		progress.setProgressIndeterminate();
 		findByNameMap.clear();
 		findByPathMap.clear();
 
 		// sort all recursive sub-collections: order of collections AND pictures!
+		progress.updateProgressDetails("sorting found collections", 0.0);
 		sortSubCollections(baseCollection, true, true);
 
 		long completeTime = System.currentTimeMillis() - startTime;
@@ -231,8 +264,9 @@ public class Logic {
 		// init time: 124 seconds, 752 ms
 	}
 
-	private static void loadDirectoryLogic(RealPictureCollection currentCollection, List<Pair<Path, RealPictureCollection>> symlinks) {
+	private static void loadDirectoryLogic(RealPictureCollection currentCollection, List<Pair<Path, RealPictureCollection>> symlinks, ProgressUpdate progress) {
 		String baseDir = currentCollection.getFullPath();
+		progress.updateProgressDetails(baseDir, +1.0);
         try {
 	        // https://stackoverflow.com/questions/1844688/read-all-files-in-a-folder/23814217#23814217
 			Files.walkFileTree(Paths.get(baseDir), new SimpleFileVisitor<Path>() {
@@ -254,6 +288,7 @@ public class Logic {
 		    			currentCollection.getSubCollections().add(sub);
 		    			sub.setName(childName);
 		    			findByNamePutCollection(sub);
+		    			progress.updateProgressMax(progress.getProgressCurrentMax() + 1.0);
 		    		} else {
 		    			// folder is in file system AND in model.xmi
 		    		}
@@ -314,7 +349,7 @@ public class Logic {
     		if (newSubCollection instanceof LinkedPictureCollection) {
     			continue;
     		}
-    		loadDirectoryLogic((RealPictureCollection) newSubCollection, symlinks);
+    		loadDirectoryLogic((RealPictureCollection) newSubCollection, symlinks, progress);
     	}
 
     	// remove collections with all its children which do not exist anymore
@@ -324,6 +359,7 @@ public class Logic {
     		findByPathMap.remove(removed.getFullPath());
     		findByNameMap.remove(removed);
 			deleteCollectionEmfSimple(removed);
+			progress.updateProgressDetails(removed.getFullPath(), +1.0);
        	}
 
     	// remove all deleted pictures of this collection
