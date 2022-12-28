@@ -386,12 +386,15 @@ public class CollectionState extends State {
 			itemCurrent = itemCurrent.getParent();
 		}
 		for (int i = 0; i < itemsToExpand.size(); i++) {
-			itemsToExpand.get(i).setExpanded(true); // open the parents first
+			TreeItem<PictureCollection> currentTreeItem = itemsToExpand.get(i);
+			currentTreeItem.setExpanded(true); // open the parents first
+			table.getFocusModel().focus(table.getRow(item), null); // ... and focus all parents, since focusing ONLY on the final item is not enough and does not work as expected ...
 		}
 
 		// scroll and select it
 		int row = table.getRow(item);
 		table.scrollTo(row);
 		table.getSelectionModel().select(row);
+		table.getFocusModel().focus(row, null);
 	}
 }
