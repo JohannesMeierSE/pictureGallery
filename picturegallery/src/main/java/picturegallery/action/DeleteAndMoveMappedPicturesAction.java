@@ -35,6 +35,7 @@ import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
+import picturegallery.ui.TaskWithProgress;
 
 public class DeleteAndMoveMappedPicturesAction extends Action {
 	private final Map<RealPicture, List<RealPicture>> map;
@@ -64,23 +65,29 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 		MainApp.get().switchToWaitingState();
 		currentState.onClose();
 
-		JavafxHelper.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {
 			@Override
-			public void run() {
+			protected Void call() throws Exception {
+				progress.updateProgressTitle(getDescription());
+				progress.updateProgressMax(map.values().stream().mapToInt(list -> list.size()).sum() + map.size());
+
 				// 1. delete all mapped values
 				for (Entry<RealPicture, List<RealPicture>> e : map.entrySet()) {
 					for (Picture picToDelete : e.getValue()) {
+						progress.updateProgressDetails("delete " + picToDelete.getRelativePath(), +1);
 						MainApp.get().deletePicture(picToDelete, false);
 					}
 				}
 
 				// 2. move all keys
 				for (Entry<RealPicture, List<RealPicture>> e : map.entrySet()) {
+					progress.updateProgressDetails("move " + e.getKey().getRelativePath(), +1);
 					MainApp.get().movePicture(e.getKey(), movetoCollection);
 				}
 
 				// close the waiting state!
 				MainApp.get().switchCloseWaitingState();
+				return null;
 			}
 		});
 	}

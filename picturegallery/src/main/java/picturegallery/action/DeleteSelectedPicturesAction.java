@@ -30,6 +30,7 @@ import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
+import picturegallery.ui.TaskWithProgress;
 
 public class DeleteSelectedPicturesAction extends Action {
 	private final List<? extends Picture> picturesToDelete;
@@ -55,16 +56,21 @@ public class DeleteSelectedPicturesAction extends Action {
 		MainApp.get().switchToWaitingState();
 		currentState.onClose();
 
-		JavafxHelper.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {
 			@Override
-			public void run() {
+			protected Void call() throws Exception {
+				progress.updateProgressTitle(getDescription());
+				progress.updateProgressMax(picturesToDelete.size());
+
 				// delete the pictures
 				for (Picture picToDelete : picturesToDelete) {
+					progress.updateProgressDetails(picToDelete.getRelativePath(), +1);
 					MainApp.get().deletePicture(picToDelete, false);
 				}
 
 				// close the waiting state!
 				MainApp.get().switchCloseWaitingState();
+				return null;
 			}
 		});
 	}

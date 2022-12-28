@@ -33,6 +33,7 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
+import picturegallery.ui.TaskWithProgress;
 
 public class ReplaceRealPicturesByLinkAction extends Action {
 	private final Map<RealPicture, List<RealPicture>> replaceMap;
@@ -61,17 +62,22 @@ public class ReplaceRealPicturesByLinkAction extends Action {
 		// the user has to wait and must not do other things (long running process)
 		MainApp.get().switchToWaitingState();
 
-		JavafxHelper.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {
 			@Override
-			public void run() {
+			protected Void call() throws Exception {
+				progress.updateProgressTitle(getDescription());
+				progress.updateProgressMax(replaceMap.values().stream().mapToInt(list -> list.size()).sum());
+
 				for (Entry<RealPicture, List<RealPicture>> e : replaceMap.entrySet()) {
 					for (RealPicture picToDelete : e.getValue()) {
+						progress.updateProgressDetails(e.getKey().getRelativePath() + " <-- " + picToDelete.getRelativePath(), +1);
 						Logic.replaceRealByLinkedPicture(picToDelete, e.getKey());
 					}
 				}
 
 				// close the waiting state!
 				MainApp.get().switchCloseWaitingState();
+				return null;
 			}
 		});
 	}

@@ -36,6 +36,7 @@ import picturegallery.fix.NumberFixer;
 import picturegallery.state.CollectionState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
+import picturegallery.ui.TaskWithProgress;
 
 public class FixPictureNumbersAction extends Action {
 
@@ -117,10 +118,14 @@ public class FixPictureNumbersAction extends Action {
 		// TODO: remove renamed pictures from the cache??
 
 		final int finalDigits = digits;
-		JavafxHelper.runNotOnUiThread(new Runnable() {
+		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {
 			@Override
-			public void run() {
+			protected Void call() throws Exception {
+				progress.updateProgressTitle(getDescription());
+				progress.updateProgressMax(toFix.size());
+
 				for (Picture pic : toFix) {
+					progress.updateProgressDetails(pic.getRelativePath(), +1);
 					String newName = fixerToUse.getNewComplete(pic.getName(), finalDigits);
 
 					try {
@@ -134,6 +139,7 @@ public class FixPictureNumbersAction extends Action {
 
 				// close the waiting state!
 				MainApp.get().switchCloseWaitingState();
+				return null;
 			}
 		});
 	}
