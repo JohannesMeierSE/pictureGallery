@@ -25,6 +25,7 @@ package picturegallery.persistency;
 import gallery.RealPicture;
 
 import java.io.File;
+import java.util.Objects;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -69,30 +70,22 @@ public class MediaRenderBaseImpl implements MediaRenderBase {
 
 	public MediaRenderBaseImpl(ObjectCache<RealPicture, Image> cache, Pane parentNode) {
 		super();
-		if (cache == null) {
-			throw new IllegalArgumentException();
-		}
-		this.cache = cache;
 
-		if (parentNode == null) {
-			throw new IllegalArgumentException();
-		}
-		this.parentNode = parentNode;
+		this.cache = Objects.requireNonNull(cache);
+		this.parentNode = Objects.requireNonNull(parentNode);
 
-		width = -1;
-		height = -1;
+		this.width = -1;
+		this.height = -1;
 
 		init();
 	}
 
 	public MediaRenderBaseImpl(ObjectCache<RealPicture, Image> cache, double width, double height) {
 		super();
-		if (cache == null) {
-			throw new IllegalArgumentException();
-		}
-		this.cache = cache;
 
-		parentNode = null;
+		this.cache = Objects.requireNonNull(cache);
+		this.parentNode = null;
+
 		this.width = width;
 		this.height = height;
 

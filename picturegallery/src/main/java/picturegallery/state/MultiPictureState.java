@@ -23,14 +23,17 @@ package picturegallery.state;
  */
 
 import gallery.Picture;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Label;
+import javafx.geometry.Insets;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
 import org.controlsfx.control.GridCell;
@@ -40,13 +43,13 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitSingleCollectionStateAction;
 import picturegallery.action.HidePathInformationAction;
-import picturegallery.persistency.MediaRenderBase;
-import picturegallery.persistency.MediaRenderBaseImpl;
+import picturegallery.ui.PictureGridCell;
 
 public class MultiPictureState extends State {
 	public static final double WIDTH = 200.0;
 	public static final double HEIGHT = 100.0;
 	private static final double SPACING = 8.0;
+	public static final Border BORDER_MARKING = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(4), Insets.EMPTY));
 
 	public final ObservableList<Picture> pictures;
 	public final SimpleBooleanProperty pathVisible;
@@ -67,43 +70,7 @@ public class MultiPictureState extends State {
 		grid.setCellFactory(new Callback<GridView<Picture>, GridCell<Picture>>() {
 			@Override
 			public GridCell<Picture> call(GridView<Picture> param) {
-				return new GridCell<Picture>() {
-					private final MediaRenderBase render = new MediaRenderBaseImpl(MainApp.get().getImageCacheSmall(), WIDTH, HEIGHT);
-
-					@Override
-					protected void updateItem(Picture item, boolean empty) {
-						super.updateItem(item, empty);
-						if (empty) {
-							setGraphic(null);
-						} else {
-							render.renderPicture(Logic.getRealPicture(item));
-
-							/*
-							 * name.jpg
-							 * 100 x 200
-							 * 350 KB
-							 * parent/child/path/
-							 */
-							String text = item.getName() + "\n";
-							if (item.getMetadata() != null) {
-								text = text + item.getMetadata().getWidth() + " x " + item.getMetadata().getHeight() + "\n";
-								text = text + Logic.formatBytes(item.getMetadata().getSize()) + "\n";
-							}
-							Label labelText = new Label(text.trim());
-							labelText.visibleProperty().bind(MainApp.get().labelsVisible);
-							MainApp.styleLabel(labelText);
-
-							Label labelPath = new Label(Logic.getShortRelativePath(item));
-							labelPath.visibleProperty().bind(Bindings.and(
-									MainApp.get().labelsVisible, pathVisible));
-							MainApp.styleLabel(labelPath);
-
-							VBox labelBox = new VBox(labelText, labelPath);
-							StackPane stack = new StackPane(render.getShownNode(), labelBox);
-							setGraphic(stack);
-						}
-					}
-				};
+				return new PictureGridCell(pathVisible);
 			}
 		});
 	}
