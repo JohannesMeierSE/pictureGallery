@@ -76,8 +76,6 @@ public class MultiPictureState extends State {
 	private final GridView<Picture> grid;
 
 	protected final SimpleObjectProperty<Picture> cursor = new SimpleObjectProperty<>(null);
-	protected int cursorX = -1;
-	protected int cursorY = -1;
 	protected final ObservableList<Picture> markings = FXCollections.observableArrayList();
 
 	public MultiPictureState(State parentState) {
@@ -116,31 +114,32 @@ public class MultiPictureState extends State {
 
 	public void changeCursor(int diffX, int diffY) {
 		if (picturesSorted.isEmpty()) {
-			cursorX = -1;
-			cursorY = -1;
 			cursor.set(null);
 			return;
 		}
 		if (cursor.get() == null) {
-			cursorX = 0;
-			cursorY = 0;
 			cursor.set(picturesSorted.get(0));
 			return;
 		}
 
 		/*
 		 * https://stackoverflow.com/questions/64323733/how-can-i-access-scroll-position-in-controlsfx-gridview-for-javafx?rq=1
+		 * System.out.println("" + ((GridViewSkin<?>) grid.getSkin()).getChildren()); // [ GridViewSkin$GridVirtualFlow ]
+		 * VirtualFlow<?> flow =  (VirtualFlow<?>) ((GridViewSkin<?>) gridView.getSkin()).getChildren().get(0);
+		 * System.out.println("1st cell: " + flow.getCell(0) + ", index: " + flow.getCell(0).getIndex());
+		 * System.out.println("1st cell: " + flow.getFirstVisibleCell() + ", index: " + flow.getFirstVisibleCell().getIndex()); // row number of the first visible row within the range of (0, row count - 1)
+		 * System.out.println("last cell: " + flow.getLastVisibleCell() + ", index: " + flow.getLastVisibleCell().getIndex()); // row number of the last visible row within the range of (0, row count - 1)
+		 * System.out.println("position: " + flow.getPosition()); // 0.0 ... 1.0: vertical scrolling position
+		 * https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/skin/VirtualFlow.html?is-external=true
 		 */
+
 		// calculate row and column numbers
-//		System.out.println("" + ((GridViewSkin<?>) grid.getSkin()).getChildren()); // [ GridViewSkin$GridVirtualFlow ]
-		// VirtualFlow<?> flow =  (VirtualFlow<?>) ((GridViewSkin<?>) gridView.getSkin()).getChildren().get(0);
 		@SuppressWarnings("unchecked")
 		VirtualFlow<? extends IndexedCell<Picture>> flow =  (VirtualFlow<? extends IndexedCell<Picture>>) ((GridViewSkin<Picture>) grid.getSkin()).getChildren().get(0);
 		int rowCount = flow.getCellCount(); // the total amount of required rows (more than the visible rows! dynamically adjusted to the available horizontal space/width!)
 		if (rowCount <= 0) {
 			throw new IllegalStateException();
 		}
-//		System.out.println("row count: " + rowCount);
 		int columnCountMax = ((GridViewSkin<?>) grid.getSkin()).computeMaxCellsInRow();
 		int columnCountCurrent;
 		if (rowCount == 1) {
@@ -148,9 +147,8 @@ public class MultiPictureState extends State {
 		} else {
 			columnCountCurrent = columnCountMax;
 		}
-//		System.out.println("column count: " + columnCountCurrent);
 
-		// fix input: huge diff values make problems with +/- calculation
+		// fix input: huge difference values make problems with +/- calculation
 		if (diffX < 0) {
 			diffX = - ( (-diffX) % columnCountCurrent);
 		} else {
@@ -161,7 +159,17 @@ public class MultiPictureState extends State {
 		} else {
 			diffY = diffY % rowCount;
 		}
-//		System.out.println("diffX = " + diffX + ", diffY = " + diffY);
+
+		/* calculate the current position
+		 * - this is necessary, since changing the size of the application window influences X, Y positions!
+		 * - therefore, it is not possible to remember them!
+		 */
+		int indexOf = picturesSorted.indexOf(cursor.get());
+		if (indexOf < 0) {
+			throw new IllegalStateException();
+		}
+		int cursorX = indexOf % columnCountCurrent;
+		int cursorY = indexOf / columnCountCurrent;
 
 		// update X and Y positions
 		int newX = (cursorX + diffX + columnCountCurrent) % columnCountCurrent;
@@ -172,7 +180,6 @@ public class MultiPictureState extends State {
 			impactX = (cursorX + diffX) / columnCountCurrent; // as expected
 		}
 		int newY = (cursorY + impactX + diffY + rowCount) % rowCount;
-//		System.out.println("x impact: " + impactX);
 		// the last row might not be filled completely:
 		if (cursorX + cursorY * columnCountCurrent >= picturesSorted.size()) {
 			cursorX = 0;
@@ -181,18 +188,10 @@ public class MultiPictureState extends State {
 			cursorX = newX;
 			cursorY = newY;
 		}
-//		System.out.println("x = " + cursorX + ", y = " + cursorY);
-//		System.out.println("");
 
-		// update cursor marking and scroll automatically
+		// update cursor marking and scroll automatically to the current row
 		cursor.set(picturesSorted.get(cursorX + cursorY * columnCountCurrent));
 		flow.scrollTo(cursorY);
-
-//		System.out.println("1st cell: " + flow.getCell(0) + ", index: " + flow.getCell(0).getIndex());
-//		System.out.println("1st cell: " + flow.getFirstVisibleCell() + ", index: " + flow.getFirstVisibleCell().getIndex()); // row number of the first visible row within the range of (0, row count - 1)
-//		System.out.println("last cell: " + flow.getLastVisibleCell() + ", index: " + flow.getLastVisibleCell().getIndex()); // row number of the last visible row within the range of (0, row count - 1)
-//		System.out.println("position: " + flow.getPosition()); // 0.0 ... 1.0: vertical scrolling position
-//		System.out.println("children: " + flow.getChildrenUnmodifiable()); // [VirtualFlow$ClippedContainer@27bc575b[styleClass=clipped-container], Group@757e782c, VirtualScrollBar@66cb2819[styleClass=scroll-bar], VirtualScrollBar@6b895cf9[styleClass=scroll-bar], StackPane@2e4ac85c[styleClass=corner]]
 	}
 
 	@Override

@@ -173,6 +173,10 @@ public class PictureGridCell extends GridCell<Picture> {
 	}
 
 	protected void updateBorder() {
+		/* borders in JavaFX:
+		 * https://stackoverflow.com/questions/43166303/javafx-node-partial-border
+		 * https://stackoverflow.com/questions/20598778/drawing-a-border-around-a-javafx-text-node
+		 */
 		if (getCurrentPicture() == cursor.get()) {
 			if (isMarked()) {
 				stack.setBorder(MultiPictureState.BORDER_BOTH);
