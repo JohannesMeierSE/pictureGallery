@@ -70,7 +70,7 @@ public class ShowSeveralCollectionsAction extends Action {
 			additionalCollection = (RealPictureCollection) JavafxHelper.selectCollection(currentState, true, false, false, shownCollections);
 		}
 
-		MainApp.get().switchState(nextState);
+		MainApp.get().switchState(nextState, false);
 	}
 
 	@Override

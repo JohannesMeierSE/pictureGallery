@@ -64,7 +64,7 @@ public class SearchIdenticalDeletedAction extends Action {
 		}
 		final boolean recursiveFinal = recursive;
 
-		MainApp.get().switchToWaitingState();
+		MainApp.get().switchToWaitingState(false);
 
 		Task<List<RealPicture>> task = new Task<List<RealPicture>>() {
 			@Override
@@ -83,15 +83,14 @@ public class SearchIdenticalDeletedAction extends Action {
 					return;
 				}
 
-				MultiPictureState nextState = new MultiPictureState();
-				nextState.setNextAfterClosed(currentState);
+				MultiPictureState nextState = new MultiPictureState(currentState);
 				nextState.onInit();
 
 				nextState.registerAction(new DeleteSelectedPicturesAction(result, "Delete all the currently shown pictures",
 						"Do you really want to delete all the shown pictures (they were all deleted before!)?"));
 
 				nextState.pictures.addAll(result);
-				MainApp.get().switchState(nextState);
+				MainApp.get().switchState(nextState, false);
 			}
 		});
         new Thread(task).start();

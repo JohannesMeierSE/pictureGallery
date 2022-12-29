@@ -41,7 +41,7 @@ import org.controlsfx.control.GridView;
 
 import picturegallery.Logic;
 import picturegallery.MainApp;
-import picturegallery.action.ExitSingleCollectionStateAction;
+import picturegallery.action.ExitCurrentStateAction;
 import picturegallery.action.HidePathInformationAction;
 import picturegallery.ui.PictureGridCell;
 
@@ -57,8 +57,8 @@ public class MultiPictureState extends State {
 	// http://controlsfx.bitbucket.org/org/controlsfx/control/GridView.html
 	private final GridView<Picture> grid;
 
-	public MultiPictureState() {
-		super();
+	public MultiPictureState(State parentState) {
+		super(parentState);
 
 		pictures = FXCollections.observableArrayList();
 		pathVisible = new SimpleBooleanProperty(true);
@@ -80,13 +80,18 @@ public class MultiPictureState extends State {
 	public void onEntry(State previousState) {
 		super.onEntry(previousState);
 		grid.setItems(pictures);
+	}
+
+	@Override
+	public void onVisible() {
+		super.onVisible();
 		grid.requestFocus();
 	}
 
 	@Override
 	public void onInit() {
 		super.onInit();
-		registerAction(new ExitSingleCollectionStateAction());
+		registerAction(new ExitCurrentStateAction(true));
 		registerAction(new HidePathInformationAction());
 	}
 

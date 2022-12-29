@@ -37,7 +37,7 @@ import picturegallery.action.DetailsLeftAction;
 import picturegallery.action.DetailsResetAction;
 import picturegallery.action.DetailsRightAction;
 import picturegallery.action.DetailsUpAction;
-import picturegallery.action.ExitSingleCollectionStateAction;
+import picturegallery.action.ExitCurrentStateAction;
 import picturegallery.action.JumpLeftAction;
 import picturegallery.action.JumpParticularPictureAction;
 import picturegallery.action.JumpRightAction;
@@ -66,8 +66,8 @@ public abstract class SinglePictureState extends SinglePictureSwitchingState {
 	private final Label labelMeta;
 	private final Label labelTags;
 
-	public SinglePictureState() {
-		super();
+	public SinglePictureState(State parentState) {
+		super(parentState);
 
 		// react on changes of the settings
 		detailRatioX.addListener(new ChangeListener<Number>() {
@@ -160,7 +160,7 @@ public abstract class SinglePictureState extends SinglePictureSwitchingState {
 		registerAction(new JumpRightAction());
 		registerAction(new JumpLeftAction());
 		registerAction(new JumpParticularPictureAction());
-		registerAction(new ExitSingleCollectionStateAction());
+		registerAction(new ExitCurrentStateAction(false));
 		registerAction(new RenamePictureAction());
 		registerAction(new ZoomIncreaseAction());
 		registerAction(new ZoomDecreaseAction());

@@ -89,13 +89,11 @@ public class CollectionState extends State {
 	private final SinglePictureMultiCollectionState multiState;
 
 	public CollectionState() {
-		super();
-		singleState = new SinglePictureSingleCollectionState();
-		singleState.setNextAfterClosed(this);
+		super(null);
+		singleState = new SinglePictureSingleCollectionState(this);
 		singleState.onInit();
 
-		multiState = new SinglePictureMultiCollectionState();
-		multiState.setNextAfterClosed(this);
+		multiState = new SinglePictureMultiCollectionState(this);
 		multiState.onInit();
 
 		collectionFilter = new CompositeCollectionFilter(this, null); // no parent filter available!
@@ -307,8 +305,8 @@ public class CollectionState extends State {
 	}
 
 	@Override
-	public void onEntry(State previousState) {
-		super.onEntry(previousState);
+	public void onVisible() {
+		super.onVisible();
 		table.requestFocus();
 	}
 

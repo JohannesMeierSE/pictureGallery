@@ -56,7 +56,7 @@ public class SearchIdenticalAndReplaceAction extends Action {
 			return;
 		}
 
-		MainApp.get().switchToWaitingState();
+		MainApp.get().switchToWaitingState(false);
 
 		Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
@@ -73,8 +73,7 @@ public class SearchIdenticalAndReplaceAction extends Action {
 					return;
 				}
 
-				MultiPictureState nextState = new MultiPictureState();
-				nextState.setNextAfterClosed(state);
+				MultiPictureState nextState = new MultiPictureState(currentState);
 				nextState.onInit();
 
 				List<Picture> picturesToDelete = new ArrayList<>();
@@ -97,7 +96,7 @@ public class SearchIdenticalAndReplaceAction extends Action {
 					picturesToShow.addAll(e.getValue());
 				}
 				nextState.pictures.addAll(picturesToShow);
-				MainApp.get().switchState(nextState);
+				MainApp.get().switchState(nextState, false);
 			}
 		});
         new Thread(task).start();

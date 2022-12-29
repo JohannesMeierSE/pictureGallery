@@ -36,8 +36,8 @@ public class WaitingState extends State {
 	protected final ProgressIndicator progress;
 	protected final VBox box;
 
-	public WaitingState() {
-		super();
+	public WaitingState(State parentState) {
+		super(parentState);
 
 		box = new VBox(20.0);
 		labelTitle = new Label("<title of the action>");

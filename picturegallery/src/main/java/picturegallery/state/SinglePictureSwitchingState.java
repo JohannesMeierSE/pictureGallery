@@ -99,8 +99,8 @@ public abstract class SinglePictureSwitchingState extends State {
 	public abstract RealPictureCollection getLinktoCollection();
 	public abstract void setLinktoCollection(RealPictureCollection linktoCollection);
 
-	public SinglePictureSwitchingState() {
-		super();
+	public SinglePictureSwitchingState(State parentState) {
+		super(parentState);
 		currentPicture = new SimpleObjectProperty<>();
 		indexCurrentCollection = -1;
 		picturesToShow = FXCollections.observableArrayList();
@@ -145,7 +145,7 @@ public abstract class SinglePictureSwitchingState extends State {
 					if (picturesSorted.isEmpty()) {
 						if (isVisible()) {
 							// close this state
-							MainApp.get().switchToPreviousState();
+							MainApp.get().switchToParentState(false);
 						} else {
 							// do nothing, if this state was already hidden / "onExit"
 						}
@@ -235,8 +235,7 @@ public abstract class SinglePictureSwitchingState extends State {
 	public final TempCollectionState getTempState() {
 		if (tempState == null) {
 			// Lazy initialization prevents infinite loops
-			tempState = new TempCollectionState();
-			tempState.setNextAfterClosed(this);
+			tempState = new TempCollectionState(this);
 			tempState.onInit();
 
 			// the following lines listen to the pictures in the next temp mode to render the current image properly
@@ -509,7 +508,7 @@ public abstract class SinglePictureSwitchingState extends State {
 		super.onClose();
 
 		// closes the temp state
-		if (tempState != null && !tempState.wasClosed()) {
+		if (tempState != null && tempState.wasClosed() == false) {
 			if (tempState.isVisible()) {
 				tempState.onExit(null);
 			}

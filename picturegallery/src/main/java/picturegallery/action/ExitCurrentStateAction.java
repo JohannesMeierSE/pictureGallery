@@ -26,12 +26,27 @@ import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
 import picturegallery.state.State;
 
-public class ExitSingleCollectionStateAction extends Action {
+public class ExitCurrentStateAction extends Action {
+	private final boolean closeCurrentState;
+	private final State nextState; // null is allowed
+
+	public ExitCurrentStateAction(boolean closeCurrentState) {
+		this(closeCurrentState, null);
+	}
+	public ExitCurrentStateAction(boolean closeCurrentState, State nextState) {
+		super();
+		this.closeCurrentState = closeCurrentState;
+		this.nextState = nextState;
+	}
 
 	@Override
 	public void run(State currentState) {
-		if (currentState.getNextAfterClosed() != null) {
-			MainApp.get().switchState(currentState.getNextAfterClosed());
+		if (currentState.getPreviousState() != null) {
+			State next = nextState;
+			if (next == null) {
+				next = currentState.getParentStateHierarchy();
+			}
+			MainApp.get().switchState(next, closeCurrentState);
 		}
 	}
 
@@ -42,6 +57,6 @@ public class ExitSingleCollectionStateAction extends Action {
 
 	@Override
 	public String getDescription() {
-		return "go back to the previous state";
+		return "go back to the parent state (often this is the previous state)";
 	}
 }

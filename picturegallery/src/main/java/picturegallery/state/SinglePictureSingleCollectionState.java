@@ -39,8 +39,8 @@ public class SinglePictureSingleCollectionState extends SinglePictureState {
 	public final SimpleObjectProperty<PictureCollection> currentCollection;
 	private final Adapter adapterCurrentCollection;
 
-	public SinglePictureSingleCollectionState() {
-		super();
+	public SinglePictureSingleCollectionState(State parentState) {
+		super(parentState);
 
 		adapterCurrentCollection = new AdapterCollection() {
 			@Override

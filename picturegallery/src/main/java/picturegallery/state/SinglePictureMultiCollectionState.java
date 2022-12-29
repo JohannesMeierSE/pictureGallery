@@ -40,8 +40,8 @@ public class SinglePictureMultiCollectionState extends SinglePictureState {
 	public final ObservableList<RealPictureCollection> collections = FXCollections.observableArrayList();
 	private final Adapter adapterCollection;
 
-	public SinglePictureMultiCollectionState() {
-		super();
+	public SinglePictureMultiCollectionState(State parentState) {
+		super(parentState);
 
 		collections.addListener(new ListChangeListener<RealPictureCollection>() {
 			@Override

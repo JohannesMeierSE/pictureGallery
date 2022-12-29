@@ -45,7 +45,7 @@ public class ShowSingleCollectionAction extends Action {
 
 		SinglePictureSingleCollectionState nextState = state.getSingleState();
 		nextState.setCurrentCollection(collection);
-		MainApp.get().switchState(nextState);
+		MainApp.get().switchState(nextState, false);
 	}
 
 	@Override

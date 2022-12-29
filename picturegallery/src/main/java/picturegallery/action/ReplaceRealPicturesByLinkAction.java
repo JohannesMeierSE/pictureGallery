@@ -60,7 +60,7 @@ public class ReplaceRealPicturesByLinkAction extends Action {
 		}
 
 		// the user has to wait and must not do other things (long running process)
-		MainApp.get().switchToWaitingState();
+		MainApp.get().switchToWaitingState(true);
 
 		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {
 			@Override

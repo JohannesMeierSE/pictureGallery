@@ -31,7 +31,7 @@ import picturegallery.state.TempCollectionState;
 public class ShowOrExitTempCollectionAction extends Action {
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof SinglePictureSwitchingState)) {
+		if (currentState instanceof SinglePictureSwitchingState == false) {
 			throw new IllegalStateException();
 		}
 		final SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
@@ -39,12 +39,12 @@ public class ShowOrExitTempCollectionAction extends Action {
 		if (state.getTempState().getSize() > 0) {
 
 			// show next temp collection (if pictures are marked)
-			MainApp.get().switchState(state.getTempState());
+			MainApp.get().switchState(state.getTempState(), false);
 
 		} else if (state instanceof TempCollectionState) {
 
 			// exit and clear TEMP collection
-			MainApp.get().switchToPreviousState();
+			MainApp.get().switchToParentState(false);
 
 		} else {
 			// do nothing

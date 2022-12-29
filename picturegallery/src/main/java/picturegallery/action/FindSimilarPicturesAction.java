@@ -100,8 +100,7 @@ public class FindSimilarPicturesAction extends Action {
 					JavafxHelper.showNotification("Find similar pictures", "Calculation is completed:", "There are no similar pictures.", false);
 					return;
 				}
-				MultiPictureState nextState = new MultiPictureState();
-				nextState.setNextAfterClosed(state);
+				MultiPictureState nextState = new MultiPictureState(currentState);
 				nextState.onInit();
 
 				List<Picture> picturesToShow = new ArrayList<>(picturesToDelete);
@@ -113,7 +112,7 @@ public class FindSimilarPicturesAction extends Action {
 						+ ", there are " + picturesToDelete.size() + " pictures with are similar to the current picture!"));
 
 				nextState.pictures.addAll(picturesToShow);
-				MainApp.get().switchState(nextState);
+				MainApp.get().switchState(nextState, false);
 			}
 		});
         new Thread(task).start();

@@ -45,10 +45,9 @@ public class ShowSingleCollectionOverviewAction extends Action {
 			return;
 		}
 
-		MultiPictureState nextState = new MultiPictureSingleCollectionState(Logic.getRealCollection(collection));
-		nextState.setNextAfterClosed(state);
+		MultiPictureState nextState = new MultiPictureSingleCollectionState(currentState, Logic.getRealCollection(collection));
 		nextState.onInit();
-		MainApp.get().switchState(nextState);
+		MainApp.get().switchState(nextState, false);
 	}
 
 	@Override

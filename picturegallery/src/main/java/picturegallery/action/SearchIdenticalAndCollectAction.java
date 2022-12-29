@@ -56,7 +56,7 @@ public class SearchIdenticalAndCollectAction extends Action {
 			return;
 		}
 
-		MainApp.get().switchToWaitingState();
+		MainApp.get().switchToWaitingState(false);
 
         Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
@@ -73,8 +73,7 @@ public class SearchIdenticalAndCollectAction extends Action {
 					return;
 				}
 
-				MultiPictureState nextState = new MultiPictureState();
-				nextState.setNextAfterClosed(currentState);
+				MultiPictureState nextState = new MultiPictureState(currentState);
 				nextState.onInit();
 
 				nextState.registerAction(new DeleteAndMoveMappedPicturesAction(result));
@@ -85,7 +84,7 @@ public class SearchIdenticalAndCollectAction extends Action {
 					picturesToShow.addAll(e.getValue());
 				}
 				nextState.pictures.addAll(picturesToShow);
-				MainApp.get().switchState(nextState);
+				MainApp.get().switchState(nextState, false);
 			}
 		});
         new Thread(task).start();

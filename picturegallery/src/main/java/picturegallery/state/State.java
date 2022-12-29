@@ -24,63 +24,93 @@ package picturegallery.state;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javafx.scene.layout.Region;
 import picturegallery.action.Action;
 
 public abstract class State {
+	public enum Status {
+		/** the initial state */
+		NOT_INITIALIZED,
+		/** the normal state where the state is invisible (after onInit() or after onExit())*/
+		NOT_VISIBLE,
+		/** the normal state where the state is visible (after onEntry()) */
+		VISIBLE,
+		/** the final state after onClose() in the invisible state */
+		CLOSED,
+	}
 	private final List<Action> registeredActions = new ArrayList<>();
-	private boolean visible = false;
-	private boolean wasClosed = false;
-	private State nextAfterClosed;
+	private Status status = Status.NOT_INITIALIZED;
+	private State previousState;
+	protected final State parentState; // null is allowed, e.g. for the CollectionState, WaitingState
+
+	public State(State parentState) {
+		super();
+		this.parentState = parentState;
+	}
+
+	public State getParentStateHierarchy() {
+		return parentState;
+	}
 
 	public void onInit() {
-		if (wasClosed) {
-			throw new IllegalStateException();
+		if (status != Status.NOT_INITIALIZED) {
+			throw new IllegalStateException(status + ", call onInit() only once!");
 		}
+		status = Status.NOT_VISIBLE;
 	}
 	public void onClose() {
-		if (isVisible()) {
-			throw new IllegalStateException("run onExit() before calling onClose() !");
+		if (status != Status.NOT_VISIBLE) {
+			throw new IllegalStateException(status + ", run onExit() before calling onClose() and call onClose() only once!");
 		}
-		if (wasClosed) {
-			throw new IllegalStateException();
-		}
-		wasClosed = true;
+		status = Status.CLOSED;
 	}
 
 	/**
-	 * 
+	 * This method should be used to prepare the GUI (in particular, the root node to provide),
+	 * if needed, depending on the previous state.
 	 * @param previousState could be null, if this state is the first one within the application life
 	 */
 	public void onEntry(State previousState) {
-		if (wasClosed) {
-			throw new IllegalStateException();
+		if (status != Status.NOT_VISIBLE) {
+			throw new IllegalStateException("current state: " + status);
 		}
-		visible = true;
-		if (nextAfterClosed == null) {
-			nextAfterClosed = previousState;
+		status = Status.VISIBLE;
+		if (previousState == this) {
+			throw new IllegalArgumentException("not the same state again: " + previousState);
 		}
+		this.previousState = previousState;
+	}
+	/**
+	 * Now, the root node is added to the whole GUI and this method allows to fix some last things,
+	 * like requesting the focus for particular elements of the GUI, since that is not possible in onEntry().
+	 */
+	public void onVisible() {
+		if (status != Status.VISIBLE) {
+			throw new IllegalStateException("current state: " + status);
+		}
+		// TODO: extend Status
 	}
 	public void onExit(State nextState) {
-		if (wasClosed) {
-			throw new IllegalStateException();
+		if (status != Status.VISIBLE) {
+			throw new IllegalStateException("current state: " + status);
 		}
-		visible = false;
+		if (nextState == this) {
+			throw new IllegalArgumentException("not the same state again: " + nextState);
+		}
+		status = Status.NOT_VISIBLE;
 	}
 
 	public final boolean isVisible() {
-		return visible;
+		return status == Status.VISIBLE;
 	}
 	public final boolean wasClosed() {
-		return wasClosed;
+		return status == Status.CLOSED;
 	}
 
-	public final State getNextAfterClosed() {
-		return nextAfterClosed;
-	}
-	public final void setNextAfterClosed(State nextAfterClosed) {
-		this.nextAfterClosed = nextAfterClosed;
+	public final State getPreviousState() {
+		return previousState;
 	}
 
 	public final List<Action> getActions() {

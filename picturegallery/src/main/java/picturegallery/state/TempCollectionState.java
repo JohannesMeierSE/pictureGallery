@@ -29,61 +29,59 @@ import javafx.scene.layout.Region;
 import picturegallery.persistency.MediaRenderBase;
 
 public class TempCollectionState extends SinglePictureSwitchingState {
-	public TempCollectionState() {
-		super();
+
+	public TempCollectionState(State parentState) {
+		super(parentState);
 	}
 
-	private SinglePictureSwitchingState getRealState() {
-		if (getNextAfterClosed() instanceof SinglePictureSwitchingState) {
-			return (SinglePictureSwitchingState) getNextAfterClosed();
-		} else {
-			throw new IllegalStateException();
-		}
+	@Override
+	public SinglePictureSwitchingState getParentStateHierarchy() {
+		return (SinglePictureSwitchingState) parentState;
 	}
 
 	@Override
 	public PictureCollection getCurrentCollection() {
-		return getRealState().getCurrentCollection();
+		return getParentStateHierarchy().getCurrentCollection();
 	}
 
 	@Override
 	protected String getCollectionDescription() {
-		return "temp collection within (" + getRealState().getCollectionDescription() + ")";
+		return "temp collection within (" + getParentStateHierarchy().getCollectionDescription() + ")";
 	}
 
 	@Override
 	protected void setLabelIndex(String newText) {
-		getRealState().setLabelIndex(newText);
+		getParentStateHierarchy().setLabelIndex(newText);
 	}
 
 	@Override
 	protected void setLabelMeta(String newText) {
-		getRealState().setLabelMeta(newText);
+		getParentStateHierarchy().setLabelMeta(newText);
 	}
 
 	@Override
 	protected void setLabelTags(String newText) {
-		getRealState().setLabelTags(newText);
+		getParentStateHierarchy().setLabelTags(newText);
 	}
 
 	@Override
 	protected void setLabelPictureName(String newText) {
-		getRealState().setLabelPictureName(newText);
+		getParentStateHierarchy().setLabelPictureName(newText);
 	}
 
 	@Override
 	protected void setLabelCollectionPath(String newText) {
-		getRealState().setLabelCollectionPath(newText);
+		getParentStateHierarchy().setLabelCollectionPath(newText);
 	}
 
 	@Override
 	protected MediaRenderBase getImage() {
-		return getRealState().getImage();
+		return getParentStateHierarchy().getImage();
 	}
 
 	@Override
 	public Region getRootNode() {
-		return getRealState().getRootNode();
+		return getParentStateHierarchy().getRootNode();
 	}
 
 	@Override
@@ -116,21 +114,21 @@ public class TempCollectionState extends SinglePictureSwitchingState {
 
 	@Override
 	public RealPictureCollection getMovetoCollection() {
-		return getRealState().getMovetoCollection();
+		return getParentStateHierarchy().getMovetoCollection();
 	}
 
 	@Override
 	public void setMovetoCollection(RealPictureCollection movetoCollection) {
-		getRealState().setMovetoCollection(movetoCollection);
+		getParentStateHierarchy().setMovetoCollection(movetoCollection);
 	}
 
 	@Override
 	public RealPictureCollection getLinktoCollection() {
-		return getRealState().getLinktoCollection();
+		return getParentStateHierarchy().getLinktoCollection();
 	}
 
 	@Override
 	public void setLinktoCollection(RealPictureCollection linktoCollection) {
-		getRealState().setLinktoCollection(linktoCollection);
+		getParentStateHierarchy().setLinktoCollection(linktoCollection);
 	}
 }

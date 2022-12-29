@@ -62,8 +62,7 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 		}
 
 		// close the state => prevents loading removed pictures again!
-		MainApp.get().switchToWaitingState();
-		currentState.onClose();
+		MainApp.get().switchToWaitingState(true);
 
 		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {
 			@Override

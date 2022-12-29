@@ -72,7 +72,7 @@ public class SearchIdenticalAction extends Action {
 			searchInSubcollectionsToo = false;
 		}
 
-		MainApp.get().switchToWaitingState();
+		MainApp.get().switchToWaitingState(false);
 
 		Task<Map<RealPicture, List<RealPicture>>> task = new Task<Map<RealPicture, List<RealPicture>>>() {
         	@Override
@@ -88,8 +88,7 @@ public class SearchIdenticalAction extends Action {
 					MainApp.get().switchCloseWaitingState();
 					return;
 				}
-				MultiPictureState nextState = new MultiPictureState();
-				nextState.setNextAfterClosed(state);
+				MultiPictureState nextState = new MultiPictureState(currentState);
 				nextState.onInit();
 
 				List<Picture> picturesToDelete = new ArrayList<>();
@@ -123,7 +122,7 @@ public class SearchIdenticalAction extends Action {
 						+ ", there are " + result.size() + " pictures with duplicates!"));
 
 				nextState.pictures.addAll(picturesToShow);
-				MainApp.get().switchState(nextState);
+				MainApp.get().switchState(nextState, false);
 			}
 		});
         new Thread(task).start();

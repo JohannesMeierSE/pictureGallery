@@ -107,7 +107,7 @@ public class MainApp extends Application {
 	private ObjectCache<RealPicture, Image> imageCacheSmall;
 
 	private WaitingState waitingState;
-	private final List<State> stateStack = new ArrayList<>();
+	private final List<State> stateStack = new ArrayList<>(); // collects the shown states with their order (first state at position 0)
 	private final List<Action> globalActions = new ArrayList<>();
 
 	public SimpleBooleanProperty labelsVisible = new SimpleBooleanProperty(true);
@@ -235,13 +235,13 @@ public class MainApp extends Application {
 					if (s.isVisible()) {
 						s.onExit(null);
 					}
-					if (!s.wasClosed()) {
+					if (s.wasClosed() == false) {
 						s.onClose();
 					}
 				}
 
 				// save model afterwards
-				saveModel();
+				saveModel(); // TODO: in WaitingState realisieren??
 			}
 		});
         stage.show();
@@ -254,9 +254,9 @@ public class MainApp extends Application {
 		globalActions.add(new SwitchPictureSortingAction());
 
 		// wait for the initialization
-		waitingState = new WaitingState();
+		waitingState = new WaitingState(null);
 		waitingState.onInit();
-		switchToWaitingState();
+		switchToWaitingState(false);
 
 		// load the picture library
 		Task<Void> task = new TaskWithProgress<Void>(waitingState) {
@@ -329,9 +329,7 @@ public class MainApp extends Application {
             	// start with the collection state (the waiting state was before, but does not count as real first state ...):
         		CollectionState newState = new CollectionState();
         		newState.onInit();
-        		newState.setNextAfterClosed(null);
-        		waitingState.setNextAfterClosed(newState);
-        		switchState(newState);
+        		switchState(newState, false);
         	}
         });
         new Thread(task).start();
@@ -841,7 +839,7 @@ public class MainApp extends Application {
 		 */
 
 		if (swithToWaitingState) {
-			switchToWaitingState();
+			switchToWaitingState(false);
 		}
 
 		// do the long-running moving in another thread!
@@ -1041,26 +1039,34 @@ public class MainApp extends Application {
 	public WaitingState getWaitingState() {
 		return waitingState;
 	}
-	public void switchToWaitingState() {
-		switchState(waitingState);
+	public void switchToWaitingState(boolean closePreviousState) {
+		switchState(waitingState, closePreviousState);
 	}
 	public void switchCloseWaitingState() {
 		// close the waiting state!
 		JavafxHelper.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				switchToPreviousState();
+				switchToPreviousState(false);
 			}
 		});
 	}
 
-	public void switchState(State newState) {
+	public void switchState(State newState, boolean closePreviousState) {
 		if (newState == null) {
 			throw new IllegalArgumentException();
 		}
 		final State previousState = getCurrentState();
 		if (newState == previousState) {
 			throw new IllegalArgumentException();
+		}
+		if (closePreviousState) {
+			if (previousState == null) {
+				throw new IllegalArgumentException();
+			}
+			if (previousState instanceof WaitingState) {
+				throw new IllegalArgumentException("the waiting state should be unique");
+			}
 		}
 
 		// handle "previous" state
@@ -1071,10 +1077,16 @@ public class MainApp extends Application {
 
 			oldNode.minHeightProperty().unbind();
 			oldNode.minWidthProperty().unbind();
+
+			if (closePreviousState) {
+				previousState.onClose();
+				stateStack.remove(stateStack.size() - 1);
+			}
 		}
 
 		// switch state
 		stateStack.add(stateStack.size(), newState);
+		newState.onEntry(previousState);
 
 		// update GUI: keys
 		String newKeys = "";
@@ -1098,25 +1110,53 @@ public class MainApp extends Application {
     	newNode.minWidthProperty().bind(root.minWidthProperty());
 		newNode.requestFocus();
 
-		newState.onEntry(newState);
+		newState.onVisible(); // now, the state can fix last GUI things, like requesting the focus on other elements
 	}
 
-	public void switchToPreviousState() {
+	/*
+	 * Previous VS Parent state
+	 * - parent reflects the structural nesting hierarchy of states, e.g. CollectionState -> SinglePictureState -> TempState 1 -> TempState 2
+	 * - previous marks the previously visible state, e.g. SinglePictureState -> TempState 1 -> TempState 2 -> TempState 1 -> TempState 2
+	 *   therefore, loops are possible like! e.g. TempState 1 -> TempState 2 AND TempState 2 -> TempState 1
+	 */
+
+	public void switchToParentState(boolean closeCurrentState) {
 		// check the input
 		State current = getCurrentState();
 		if (current == null) {
 			throw new IllegalStateException();
 		}
-		State nextState = current.getNextAfterClosed();
-		if (nextState == null) {
+		State targetState = current.getParentStateHierarchy();
+		if (targetState == null) {
 			throw new IllegalStateException();
 		}
 
 		// switch
-		switchState(nextState);
+		switchState(targetState, closeCurrentState);
+	}
+	public void switchToPreviousState(boolean closeCurrentState) {
+		// check the input
+		State current = getCurrentState();
+		if (current == null) {
+			throw new IllegalStateException();
+		}
+		State targetState = current.getPreviousState();
+		if (targetState == null) {
+			throw new IllegalStateException();
+		}
+		if (targetState != stateStack.get(stateStack.size() - 2)) {
+			throw new IllegalStateException();
+		}
+
+		// switch
+		switchState(targetState, closeCurrentState);
 
 		// fix the stack
-		stateStack.remove(stateStack.size() - 2); // the "current" state should be ignored from now on
-		stateStack.remove(stateStack.size() - 2); // the "previous" state should not added twice
+		if (closeCurrentState) {
+			// do nothing, since the state is removed already by the previous method call
+		} else {
+			stateStack.remove(stateStack.size() - 2); // the "current" state should be ignored from now on
+		}
+		stateStack.remove(stateStack.size() - 2); // the "previous" state should not be added twice
 	}
 }

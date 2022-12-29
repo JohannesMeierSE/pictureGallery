@@ -74,8 +74,7 @@ public class DiffCollectionDeleteAction extends Action {
 					return;
 				}
 
-				MultiPictureState nextState = new MultiPictureState();
-				nextState.setNextAfterClosed(state);
+				MultiPictureState nextState = new MultiPictureState(state);
 				nextState.onInit();
 
 				nextState.registerAction(new DeleteSelectedPicturesAction(result,
@@ -84,7 +83,7 @@ public class DiffCollectionDeleteAction extends Action {
 						+ ", there are " + result.size() + " pictures without corresponding element in " + first.getRelativePath() + "!"));
 
 				nextState.pictures.addAll(result);
-				MainApp.get().switchState(nextState);
+				MainApp.get().switchState(nextState, false);
 			}
         });
         new Thread(task).start();

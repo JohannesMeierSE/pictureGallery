@@ -35,8 +35,8 @@ public class MultiPictureSingleCollectionState extends MultiPictureState {
 	protected final RealPictureCollection collection;
 	protected final Adapter adapterCurrentCollection;
 
-	public MultiPictureSingleCollectionState(RealPictureCollection collection) {
-		super();
+	public MultiPictureSingleCollectionState(State parentState, RealPictureCollection collection) {
+		super(parentState);
 		pathVisible.set(false); // since all shown pictures are within the same collection, the path label is the same for all pictures => do not show it
 
 		this.collection = Objects.requireNonNull(collection);

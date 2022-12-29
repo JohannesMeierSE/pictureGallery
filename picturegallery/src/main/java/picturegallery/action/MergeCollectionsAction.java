@@ -67,7 +67,7 @@ public class MergeCollectionsAction extends Action {
 
 
 		// do the long-running merging in another thread!
-		MainApp.get().switchToWaitingState();
+		MainApp.get().switchToWaitingState(false);
 
 		JavafxHelper.runNotOnUiThread(new Runnable() {
 			@Override

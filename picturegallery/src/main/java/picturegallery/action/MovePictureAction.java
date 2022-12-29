@@ -66,7 +66,7 @@ public class MovePictureAction extends Action {
 		// close temp mode (only one level)
 		if (state instanceof TempCollectionState) {
 			// exit and clear TEMP collection => see ShowOrExitTempCollectionAction
-			MainApp.get().switchToPreviousState();
+			MainApp.get().switchToParentState(false);
 		} else {
 			// go directly to the next picture
 			if (state.getSize() >= 2) {
