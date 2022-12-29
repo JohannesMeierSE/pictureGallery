@@ -95,7 +95,7 @@ public class SearchIdenticalAndReplaceAction extends Action {
 					picturesToShow.add(e.getKey());
 					picturesToShow.addAll(e.getValue());
 				}
-				nextState.pictures.addAll(picturesToShow);
+				nextState.picturesToShow.addAll(picturesToShow);
 				MainApp.get().switchState(nextState, false);
 			}
 		});

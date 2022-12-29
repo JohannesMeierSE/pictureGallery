@@ -111,7 +111,7 @@ public class FindSimilarPicturesAction extends Action {
 						"In the collection " + currentCollection.getRelativePath()
 						+ ", there are " + picturesToDelete.size() + " pictures with are similar to the current picture!"));
 
-				nextState.pictures.addAll(picturesToShow);
+				nextState.picturesToShow.addAll(picturesToShow);
 				MainApp.get().switchState(nextState, false);
 			}
 		});

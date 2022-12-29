@@ -24,6 +24,7 @@ package picturegallery.state;
 
 import gallery.Picture;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -36,6 +37,9 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.controlsfx.control.GridCell;
 import org.controlsfx.control.GridView;
 
@@ -43,6 +47,8 @@ import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitCurrentStateAction;
 import picturegallery.action.HidePathInformationAction;
+import picturegallery.persistency.ObservablePicture;
+import picturegallery.persistency.SpecialSortedList;
 import picturegallery.ui.PictureGridCell;
 
 public class MultiPictureState extends State {
@@ -52,7 +58,8 @@ public class MultiPictureState extends State {
 	public static final Border BORDER_MARKED = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5), Insets.EMPTY));
 	public static final Border BORDER_UNMARKED = new Border(new BorderStroke(Color.TRANSPARENT, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5), Insets.EMPTY));
 
-	public final ObservableList<Picture> pictures;
+	public final ObservableList<Picture> picturesToShow;
+	protected final SpecialSortedList<Picture> picturesSorted;
 	public final SimpleBooleanProperty pathVisible;
 	// http://controlsfx.bitbucket.org/org/controlsfx/control/GridView.html
 	private final GridView<Picture> grid;
@@ -60,8 +67,23 @@ public class MultiPictureState extends State {
 	public MultiPictureState(State parentState) {
 		super(parentState);
 
-		pictures = FXCollections.observableArrayList();
+		picturesToShow = FXCollections.observableArrayList();
 		pathVisible = new SimpleBooleanProperty(true);
+
+		picturesSorted = new SpecialSortedList<Picture>(picturesToShow, MainApp.get().pictureComparator) {
+			// map for caching the value => is important for removing listeners
+			private Map<Picture, ObservableValue<Picture>> map = new HashMap<>();
+
+			@Override
+			protected ObservableValue<Picture> createObservable(Picture value) {
+				ObservableValue<Picture> observable = map.get(value);
+				if (observable == null) {
+					observable = new ObservablePicture(value);
+					map.put(value, observable);
+				}
+				return observable;
+			}
+		};
 
 		grid = new GridView<>();
 		grid.cellHeightProperty().set(HEIGHT);
@@ -79,7 +101,7 @@ public class MultiPictureState extends State {
 	@Override
 	public void onEntry(State previousState) {
 		super.onEntry(previousState);
-		grid.setItems(pictures);
+		grid.setItems(picturesSorted);
 	}
 
 	@Override
@@ -103,10 +125,11 @@ public class MultiPictureState extends State {
 
 	@Override
 	public void onClose() {
-		for (Picture pic : pictures) {
+		for (Picture pic : picturesToShow) {
 			MainApp.get().getImageCacheSmall().remove(Logic.getRealPicture(pic));
 		}
-		pictures.clear();
+		picturesToShow.clear();
+		picturesSorted.onClose();
 		super.onClose();
 	}
 

@@ -89,7 +89,7 @@ public class SearchIdenticalDeletedAction extends Action {
 				nextState.registerAction(new DeleteSelectedPicturesAction(result, "Delete all the currently shown pictures",
 						"Do you really want to delete all the shown pictures (they were all deleted before!)?"));
 
-				nextState.pictures.addAll(result);
+				nextState.picturesToShow.addAll(result);
 				MainApp.get().switchState(nextState, false);
 			}
 		});

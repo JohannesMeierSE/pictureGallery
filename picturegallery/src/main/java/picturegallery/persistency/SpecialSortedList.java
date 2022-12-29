@@ -38,6 +38,7 @@ import javafx.collections.transformation.TransformationList;
 /**
  * This list wraps another observable list by providing all elements of the source list in the order of the wanted comparator.
  * The comparator is stored inside an observable property and can be changed, which is reflected automatically.
+ * Additionally, elements are repainted, if they changed internally.
  *
  * @author Johannes Meier
  *
@@ -45,6 +46,7 @@ import javafx.collections.transformation.TransformationList;
  */
 public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 	private final InvalidationListener elementListener;
+	private final ChangeListener<Comparator<T>> changeListener;
 	private final List<T> sortedList;
 	private final ObservableList<? extends T> wrappedList;
 	public final ObservableValue<Comparator<T>> comparator;
@@ -54,8 +56,7 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 		wrappedList = Objects.requireNonNull(source);
 		sortedList = new ArrayList<>(source.size());
 
-		this.comparator = Objects.requireNonNull(comparator);
-		this.comparator.addListener(new ChangeListener<Comparator<T>>() {
+		changeListener = new ChangeListener<Comparator<T>>() {
 			@Override
 			public void changed(ObservableValue<? extends Comparator<T>> observable,
 					Comparator<T> oldValue, Comparator<T> newValue) {
@@ -75,7 +76,9 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 				}
 				endChange();
 			}
-		});
+		};
+		this.comparator = Objects.requireNonNull(comparator);
+		this.comparator.addListener(changeListener);
 
 		elementListener = new InvalidationListener() {
 			@SuppressWarnings("unchecked")
@@ -96,6 +99,11 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 		for (T initialElement : wrappedList) {
 			addElement(initialElement);
 		}
+	}
+
+	public void onClose() {
+		comparator.removeListener(changeListener);
+		sortedList.clear();
 	}
 
 	/**
@@ -126,11 +134,7 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 				}
 				for (T removed : change.getRemoved()) {
 					// remove
-					createObservable(removed).removeListener(elementListener); 
-
-					int oldIndex = sortedList.indexOf(removed);
-					sortedList.remove(removed);
-					nextRemove(oldIndex, removed);
+					removeElement(removed);
 				}
 			}
 		}
@@ -176,6 +180,14 @@ public abstract class SpecialSortedList<T> extends TransformationList<T, T> {
 		nextAdd(newIndex, newIndex + 1);
 
 		createObservable(added).addListener(elementListener);
+	}
+
+	private void removeElement(T removed) {
+		createObservable(removed).removeListener(elementListener); 
+
+		int oldIndex = sortedList.indexOf(removed);
+		sortedList.remove(removed);
+		nextRemove(oldIndex, removed);
 	}
 
 	private int getIndexForPictureInsertion(List<? extends T> pictureList, T picture) {

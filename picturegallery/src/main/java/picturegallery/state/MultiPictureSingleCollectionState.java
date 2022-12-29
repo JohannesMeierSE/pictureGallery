@@ -44,12 +44,12 @@ public class MultiPictureSingleCollectionState extends MultiPictureState {
 		adapterCurrentCollection = new AdapterCollection() {
 			@Override
 			public void onPictureAdded(PictureCollection collection, Picture addedPicture) {
-				pictures.add(addedPicture);
+				picturesToShow.add(addedPicture);
 			}
 
 			@Override
 			public void onPictureRemoved(PictureCollection collection, Picture removedPicture) {
-				pictures.remove(removedPicture);
+				picturesToShow.remove(removedPicture);
 			}
 
 			@Override
@@ -63,7 +63,7 @@ public class MultiPictureSingleCollectionState extends MultiPictureState {
 	public void onInit() {
 		super.onInit();
 		collection.eAdapters().add(adapterCurrentCollection);
-		pictures.addAll(collection.getPictures());
+		picturesToShow.addAll(collection.getPictures());
 	}
 
 	@Override

@@ -82,7 +82,7 @@ public class DiffCollectionDeleteAction extends Action {
 						"In the collection " + second.getRelativePath()
 						+ ", there are " + result.size() + " pictures without corresponding element in " + first.getRelativePath() + "!"));
 
-				nextState.pictures.addAll(result);
+				nextState.picturesToShow.addAll(result);
 				MainApp.get().switchState(nextState, false);
 			}
         });

@@ -517,6 +517,7 @@ public abstract class SinglePictureSwitchingState extends State {
 
 		// clear this state
 		picturesToShow.clear();
+		picturesSorted.onClose();
 		currentPicture.set(null);
 	}
 

@@ -121,7 +121,7 @@ public class SearchIdenticalAction extends Action {
 						"In the collection " + selection.getRelativePath()
 						+ ", there are " + result.size() + " pictures with duplicates!"));
 
-				nextState.pictures.addAll(picturesToShow);
+				nextState.picturesToShow.addAll(picturesToShow);
 				MainApp.get().switchState(nextState, false);
 			}
 		});

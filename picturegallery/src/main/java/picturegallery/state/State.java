@@ -24,7 +24,6 @@ package picturegallery.state;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javafx.scene.layout.Region;
 import picturegallery.action.Action;
