@@ -29,6 +29,11 @@ import org.controlsfx.control.GridCell;
 import gallery.Picture;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -43,52 +48,74 @@ import picturegallery.state.MultiPictureState;
 
 public class PictureGridCell extends GridCell<Picture> {
 	protected final SimpleBooleanProperty pathVisible;
+	protected final SimpleObjectProperty<Picture> cursor;
+	protected final ObservableList<Picture> markings;
 
 	protected final MediaRenderBase render;
 
+	protected Picture currentPicture = null;
 	protected Label labelText;
 	protected Label labelPath;
 	protected VBox labelBox;
 	protected StackPane stack;
-	protected boolean marked = false;
 
-	public PictureGridCell(SimpleBooleanProperty pathVisible) {
+	public PictureGridCell(SimpleBooleanProperty pathVisible, SimpleObjectProperty<Picture> cursor, ObservableList<Picture> markings) {
 		super();
 		this.pathVisible = Objects.requireNonNull(pathVisible);
+		this.cursor = Objects.requireNonNull(cursor);
+		this.markings = Objects.requireNonNull(markings);
 
 		render = new MediaRenderBaseImpl(MainApp.get().getImageCacheSmall(), MultiPictureState.WIDTH, MultiPictureState.HEIGHT);
 
 		setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
-				switchMarking();
+				if (isMarked()) {
+					markings.remove(getCurrentPicture());
+				} else {
+					markings.add(getCurrentPicture());
+				}
+			}
+		});
+
+		// TODO: diese Listener irgendwann wieder entfernen?!
+		cursor.addListener(new ChangeListener<Picture>() {
+			@Override
+			public void changed(ObservableValue<? extends Picture> property, Picture oldValue, Picture newValue) {
+				if (oldValue == getCurrentPicture() || newValue == getCurrentPicture()) {
+					updateBorder();
+				}
+			}
+		});
+		markings.addListener(new ListChangeListener<Picture>() {
+			@Override
+			public void onChanged(Change<? extends Picture> change) {
+				while (change.next()) {
+					if (change.wasPermutated()) {
+						// order does not matter
+					} else if (change.wasUpdated()) {
+						// update item => is not relevant here
+					} else {
+						if (change.getRemoved().contains(getCurrentPicture())) {
+							updateBorder();
+							return;
+						}
+						if (change.getAddedSubList().contains(getCurrentPicture())) {
+							updateBorder();
+							return;
+						}
+					}
+				}
 			}
 		});
 	}
 
-	public void mark() {
-		if (marked) {
-			return;
-		}
-		stack.setBorder(MultiPictureState.BORDER_MARKED);
-		marked = true;
+	public Picture getCurrentPicture() {
+		return currentPicture;
 	}
-	public void unmark() {
-		if (marked == false) {
-			return;
-		}
-		stack.setBorder(MultiPictureState.BORDER_UNMARKED);
-		marked = false;
-	}
-	public void switchMarking() {
-		if (marked) {
-			unmark();
-		} else {
-			mark();
-		}
-	}
-	public boolean isMarked() {
-		return marked;
+
+	protected boolean isMarked() {
+		return markings.contains(getCurrentPicture());
 	}
 
 	@Override
@@ -96,7 +123,9 @@ public class PictureGridCell extends GridCell<Picture> {
 		super.updateItem(item, empty);
 		if (empty) {
 			setGraphic(null);
+			currentPicture = null;
 		} else {
+			currentPicture = item;
 			// initialize GUI elements
 			if (stack == null) {
 				labelText = new Label();
@@ -111,7 +140,7 @@ public class PictureGridCell extends GridCell<Picture> {
 				labelBox = new VBox(labelText, labelPath);
 				stack = new StackPane();
 				stack.setPadding(Insets.EMPTY);
-				stack.setBorder(MultiPictureState.BORDER_UNMARKED);
+				stack.setBorder(MultiPictureState.BORDER_NOTHING);
 			}
 
 
@@ -133,10 +162,27 @@ public class PictureGridCell extends GridCell<Picture> {
 
 			labelPath.setText(Logic.getShortRelativePath(item));
 
+			// markings / borders
+			updateBorder();
+
 
 			// update the GUI elements to show
 			stack.getChildren().setAll(render.getShownNode(), labelBox);
 			setGraphic(stack);
+		}
+	}
+
+	protected void updateBorder() {
+		if (getCurrentPicture() == cursor.get()) {
+			if (isMarked()) {
+				stack.setBorder(MultiPictureState.BORDER_BOTH);
+			} else {
+				stack.setBorder(MultiPictureState.BORDER_CURSOR);
+			}
+		} else if (isMarked()) {
+			stack.setBorder(MultiPictureState.BORDER_MARKED);
+		} else {
+			stack.setBorder(MultiPictureState.BORDER_NOTHING);
 		}
 	}
 }
