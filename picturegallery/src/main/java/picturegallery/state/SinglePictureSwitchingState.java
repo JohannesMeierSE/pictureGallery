@@ -29,23 +29,15 @@ import gallery.PictureCollection;
 import gallery.RealPicture;
 import gallery.RealPictureCollection;
 import gallery.Tag;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
-
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.AddToRemoveFromTempCollectionAction;
@@ -62,17 +54,13 @@ import picturegallery.action.PrintMetadataAction;
 import picturegallery.action.ShowOrExitTempCollectionAction;
 import picturegallery.persistency.MediaRenderBase;
 import picturegallery.persistency.MediaRenderBase.PictureProvider;
-import picturegallery.persistency.ObservablePicture;
-import picturegallery.persistency.SpecialSortedList;
 import picturegallery.ui.JavafxHelper;
 
 /**
  * This state shows one picture out of a list of (sorted) pictures.
  * @author Johannes Meier
  */
-public abstract class SinglePictureSwitchingState extends State {
-	protected final ObservableList<Picture> picturesToShow;
-	protected final SpecialSortedList<Picture> picturesSorted;
+public abstract class SinglePictureSwitchingState extends PicturesShowingState {
 	protected final SimpleObjectProperty<Picture> currentPicture;
 	protected int indexCurrentCollection;
 
@@ -103,22 +91,7 @@ public abstract class SinglePictureSwitchingState extends State {
 		super(parentState);
 		currentPicture = new SimpleObjectProperty<>();
 		indexCurrentCollection = -1;
-		picturesToShow = FXCollections.observableArrayList();
 
-		picturesSorted = new SpecialSortedList<Picture>(picturesToShow, MainApp.get().pictureComparator) {
-			// map for caching the value => is important for removing listeners
-			private Map<Picture, ObservableValue<Picture>> map = new HashMap<>();
-
-			@Override
-			protected ObservableValue<Picture> createObservable(Picture value) {
-				ObservableValue<Picture> observable = map.get(value);
-				if (observable == null) {
-					observable = new ObservablePicture(value);
-					map.put(value, observable);
-				}
-				return observable;
-			}
-		};
 		picturesSorted.addListener(new ListChangeListener<Picture>() {
 			@Override
 			public void onChanged(ListChangeListener.Change<? extends Picture> c) {
@@ -241,7 +214,7 @@ public abstract class SinglePictureSwitchingState extends State {
 			// the following lines listen to the pictures in the next temp mode to render the current image properly
 			tempState.picturesSorted.addListener(new ListChangeListener<Picture>() {
 				@Override
-				public void onChanged(javafx.collections.ListChangeListener.Change<? extends Picture> c) {
+				public void onChanged(ListChangeListener.Change<? extends Picture> c) {
 					if (currentPicture.get() == null) {
 						return;
 					}
@@ -258,16 +231,6 @@ public abstract class SinglePictureSwitchingState extends State {
 			});
 		}
 		return tempState;
-	}
-
-	public final int getSize() {
-		return picturesSorted.size();
-	}
-	private final Picture getPictureAtIndex(int index) {
-		return picturesSorted.get(index);
-	}
-	public final boolean containsPicture(Picture picture) {
-		return picturesSorted.contains(picture);
 	}
 
 	public void gotoPicture(Picture newPictureToShow, boolean preload) {
@@ -505,8 +468,6 @@ public abstract class SinglePictureSwitchingState extends State {
 
 	@Override
 	public void onClose() {
-		super.onClose();
-
 		// closes the temp state
 		if (tempState != null && tempState.wasClosed() == false) {
 			if (tempState.isVisible()) {
@@ -516,9 +477,9 @@ public abstract class SinglePictureSwitchingState extends State {
 		}
 
 		// clear this state
-		picturesToShow.clear();
-		picturesSorted.onClose();
 		currentPicture.set(null);
+
+		super.onClose();
 	}
 
 	@Override

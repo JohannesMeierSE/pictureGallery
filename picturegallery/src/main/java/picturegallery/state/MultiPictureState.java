@@ -26,7 +26,6 @@ import gallery.Picture;
 import impl.org.controlsfx.skin.GridViewSkin;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -40,13 +39,8 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.controlsfx.control.GridCell;
 import org.controlsfx.control.GridView;
-
 import picturegallery.Logic;
 import picturegallery.MainApp;
 import picturegallery.action.ExitCurrentStateAction;
@@ -56,11 +50,9 @@ import picturegallery.action.MultiPictureLeftAction;
 import picturegallery.action.MultiPictureRightAction;
 import picturegallery.action.MultiPictureUnMarkAction;
 import picturegallery.action.MultiPictureUpAction;
-import picturegallery.persistency.ObservablePicture;
-import picturegallery.persistency.SpecialSortedList;
 import picturegallery.ui.PictureGridCell;
 
-public class MultiPictureState extends State {
+public class MultiPictureState extends PicturesShowingState {
 	public static final double WIDTH = 200.0;
 	public static final double HEIGHT = 100.0;
 	private static final double SPACING = 8.0;
@@ -70,8 +62,6 @@ public class MultiPictureState extends State {
 			new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(3), Insets.EMPTY));
 	public static final Border BORDER_NOTHING = new Border(new BorderStroke(Color.TRANSPARENT, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5), Insets.EMPTY));
 
-	public final ObservableList<Picture> picturesToShow;
-	protected final SpecialSortedList<Picture> picturesSorted;
 	public final SimpleBooleanProperty pathVisible;
 	// http://controlsfx.bitbucket.org/org/controlsfx/control/GridView.html
 	private final GridView<Picture> grid;
@@ -82,23 +72,7 @@ public class MultiPictureState extends State {
 	public MultiPictureState(State parentState) {
 		super(parentState);
 
-		picturesToShow = FXCollections.observableArrayList();
 		pathVisible = new SimpleBooleanProperty(true);
-
-		picturesSorted = new SpecialSortedList<Picture>(picturesToShow, MainApp.get().pictureComparator) {
-			// map for caching the value => is important for removing listeners
-			private Map<Picture, ObservableValue<Picture>> map = new HashMap<>();
-
-			@Override
-			protected ObservableValue<Picture> createObservable(Picture value) {
-				ObservableValue<Picture> observable = map.get(value);
-				if (observable == null) {
-					observable = new ObservablePicture(value);
-					map.put(value, observable);
-				}
-				return observable;
-			}
-		};
 
 		grid = new GridView<>();
 		grid.cellHeightProperty().set(HEIGHT);
@@ -230,8 +204,6 @@ public class MultiPictureState extends State {
 		for (Picture pic : picturesToShow) {
 			MainApp.get().getImageCacheSmall().remove(Logic.getRealPicture(pic));
 		}
-		picturesToShow.clear();
-		picturesSorted.onClose();
 		super.onClose();
 	}
 
