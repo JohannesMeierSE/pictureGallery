@@ -54,6 +54,7 @@ import picturegallery.action.HidePathInformationAction;
 import picturegallery.action.MultiPictureDownAction;
 import picturegallery.action.MultiPictureLeftAction;
 import picturegallery.action.MultiPictureRightAction;
+import picturegallery.action.MultiPictureUnMarkAction;
 import picturegallery.action.MultiPictureUpAction;
 import picturegallery.persistency.ObservablePicture;
 import picturegallery.persistency.SpecialSortedList;
@@ -75,8 +76,8 @@ public class MultiPictureState extends State {
 	// http://controlsfx.bitbucket.org/org/controlsfx/control/GridView.html
 	private final GridView<Picture> grid;
 
-	protected final SimpleObjectProperty<Picture> cursor = new SimpleObjectProperty<>(null);
-	protected final ObservableList<Picture> markings = FXCollections.observableArrayList();
+	public final SimpleObjectProperty<Picture> cursor = new SimpleObjectProperty<>(null);
+	public final ObservableList<Picture> markings = FXCollections.observableArrayList();
 
 	public MultiPictureState(State parentState) {
 		super(parentState);
@@ -213,6 +214,7 @@ public class MultiPictureState extends State {
 		registerAction(new MultiPictureRightAction());
 		registerAction(new MultiPictureUpAction());
 		registerAction(new MultiPictureDownAction());
+		registerAction(new MultiPictureUnMarkAction());
 		registerAction(new ExitCurrentStateAction(true));
 		registerAction(new HidePathInformationAction());
 	}
