@@ -115,7 +115,6 @@ public class FixPictureNumbersAction extends Action {
 
 		// the user has to wait and must not do other things (long running process)
 		MainApp.get().switchToWaitingState(false);
-		// TODO: remove renamed pictures from the cache??
 
 		final int finalDigits = digits;
 		JavafxHelper.runNotOnUiThread(new TaskWithProgress<Void>(MainApp.get().getWaitingState()) {

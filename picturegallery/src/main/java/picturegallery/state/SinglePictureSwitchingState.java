@@ -110,7 +110,7 @@ public abstract class SinglePictureSwitchingState extends PicturesShowingState {
 					return;
 				}
 				if (containsPicture(current)) {
-					// show this picture furthermore => update index
+					// show this picture furthermore => update index!
 					jumpedBefore();
 					changeIndex(picturesSorted.indexOf(current), true);
 				} else {
@@ -416,7 +416,7 @@ public abstract class SinglePictureSwitchingState extends PicturesShowingState {
 
 	private void requestWithoutCallback(Picture picture) {
 		RealPicture key = Logic.getRealPicture(picture);
-		if (!MainApp.get().getImageCache().isLoadedOrLoading(key)) {
+		if (MainApp.get().getImageCache().isLoadedOrLoading(key) == false) {
 			MainApp.get().getImageCache().request(key, null);
 		}
 	}

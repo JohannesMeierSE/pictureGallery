@@ -48,22 +48,25 @@ public class SinglePictureMultiCollectionState extends SinglePictureState {
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends RealPictureCollection> c) {
 				while (c.next()) {
 					if (c.wasPermutated()) {
-						// ignore permutations => this is handled by the Ordering mechanism (TODO auch im Fall wo die Reihenfolge der Collections wichtig ist?)
+						/* ignore permutations => this is handled by the Ordering mechanism of the Pictures itself
+						 * - the order of collections might be relevant for special ordering mechanisms, but they use the names of collections, but the order of collections within THIS state!
+						 */
 					} else if (c.wasUpdated()) {
 						// update item => is done by the adapterCollection
 					} else {
-						for (RealPictureCollection removedCollection : c.getRemoved()) {
-							removedCollection.eAdapters().remove(adapterCollection);
-							picturesToShow.removeAll(removedCollection.getPictures());
-						}
 						// 1. add, 2. remove => otherwise, this state will be closed, because there are no pictures to show!
 						for (RealPictureCollection addedCollection : c.getAddedSubList()) {
 							addedCollection.eAdapters().add(adapterCollection);
 							picturesToShow.addAll(addedCollection.getPictures());
 						}
-						/* TODO:
-						 * - handle update of the position/index/current picture
-						 * - handle close empty picture list (?) 
+						for (RealPictureCollection removedCollection : c.getRemoved()) {
+							removedCollection.eAdapters().remove(adapterCollection);
+							picturesToShow.removeAll(removedCollection.getPictures());
+						}
+						/* other special situations
+						 * - the current(ly shown) picture was removed => this case is already supported by SinglePictureSwitchingState (show the next available picture or switch to the parent state)
+						 * - handle update of the position/index of the current picture (by adding/removing pictures before it in the list) => this case is already supported by SinglePictureSwitchingState
+						 * - a collection is empty now: no need to react on that (in particular, do not close/remove it), because this collection might get new pictures in the future
 						 */
 					}
 				}
@@ -111,7 +114,11 @@ public class SinglePictureMultiCollectionState extends SinglePictureState {
 		if (currentPicture.get() == null) {
 			return null;
 		}
-		return currentPicture.get().getCollection(); // TODO: liefert die RealCollection statt der eventuellen LinkedCollection!
+		/* this returns the RealCollection instead of possible LinkedCollections
+		 * - but that is no problem, since this state supports only real collections!
+		 * - each (real and linked) picture is contained within in exactly one real collection
+		 */
+		return currentPicture.get().getCollection();
 	}
 
 	@Override
@@ -129,12 +136,12 @@ public class SinglePictureMultiCollectionState extends SinglePictureState {
 		collections.remove(collectionToRemove);
 	}
 	public void clearCollections() {
-		collections.clear();
+		collections.clear(); // this removes also the adapters from the collections!
 	}
 
 	@Override
-	public void onInit() {
-		super.onInit();
-//		registerAction(new JumpRightAction());
+	public void onClose() {
+		clearCollections();
+		super.onClose();
 	}
 }

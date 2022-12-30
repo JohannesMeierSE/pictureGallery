@@ -59,7 +59,7 @@ public class FindSimilarPicturesAction extends Action {
 		String sim = JavafxHelper.askForString("Find similar pictures",
 				"Which similarity value do you want?",
 				"Similarity (double: 0..1):", true, "0.9");
-		double value = 90.0; // TODO: ask for this value
+		double value = -2.0;
 		try {
 			value = Double.parseDouble(sim);
 		} catch (Throwable e) {

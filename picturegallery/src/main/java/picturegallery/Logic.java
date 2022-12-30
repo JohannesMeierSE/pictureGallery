@@ -443,8 +443,8 @@ public class Logic {
 		return base;
 	}
 
-	public static Picture findFirstPicture(PictureCollection col) { // TODO: unused
-		if (!col.getPictures().isEmpty()) {
+	public static Picture findFirstPicture(PictureCollection col) {
+		if (col.getPictures().isEmpty() == false) {
 			return col.getPictures().get(0);
 		}
 		// recursive depth-first-search
@@ -457,8 +457,8 @@ public class Logic {
 		return null;
 	}
 
-	public static PictureCollection findFirstNonEmptyCollection(PictureCollection col) { // TODO: unused
-		if (!col.getPictures().isEmpty()) {
+	public static PictureCollection findFirstNonEmptyCollection(PictureCollection col) {
+		if (col.getPictures().isEmpty() == false) {
 			return col;
 		}
 		for (PictureCollection sub : col.getSubCollections()) {

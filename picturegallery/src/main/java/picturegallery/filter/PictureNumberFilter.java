@@ -143,7 +143,9 @@ public class PictureNumberFilter extends CollectionFilter {
 
 	@Override
 	public void close() {
-		// TODO: unbind
+		min.removeListener(listenerForNotification);
+		max.removeListener(listenerForNotification);
+		extensionCombo.getCheckModel().getCheckedItems().removeListener(listenerForNotification);
 		super.close();
 	}
 }

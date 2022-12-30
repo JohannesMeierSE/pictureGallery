@@ -231,17 +231,35 @@ public class MainApp extends Application {
 			@Override
 			public void handle(WindowEvent event) {
 				stopCache();
-				for (State s : stateStack) {
-					if (s.isVisible()) {
-						s.onExit(null);
-					}
-					if (s.wasClosed() == false) {
-						s.onClose();
-					}
-				}
 
-				// save model afterwards
-				saveModel(); // TODO: in WaitingState realisieren??
+				// save model afterwards (some models might be very big ... use waiting state, but it seems to be invisible, since the window is already gone ...)
+				MainApp.get().switchToWaitingState(false);
+				Task<Void> task = new TaskWithProgress<Void>(waitingState) {
+					@Override
+					protected Void call() throws Exception {
+						progress.updateProgressTitle("save database");
+						progress.setProgressIndeterminate();
+
+						saveModel();
+						MainApp.get().switchCloseWaitingState();
+						return null;
+					}
+				};
+				task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+					@Override
+					public void handle(WorkerStateEvent event) {
+						// close all states
+						for (State s : stateStack) {
+							if (s.isVisible()) {
+								s.onExit(null);
+							}
+							if (s.wasClosed() == false) {
+								s.onClose();
+							}
+						}
+					}
+				});
+				new Thread(task).start();
 			}
 		});
         stage.show();
