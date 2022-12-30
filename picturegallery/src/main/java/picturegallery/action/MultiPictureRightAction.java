@@ -44,6 +44,11 @@ public class MultiPictureRightAction extends Action {
 	}
 
 	@Override
+	public boolean allowKeyPressed() {
+		return true;
+	}
+
+	@Override
 	public String getDescription() {
 		return "next picture (right)";
 	}

@@ -26,6 +26,8 @@ import gallery.Picture;
 import impl.org.controlsfx.skin.GridViewSkin;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -46,12 +48,13 @@ import picturegallery.MainApp;
 import picturegallery.action.ExitCurrentStateAction;
 import picturegallery.action.HidePathInformationAction;
 import picturegallery.action.MultiPictureDownAction;
+import picturegallery.action.MultiPictureFirstAction;
+import picturegallery.action.MultiPictureLastAction;
 import picturegallery.action.MultiPictureLeftAction;
 import picturegallery.action.MultiPictureRightAction;
 import picturegallery.action.MultiPictureUnMarkAction;
 import picturegallery.action.MultiPictureUnmarkAllAction;
 import picturegallery.action.MultiPictureUpAction;
-import picturegallery.action.ShowSingleCollectionAction;
 import picturegallery.ui.PictureGridCell;
 
 public class MultiPictureState extends PicturesShowingState {
@@ -87,6 +90,18 @@ public class MultiPictureState extends PicturesShowingState {
 				return new PictureGridCell(pathVisible, cursor, markings);
 			}
 		});
+
+		cursor.addListener(new ChangeListener<Picture>() {
+			@Override
+			public void changed(ObservableValue<? extends Picture> property, Picture oldValue, Picture newValue) {
+				if (newValue != null) {
+					// scroll to the row of the picture with the cursor
+					@SuppressWarnings("unchecked")
+					VirtualFlow<? extends IndexedCell<Picture>> flow = (VirtualFlow<? extends IndexedCell<Picture>>) ((GridViewSkin<Picture>) grid.getSkin()).getChildren().get(0);
+					flow.scrollTo(picturesSorted.indexOf(newValue) / getColumnCount());
+				}
+			}
+		});
 	}
 
 	public void changeCursor(int diffX, int diffY) {
@@ -110,20 +125,9 @@ public class MultiPictureState extends PicturesShowingState {
 		 * https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/skin/VirtualFlow.html?is-external=true
 		 */
 
-		// calculate row and column numbers
-		@SuppressWarnings("unchecked")
-		VirtualFlow<? extends IndexedCell<Picture>> flow =  (VirtualFlow<? extends IndexedCell<Picture>>) ((GridViewSkin<Picture>) grid.getSkin()).getChildren().get(0);
-		int rowCount = flow.getCellCount(); // the total amount of required rows (more than the visible rows! dynamically adjusted to the available horizontal space/width!)
-		if (rowCount <= 0) {
-			throw new IllegalStateException();
-		}
-		int columnCountMax = ((GridViewSkin<?>) grid.getSkin()).computeMaxCellsInRow();
-		int columnCountCurrent;
-		if (rowCount == 1) {
-			columnCountCurrent = picturesSorted.size();
-		} else {
-			columnCountCurrent = columnCountMax;
-		}
+		// row and column numbers
+		int rowCount = getRowCount();
+		int columnCountCurrent = getColumnCount();
 
 		// fix input: huge difference values make problems with +/- calculation
 		if (diffX < 0) {
@@ -157,18 +161,33 @@ public class MultiPictureState extends PicturesShowingState {
 			impactX = (cursorX + diffX) / columnCountCurrent; // as expected
 		}
 		int newY = (cursorY + impactX + diffY + rowCount) % rowCount;
+
 		// the last row might not be filled completely:
-		if (cursorX + cursorY * columnCountCurrent >= picturesSorted.size()) {
-			cursorX = 0;
-			cursorY = 0;
-		} else {
-			cursorX = newX;
-			cursorY = newY;
+		int pictureIndex = newX + newY * columnCountCurrent;
+		if (pictureIndex >= picturesSorted.size()) {
+			pictureIndex = 0;
 		}
 
-		// update cursor marking and scroll automatically to the current row
-		cursor.set(picturesSorted.get(cursorX + cursorY * columnCountCurrent));
-		flow.scrollTo(cursorY);
+		// update cursor marking (the scrolling is done by a listener of the cursor automatically)
+		cursor.set(picturesSorted.get(pictureIndex));
+	}
+
+	protected int getRowCount() {
+		@SuppressWarnings("unchecked")
+		VirtualFlow<? extends IndexedCell<Picture>> flow = (VirtualFlow<? extends IndexedCell<Picture>>) ((GridViewSkin<Picture>) grid.getSkin()).getChildren().get(0);
+		int rowCount = flow.getCellCount(); // the total amount of required rows (more than the visible rows! dynamically adjusted to the available horizontal space/width!)
+		if (rowCount <= 0) {
+			throw new IllegalStateException();
+		}
+		return rowCount;
+	}
+	protected int getColumnCount() {
+		int columnCountMax = ((GridViewSkin<?>) grid.getSkin()).computeMaxCellsInRow();
+		if (getRowCount() == 1) {
+			return picturesSorted.size();
+		} else {
+			return columnCountMax;
+		}
 	}
 
 	@Override
@@ -190,6 +209,8 @@ public class MultiPictureState extends PicturesShowingState {
 		registerAction(new MultiPictureRightAction());
 		registerAction(new MultiPictureUpAction());
 		registerAction(new MultiPictureDownAction());
+		registerAction(new MultiPictureFirstAction());
+		registerAction(new MultiPictureLastAction());
 		registerAction(new MultiPictureUnMarkAction());
 		registerAction(new MultiPictureUnmarkAllAction());
 		registerAction(new ExitCurrentStateAction(true));

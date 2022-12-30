@@ -44,6 +44,11 @@ public class MultiPictureDownAction extends Action {
 	}
 
 	@Override
+	public boolean allowKeyPressed() {
+		return true;
+	}
+
+	@Override
 	public String getDescription() {
 		return "picture in next row (down)";
 	}

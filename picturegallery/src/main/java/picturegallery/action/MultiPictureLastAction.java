@@ -26,7 +26,7 @@ import javafx.scene.input.KeyCode;
 import picturegallery.state.MultiPictureState;
 import picturegallery.state.State;
 
-public class MultiPictureLeftAction extends Action {
+public class MultiPictureLastAction extends Action {
 
 	@Override
 	public void run(State currentState) {
@@ -35,21 +35,16 @@ public class MultiPictureLeftAction extends Action {
 		}
 		MultiPictureState state = (MultiPictureState) currentState;
 
-		state.changeCursor(-1, 0);
+		state.cursor.set(state.getPictureAtIndex(state.getSize() - 1));
 	}
 
 	@Override
 	public KeyCode getKey() {
-		return KeyCode.LEFT;
-	}
-
-	@Override
-	public boolean allowKeyPressed() {
-		return true;
+		return KeyCode.END;
 	}
 
 	@Override
 	public String getDescription() {
-		return "previous picture (left)";
+		return "go to the last picture";
 	}
 }

@@ -78,7 +78,7 @@ public class PictureGridCell extends GridCell<Picture> {
 			}
 		});
 
-		// TODO: diese Listener irgendwann wieder entfernen?!
+		// it should be not necessary to remove these listeners, since the properties are reused and managed by MultiPictureState and this state with the grid of these cells are destroyed together
 		cursor.addListener(new ChangeListener<Picture>() {
 			@Override
 			public void changed(ObservableValue<? extends Picture> property, Picture oldValue, Picture newValue) {
