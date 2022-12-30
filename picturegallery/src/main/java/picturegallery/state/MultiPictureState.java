@@ -49,7 +49,9 @@ import picturegallery.action.MultiPictureDownAction;
 import picturegallery.action.MultiPictureLeftAction;
 import picturegallery.action.MultiPictureRightAction;
 import picturegallery.action.MultiPictureUnMarkAction;
+import picturegallery.action.MultiPictureUnmarkAllAction;
 import picturegallery.action.MultiPictureUpAction;
+import picturegallery.action.ShowSingleCollectionAction;
 import picturegallery.ui.PictureGridCell;
 
 public class MultiPictureState extends PicturesShowingState {
@@ -189,6 +191,7 @@ public class MultiPictureState extends PicturesShowingState {
 		registerAction(new MultiPictureUpAction());
 		registerAction(new MultiPictureDownAction());
 		registerAction(new MultiPictureUnMarkAction());
+		registerAction(new MultiPictureUnmarkAllAction());
 		registerAction(new ExitCurrentStateAction(true));
 		registerAction(new HidePathInformationAction());
 	}

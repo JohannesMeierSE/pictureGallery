@@ -109,7 +109,7 @@ public class SinglePictureSingleCollectionState extends SinglePictureState {
 		setLinktoCollection(null);
 
 		this.currentCollection.set(currentCollection);
-		if (initialPicture == null || ! containsPicture(initialPicture)) {
+		if (initialPicture == null || containsPicture(initialPicture) == false) {
 			indexCurrentCollection = -1;
 		} else {
 			indexCurrentCollection = picturesSorted.indexOf(initialPicture);

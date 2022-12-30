@@ -257,7 +257,7 @@ public abstract class SinglePictureSwitchingState extends PicturesShowingState {
 		}
 
 		indexCurrentCollection = newIndex;
-		if (!isVisible()) {
+		if (isVisible() == false) {
 			// if this state is not visible, do not update the GUI!
 			return;
 		}

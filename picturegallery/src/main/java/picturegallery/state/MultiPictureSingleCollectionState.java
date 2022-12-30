@@ -29,6 +29,7 @@ import org.eclipse.emf.common.notify.Adapter;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
+import picturegallery.action.ShowSingleCollectionDynamicAction;
 import picturegallery.persistency.AdapterCollection;
 
 public class MultiPictureSingleCollectionState extends MultiPictureState {
@@ -59,9 +60,15 @@ public class MultiPictureSingleCollectionState extends MultiPictureState {
 		};
 	}
 
+	public RealPictureCollection getCollection() {
+		return collection;
+	}
+
 	@Override
 	public void onInit() {
 		super.onInit();
+		registerAction(new ShowSingleCollectionDynamicAction());
+
 		collection.eAdapters().add(adapterCurrentCollection);
 		picturesToShow.addAll(collection.getPictures());
 	}
