@@ -4,7 +4,7 @@ package picturegallery;
  * BEGIN-LICENSE
  * picturegallery
  * %%
- * Copyright (C) 2016 - 2022 Johannes Meier
+ * Copyright (C) 2016 - 2023 Johannes Meier
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -200,7 +200,7 @@ public class MainApp extends Application {
     	StackPane.setAlignment(labelKeys, Pos.CENTER_RIGHT);
 
     	// Label for License hint
-    	Label labelLicense = new Label("Copyright (C) 2016-2022 Johannes Meier.\n"
+    	Label labelLicense = new Label("Copyright (C) 2016-2023 Johannes Meier.\n"
     			+ "This program is distributed under the terms of the GNU General Public License v3.0.");
     	labelLicense.visibleProperty().bind(labelsVisible);
     	styleLabel(labelLicense);
