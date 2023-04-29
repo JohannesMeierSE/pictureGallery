@@ -84,6 +84,7 @@ import gallery.RealPicture;
 import gallery.RealPictureCollection;
 import gallery.TagCategory;
 import javafx.util.Pair;
+import picturegallery.persistency.AdapterCollection;
 import picturegallery.ui.ProgressUpdate;
 
 public class Logic {
@@ -1760,21 +1761,37 @@ public class Logic {
 
 	public static class RealPictureIterator implements Iterator<RealPicture> {
 		private final Iterator<RealPictureCollection> collections;
+		private RealPictureCollection collectionCurrent;
 		private Iterator<Picture> pictures;
 		private RealPicture nextPicture;
+		private AdapterCollection collectionContentsChanged;
 
 		public RealPictureIterator(RealPictureCollection base) {
-			collections = iteratorCollection(base);
-			if (collections.hasNext()) {
-				pictures = collections.next().getPictures().iterator();
-			}
-			nextPicture = null;
+			// switch to the next collection, when a picture is added/removed to the current collection!
+			// TODO: mit Threads aufpassen!! besser Switch-Flag nutzen!
+			collectionContentsChanged = new AdapterCollection() {
+				@Override
+				public void onPictureRemoved(PictureCollection collection, Picture removedPicture) {
+					switchToNextCollection();
+				}
+				@Override
+				public void onPictureAdded(PictureCollection collection, Picture addedPicture) {
+					switchToNextCollection();
+				}
+				@Override
+				public void onCollectionNameChanged(PictureCollection collection) {
+					// ignore
+				}
+			};
 
 			/*
 			 * 1..* x hasNext()
 			 * 1 next()
 			 * ...
 			 */
+
+			collections = iteratorCollection(base);
+			switchToNextCollection();
 		}
 
 		@Override
@@ -1784,7 +1801,7 @@ public class Logic {
 			}
 			Picture next = null;
 			while (true) {
-				while (pictures.hasNext() && !(next instanceof RealPicture)) {
+				while (pictures != null && pictures.hasNext() && next instanceof RealPicture == false) {
 					next = pictures.next();
 				}
 				if (next instanceof RealPicture) {
@@ -1792,10 +1809,10 @@ public class Logic {
 					nextPicture = (RealPicture) next;
 					return true;
 				}
-	
+
 				// check the next collection
-				if (collections.hasNext()) {
-					pictures = collections.next().getPictures().iterator();
+				if (switchToNextCollection()) {
+					// proceed to the next collection
 				} else {
 					return false;
 				}
@@ -1804,7 +1821,7 @@ public class Logic {
 
 		@Override
 		public RealPicture next() {
-			if (!hasNext()) {
+			if (hasNext() == false) {
 				throw new NoSuchElementException();
 			}
 			if (nextPicture == null) {
@@ -1812,6 +1829,36 @@ public class Logic {
 			}
 			RealPicture result = nextPicture;
 			nextPicture = null;
+			return result;
+		}
+
+		/**
+		 * Switches the current collection to the next collection.
+		 * @return true, if there is another collection with is the current collection now, false, if there is no remaining collection (and no collection is the current one now)
+		 */
+		private boolean switchToNextCollection() {
+			// forget the previous/current collection
+			nextPicture = null;
+			if (collectionCurrent != null) {
+				collectionCurrent.eAdapters().remove(collectionContentsChanged);
+			}
+
+			// check the next collection
+			boolean result;
+			if (collections.hasNext()) {
+				collectionCurrent = collections.next();
+				pictures = collectionCurrent.getPictures().iterator();
+				result = true;
+			} else {
+				collectionCurrent = null;
+				pictures = null;
+				result = false;
+			}
+
+			// observe the new/current collection
+			if (collectionCurrent != null) {
+				collectionCurrent.eAdapters().add(collectionContentsChanged);
+			}
 			return result;
 		}
 	}
