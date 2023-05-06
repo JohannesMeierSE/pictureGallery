@@ -277,6 +277,24 @@ public class JavafxHelper {
 					if (event.getCode() == KeyCode.ESCAPE && cancelButton != null) {
 						cancelButton.fire();
 					}
+					// open/close sub-collections in the tree, compare with OpenCloseCollectionsOfSameLevelAction
+					if (event.getCode() == KeyCode.Q) {
+						TreeItem<PictureCollection> selectedItem = tree.getSelectionModel().getSelectedItem();
+						if (selectedItem != null) {
+							boolean expanded = selectedItem.isExpanded() == false;
+							TreeItem<PictureCollection> parent = selectedItem.getParent();
+							if (parent == null) {
+								selectedItem.setExpanded(expanded);
+							} else {
+								PictureCollection collection = selectedItem.getValue();
+								for (TreeItem<PictureCollection> child : parent.getChildren()) {
+									child.setExpanded(expanded);
+								}
+								// select/focus the current item (again), since the focus is sometimes wrong afterwards (why?)
+								selectCollection(tree, collection);
+							}
+						}
+					}
 				}
 			});
 	
@@ -316,14 +334,7 @@ public class JavafxHelper {
 	
 			// jump to the currently selected item!
 			if (currentCollection != null) {
-				TreeItem<PictureCollection> currentSelectedItem = JavafxHelper.searchForEntry(currentCollection, rootItem);
-				if (currentSelectedItem != null) {
-					// https://stackoverflow.com/questions/17413206/listview-not-showing-selected-item-when-selected-programatically
-					tree.getSelectionModel().select(currentSelectedItem);
-					int row = tree.getRow(currentSelectedItem);
-					tree.getFocusModel().focus(row);
-					tree.scrollTo(row);
-				}
+				selectCollection(tree, currentCollection);
 			}
 	
 			// run the dialog
@@ -341,6 +352,17 @@ public class JavafxHelper {
 			}
 		}
 		return result;
+	}
+
+	private static void selectCollection(TreeView<PictureCollection> tree, PictureCollection currentCollection) {
+		TreeItem<PictureCollection> currentSelectedItem = JavafxHelper.searchForEntry(currentCollection, tree.getRoot());
+		if (currentSelectedItem != null) {
+			// https://stackoverflow.com/questions/17413206/listview-not-showing-selected-item-when-selected-programatically
+			tree.getSelectionModel().select(currentSelectedItem);
+			int row = tree.getRow(currentSelectedItem);
+			tree.getFocusModel().focus(row);
+			tree.scrollTo(row);
+		}
 	}
 
 	public static void handleTreeItem(TreeItem<PictureCollection> item, boolean showLinkedCollections) {
