@@ -33,34 +33,42 @@ public class OpenCloseCollectionsOfSameLevelAction extends Action {
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof CollectionState)) {
+		if (currentState instanceof CollectionState == false) {
 			throw new IllegalStateException();
 		}
 		CollectionState state = (CollectionState) currentState;
-
 		PictureCollection currentCollection = state.getSelection();
 		if (currentCollection == null) {
 			return;
 		}
+
+		// change/toggle the expansion state of the current collection
 		TreeItem<PictureCollection> currentTreeItem = state.getCollectionItem(currentCollection);
 		if (currentTreeItem == null) {
 			throw new IllegalStateException();
 		}
-		boolean targetExpaneded = currentTreeItem.isExpanded() == false;
+		boolean targetExpanded = currentTreeItem.isExpanded() == false;
 
+		// special case: the current collection has no parent collection ...
 		RealPictureCollection superCollection = currentCollection.getSuperCollection();
 		if (superCollection == null) {
-			// close only the current collection
-			currentTreeItem.setExpanded(targetExpaneded); 
+			// ... close only the current collection
+			currentTreeItem.setExpanded(targetExpanded); 
 			return;
 		}
+		// Vereinfachung mit currentTreeItem.getParent() ??
+
+		// toggle the expansion state of the current collection and all its sibling collections!
 		TreeItem<PictureCollection> superTreeItem = state.getCollectionItem(superCollection);
 		if (superTreeItem == null) {
 			throw new IllegalStateException();
 		}
 		for (TreeItem<PictureCollection> sub : superTreeItem.getChildren()) {
-			sub.setExpanded(targetExpaneded);
+			sub.setExpanded(targetExpanded);
 		}
+		// afterwards, the current collection is not focused anymore (why?), therefore, select it explicitly (again)
+		state.jumpToCollection(currentCollection);
+		currentTreeItem.setExpanded(targetExpanded);
 	}
 
 	@Override

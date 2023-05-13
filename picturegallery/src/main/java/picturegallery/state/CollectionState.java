@@ -150,6 +150,7 @@ public class CollectionState extends State {
 
 		TreeTableColumn<PictureCollection, PictureCollection> sizeRealPicturesCol = new TreeTableColumn<>("Real Pictures");
 		setupColumn(sizeRealPicturesCol);
+		// TODO: kann man diese 3 Callbacks durch ein Objekt mit interne Map zum Cachen vereinfachen??
 		sizeRealPicturesCol.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<PictureCollection, PictureCollection>, ObservableValue<PictureCollection>>() {
 			@Override
 			public ObservableValue<PictureCollection> call(CellDataFeatures<PictureCollection, PictureCollection> param) {
@@ -380,17 +381,25 @@ public class CollectionState extends State {
 		List<TreeItem<PictureCollection>> itemsToExpand = new ArrayList<>(); // order: top-parent, ..., item to jump to
 		TreeItem<PictureCollection> itemCurrent = item;
 		while (itemCurrent != null) {
-			itemsToExpand.add(0, itemCurrent); // add to the begin
+			itemsToExpand.add(0, itemCurrent); // add at the beginning in order to ...
 			itemCurrent = itemCurrent.getParent();
 		}
 		for (int i = 0; i < itemsToExpand.size(); i++) {
 			TreeItem<PictureCollection> currentTreeItem = itemsToExpand.get(i);
-			currentTreeItem.setExpanded(true); // open the parents first
-			table.getFocusModel().focus(table.getRow(item), null); // ... and focus all parents, since focusing ONLY on the final item is not enough and does not work as expected ...
+			currentTreeItem.setExpanded(true); // ... open the parents first
+			table.getFocusModel().focus(table.getRow(item), null); // ... to and focus all parents, since focusing ONLY on the final item is not enough and does not work as expected ...
 		}
 
-		// scroll and select it
+		// the "item" seems to be stable
+		if (getCollectionItem(jumpTo) != item) {
+			throw new IllegalStateException();
+		}
+
+		// scroll to it and select it
 		int row = table.getRow(item);
+		table.scrollTo(row);
+		table.getSelectionModel().select(row);
+		table.getFocusModel().focus(row, null);
 		table.scrollTo(row);
 		table.getSelectionModel().select(row);
 		table.getFocusModel().focus(row, null);
