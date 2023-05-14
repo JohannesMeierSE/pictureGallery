@@ -40,6 +40,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -50,6 +51,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import picturegallery.MainApp;
@@ -103,20 +105,87 @@ public class JavafxHelper {
 	}
 
 	public static boolean askForConfirmation(String title, String header, String content) {
+		return askForYesNo(title, header, content, null);
+	}
+	public static boolean askForYesNo(String title, String header, String content, RememberDecisionInformation<Boolean> rememberInfos) {
 		// http://code.makery.ch/blog/javafx-dialogs-official/
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle(title);
-		alert.setHeaderText(header);
-		alert.setContentText(content);
-	
-		Optional<ButtonType> result = alert.showAndWait();
-		if (result.get() == ButtonType.OK){
-		    // ... user chose OK
-			return true;
+//		Alert alert = new Alert(AlertType.CONFIRMATION);
+		Dialog<Boolean> dialog = new Dialog<>();
+		dialog.setTitle(title);
+		dialog.setHeaderText(header);
+//		alert.setContentText(content);
+
+		VBox box = new VBox(20.0);
+
+		Label label = new Label(content);
+		box.getChildren().add(label);
+
+		if (rememberInfos != null) {
+			CheckBox check = new CheckBox("Remember this decision and do not ask again.");
+			check.selectedProperty().bindBidirectional(rememberInfos.rememberDecision);
+			switch (rememberInfos.getVisualization()) {
+			case HIDE_WHEN_NOT_ASKING:
+				if (rememberInfos.isRemembering()) {
+					// nothing to do
+				} else {
+					check.setDisable(false);
+					box.getChildren().add(check);
+				}
+				break;
+			case DISABLE_WHEN_NOT_ASKING:
+				check.setDisable(rememberInfos.isRemembering());
+				box.getChildren().add(check);
+				break;
+			case ENABLE_ALWAYS:
+				check.setDisable(false);
+				box.getChildren().add(check);
+				break;
+			default:
+				throw new IllegalStateException("missing implementation for " + rememberInfos.getVisualization());
+			}
+		}
+
+		dialog.getDialogPane().setContent(box);
+
+		// select button
+		ButtonType yesType = new ButtonType("Yes", ButtonData.YES);
+		dialog.getDialogPane().getButtonTypes().add(yesType);
+		Button yesButton = (Button) dialog.getDialogPane().lookupButton(yesType);
+		yesButton.setDisable(false);
+
+		// cancel button
+		ButtonType noType = ButtonType.NO;
+		dialog.getDialogPane().getButtonTypes().add(noType);
+		Button noButton = (Button) dialog.getDialogPane().lookupButton(noType);
+		noButton.setDisable(false);
+		// TODO ESC key
+
+		dialog.setResultConverter(new Callback<ButtonType, Boolean>() {
+			@Override
+			public Boolean call(ButtonType arg0) {
+				return arg0 == yesType;
+			}
+		});
+		Optional<Boolean> result = dialog.showAndWait();
+		if (result.isPresent()) {
+			if (rememberInfos != null) {
+				rememberInfos.setCurrentDecision(result.get());
+			}
+			return result.get() == true;
 		} else {
-		    // ... user chose CANCEL or closed the dialog
+			if (rememberInfos != null) {
+				rememberInfos.setCurrentDecision(null);
+			}
 			return false;
 		}
+//		Optional<ButtonType> result = alert.showAndWait();
+//		if (result.get() == ButtonType.OK){
+//		    // ... user chose OK
+//			return true;
+//		} else {
+//		    // ... user chose CANCEL or closed the dialog
+//			return false;
+//		}
 	}
 
 	public static String askForDirectory(String title, boolean allowNull) {
@@ -196,20 +265,20 @@ public class JavafxHelper {
 		}
 		PictureCollection result = null;
 		boolean found = false;
-	
-		while (!found) {
+
+		while (found == false) {
 			// create the dialog
 			// http://code.makery.ch/blog/javafx-dialogs-official/
 			Dialog<PictureCollection> dialog = new Dialog<>();
 			dialog.setTitle("Select picture collection");
 			dialog.setHeaderText("Select one existing picture collection out of the following ones!");
-	
+
 			// select button
 			ButtonType selectType = new ButtonType("Select", ButtonData.OK_DONE);
 			dialog.getDialogPane().getButtonTypes().add(selectType);
 			Button selectButton = (Button) dialog.getDialogPane().lookupButton(selectType);
 			selectButton.setDisable(true);
-	
+
 			// cancel button: handle the "null collection" (1)
 			Button cButton = null;
 			ButtonType cancelType = ButtonType.CANCEL;
@@ -218,7 +287,7 @@ public class JavafxHelper {
 				cButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
 			}
 			Button cancelButton = cButton;
-	
+
 			// create the tree view
 			TreeItem<PictureCollection> rootItem = new TreeItem<PictureCollection>(MainApp.get().getBaseCollection());
 			rootItem.setExpanded(true);
@@ -297,7 +366,7 @@ public class JavafxHelper {
 					}
 				}
 			});
-	
+
 			// handle the "null collection" (2)
 			tree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<PictureCollection>>() {
 				@Override
@@ -310,7 +379,7 @@ public class JavafxHelper {
 							(newValue.getGraphic() != null && newValue.getGraphic().isDisabled()));
 				}
 			});
-	
+
 			// finish the dialog
 			tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 			tree.getSelectionModel().clearSelection();
@@ -331,12 +400,12 @@ public class JavafxHelper {
 					return null;
 				}
 			});
-	
+
 			// jump to the currently selected item!
 			if (currentCollection != null) {
 				selectCollection(tree, currentCollection);
 			}
-	
+
 			// run the dialog
 			Optional<PictureCollection> dialogResult = dialog.showAndWait();
 			if (dialogResult.isPresent()) {
@@ -345,7 +414,7 @@ public class JavafxHelper {
 					result = null;
 				}
 			}
-	
+
 			// handle the result
 			if (result != null || allowNull) {
 				found = true;

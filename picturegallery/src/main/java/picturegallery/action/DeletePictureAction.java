@@ -23,28 +23,33 @@ package picturegallery.action;
  */
 
 import gallery.Picture;
+import gallery.PictureCollection;
 import gallery.RealPicture;
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
+import picturegallery.state.SinglePictureSingleCollectionState;
 import picturegallery.state.SinglePictureSwitchingState;
 import picturegallery.state.State;
+import picturegallery.ui.RememberDecisionInformation;
+import picturegallery.ui.RememberDecisionInformation.Visualization;
 import picturegallery.ui.JavafxHelper;
 
 public class DeletePictureAction extends Action {
-	private boolean askUser;
+	private final RememberDecisionInformation<Boolean> rememberDelete;
+	private final RememberDecisionInformation<Boolean> rememberLinked;
 	private boolean saveDeletedInformation;
-	private boolean initiallyAsked;
+	private PictureCollection currentCollectionForReset = null;
 
 	public DeletePictureAction() {
 		super();
-		askUser = true;
 		saveDeletedInformation = true;
-		initiallyAsked = false;
+		rememberDelete = new RememberDecisionInformation<>(Visualization.ENABLE_ALWAYS);
+		rememberLinked = new RememberDecisionInformation<>(Visualization.ENABLE_ALWAYS);
 	}
 
 	@Override
 	public void run(State currentState) {
-		if (!(currentState instanceof SinglePictureSwitchingState)) {
+		if (currentState instanceof SinglePictureSwitchingState == false) {
 			throw new IllegalStateException();
 		}
 		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
@@ -53,21 +58,55 @@ public class DeletePictureAction extends Action {
 			return;
 		}
 
+		/* realize the reset (quite specific for the SinglePictureSingleCollectionState which is stable in the CollectionState)!
+		 * - only for the mentioned special case (other dynamic/short-term states create their actions quite often)
+		 * - the previous collection (not null) must be different than the current collection (not null)
+		 */
+		if (currentCollectionForReset != null && state.getCurrentCollection() != null && currentCollectionForReset != state.getCurrentCollection()) {
+			rememberDelete.reset();
+			rememberLinked.reset();
+		}
+		if (state instanceof SinglePictureSingleCollectionState && state.getCurrentCollection() != null) {
+			currentCollectionForReset = state.getCurrentCollection();
+		} else {
+			currentCollectionForReset = null;
+		}
+
 		// ask the user for confirmation
-		if (askUser) {
-			if (!JavafxHelper.askForConfirmation("Delete picture",
-					"You selected the picture " + pictureToDelete.getRelativePath() + " for deletion.",
-					"Do you really want to delete this file?")) {
+		if (rememberDelete.isRemembering()) {
+			if (rememberDelete.getCurrentDecision() == false) {
+				// do not delete as well
 				return;
+			} else {
+				// proceed
+			}
+		} else {
+			if ( ! JavafxHelper.askForYesNo("Delete picture",
+					"You selected the picture " + pictureToDelete.getRelativePath() + " for deletion.",
+					"Do you really want to delete this file?", rememberDelete)) {
+				return;
+			} else {
+				// proceed
 			}
 		}
 
-		// ask the user (again), if this picture is linked by others!
+		// ask the user (again), when this picture is linked by others!
 		if (pictureToDelete instanceof RealPicture && !((RealPicture) pictureToDelete).getLinkedBy().isEmpty()) {
-			if (!JavafxHelper.askForConfirmation("Delete picture",
-					"The selected picture " + pictureToDelete.getRelativePath() + " is linked by other pictures.",
-					"Do you really want to delete this picture with links?")) {
-				return;
+			if (rememberLinked.isRemembering()) {
+				if (rememberLinked.getCurrentDecision() == false) {
+					// do not delete as well
+					return;
+				} else {
+					// proceed
+				}
+			} else {
+				if ( ! JavafxHelper.askForYesNo("Delete picture",
+						"The selected picture " + pictureToDelete.getRelativePath() + " is linked by other pictures.",
+						"Do you really want to delete this picture with links?", rememberLinked)) {
+					return;
+				} else {
+					// proceed
+				}
 			}
 		}
 
@@ -78,15 +117,6 @@ public class DeletePictureAction extends Action {
 
 		// delete the picture
 		MainApp.get().deletePicture(pictureToDelete, saveDeletedInformation);
-
-		// ask always or never?
-		if (!initiallyAsked) {
-			initiallyAsked = true;
-			if (JavafxHelper.askForConfirmation("Delete picture", "Do want to be asked any time you delete a picture?",
-					"If you confirm, than you will never be asked again, if you cancel, than you will be asked always!")) {
-				askUser = false;
-			}
-		}
 	}
 
 	@Override
