@@ -25,6 +25,8 @@ import java.util.Objects;
  */
 
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
 
 /**
  * 
@@ -39,7 +41,9 @@ public class RememberDecisionInformation<V> {
 
 	public final SimpleBooleanProperty rememberDecision;
 	private final Visualization visualization;
-	private V currentDecision; // the value of a done decision must not be NULL !!
+
+	private V currentDecision = null; // the value of a done decision must not be NULL, because null indicates a missing decision!!
+	private CheckBox check = null;
 
 	public RememberDecisionInformation(Visualization visualization) {
 		super();
@@ -48,10 +52,38 @@ public class RememberDecisionInformation<V> {
 		reset();
 	}
 
-	// TODO: diese Methode muss noch passend aufgerufen werden!
 	public void reset() {
 		currentDecision = null;
 		rememberDecision.set(false);
+	}
+
+	private void initDialogElement() {
+		if (check != null) {
+			return;
+		}
+		check = new CheckBox("Remember this decision and do not ask again.");
+		check.selectedProperty().bindBidirectional(rememberDecision);
+	}
+
+	/**
+	 * This method is called to get the CheckBox (or another GUI element) for dialogs (or for other visualizations for informations)
+	 * to allow the user to manage the decision, whether the current selection should be remembered or not.
+	 * @return null, if the current selection is remembered and re-applied (depending on the visualization configuration)
+	 */
+	public Node getElementForCurrentDialog() {
+		if (getVisualization() == Visualization.HIDE_WHEN_NOT_ASKING && isRemembering()) {
+			// nothing to decide
+			return null;
+		}
+
+		// show the CheckBox otherwise
+		initDialogElement(); // lazy initialization
+		if (getVisualization() == Visualization.DISABLE_WHEN_NOT_ASKING) {
+			check.setDisable(isRemembering());
+		} else {
+			check.setDisable(false);
+		}
+		return check;
 	}
 
 	public Visualization getVisualization() {

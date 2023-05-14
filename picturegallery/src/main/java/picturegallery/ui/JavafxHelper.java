@@ -35,12 +35,12 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -115,33 +115,14 @@ public class JavafxHelper {
 		dialog.setHeaderText(header);
 //		alert.setContentText(content);
 
-		VBox box = new VBox(20.0);
+		// the label with the decision/question
+		VBox box = new VBox(20.0, new Label(content));
 
-		Label label = new Label(content);
-		box.getChildren().add(label);
-
+		// the checkbox for controlling, whether the current selection should be remembered
 		if (rememberInfos != null) {
-			CheckBox check = new CheckBox("Remember this decision and do not ask again.");
-			check.selectedProperty().bindBidirectional(rememberInfos.rememberDecision);
-			switch (rememberInfos.getVisualization()) {
-			case HIDE_WHEN_NOT_ASKING:
-				if (rememberInfos.isRemembering()) {
-					// nothing to do
-				} else {
-					check.setDisable(false);
-					box.getChildren().add(check);
-				}
-				break;
-			case DISABLE_WHEN_NOT_ASKING:
-				check.setDisable(rememberInfos.isRemembering());
+			Node check = rememberInfos.getElementForCurrentDialog();
+			if (check != null) {
 				box.getChildren().add(check);
-				break;
-			case ENABLE_ALWAYS:
-				check.setDisable(false);
-				box.getChildren().add(check);
-				break;
-			default:
-				throw new IllegalStateException("missing implementation for " + rememberInfos.getVisualization());
 			}
 		}
 
@@ -158,7 +139,6 @@ public class JavafxHelper {
 		dialog.getDialogPane().getButtonTypes().add(noType);
 		Button noButton = (Button) dialog.getDialogPane().lookupButton(noType);
 		noButton.setDisable(false);
-		// TODO ESC key
 
 		dialog.setResultConverter(new Callback<ButtonType, Boolean>() {
 			@Override
