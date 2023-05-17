@@ -76,6 +76,10 @@ public class JavafxHelper {
 
 	public static String askForString(String title, String header, String content,
 			boolean nullAndEmptyAreForbidden, String defaultValue) {
+		return askForString(title, header, content, nullAndEmptyAreForbidden, defaultValue, null);
+	}
+	public static String askForString(String title, String header, String content,
+			boolean nullAndEmptyAreForbidden, String defaultValue, RememberDecisionInformation<String> rememberInfos) { // TODO noch einbauen
 		while (true) {
 			final TextInputDialog dialog;
 			if (defaultValue == null || defaultValue.isEmpty()) {

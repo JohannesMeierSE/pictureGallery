@@ -31,14 +31,16 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * Loads and caches a fixed number of objects, used to load big pictures in advance. 
  * Loading priority: 1. number of requests descending, 2. time of last request (last time is more important)
+ * If there is unused time for the background thread, it can be configured to do some other stuff.
  * @author Johannes Meier
  *
- * @param <K> type of the key
+ * @param <K> type of the key to identify the objects (== values) to load/calculate/provide
  * @param <V> type of the value
  */
 // https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/LRUMap.html
-public abstract class ObjectCache<K, V> { // hier: (RealPicture -> Image)
+public abstract class ObjectCache<K, V> { // here: (RealPicture -> Image)
 	/**
 	 * Will be used for listeners which want to be notified if the loading finished.
 	 * @author Johannes Meier
