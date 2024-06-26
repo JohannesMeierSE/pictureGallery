@@ -42,7 +42,7 @@ import picturegallery.state.CollectionState;
 import picturegallery.state.State;
 import picturegallery.ui.JavafxHelper;
 
-public class CreateNewCollection extends Action {
+public class CreateNewCollectionAction extends Action {
 
 	@Override
 	public void run(State currentState) {

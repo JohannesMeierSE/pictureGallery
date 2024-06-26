@@ -564,7 +564,7 @@ public class MainApp extends Application {
 		}
 	}
 
-	public void deleteCollection(PictureCollection collectionToRemove) {
+	public void deleteCollection(PictureCollection collectionToRemove, boolean collectionMustBeEmpty) {
 		// do not remove the base collection
 		if (collectionToRemove.getSuperCollection() == null) {
 			throw new IllegalArgumentException();
@@ -576,14 +576,14 @@ public class MainApp extends Application {
 		} else {
 			// real collection
 			RealPictureCollection col = (RealPictureCollection) collectionToRemove;
-			if (col.getPictures().isEmpty() && col.getSubCollections().isEmpty()) {
-				deleteCollectionLogic(collectionToRemove, false);
+			if (collectionMustBeEmpty && (col.getPictures().size() >=1 || col.getSubCollections().size() >= 1)) {
+				return;
 			} else {
-				throw new IllegalArgumentException();
+				deleteCollectionLogic(collectionToRemove, false);
 			}
 		}
 	}
-	private void deleteCollectionLogic(PictureCollection collectionToRemove, boolean saveDeletedInformation) {
+	private void deleteCollectionLogic(PictureCollection collectionToRemove, boolean saveDeletedPicturesInformation) {
 		/* the following line is important, because the deleting itself will be done later
 		 * when the path information of the picture was already deleted => error / failing remove operation in file system!
 		 */
@@ -605,18 +605,19 @@ public class MainApp extends Application {
 
 			// remove the linked collections
 			for (LinkedPictureCollection linked : real.getLinkedBy()) {
-				deleteCollectionLogic(linked, saveDeletedInformation);
+				deleteCollectionLogic(linked, saveDeletedPicturesInformation);
 			}
 			// remove all its contained pictures
 			for (Picture pic : real.getPictures()) {
-				deletePicture(pic, saveDeletedInformation);
+				deletePicture(pic, saveDeletedPicturesInformation);
 			}
 			// remove its sub collections
 			for (PictureCollection sub : real.getSubCollections()) {
-				deleteCollectionLogic(sub, saveDeletedInformation);
+				deleteCollectionLogic(sub, saveDeletedPicturesInformation);
 			}
 		}
 
+		// finally, delete the folder in the file system
 		boolean result = Logic.deletePath(pathToDelete);
 	}
 

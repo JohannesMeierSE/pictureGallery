@@ -148,7 +148,7 @@ public class LinkCollectionsAction extends Action {
 			if (JavafxHelper.askForConfirmation("Link current collection", "The current collection is already linked into the selected collection:",
 					"Confirm to remove the existing link from the collection.")) {
 				// => remove existing link
-				MainApp.get().deleteCollection(existingLink);
+				MainApp.get().deleteCollection(existingLink, true);
 			}
 		}
 	}
