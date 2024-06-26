@@ -247,6 +247,7 @@ public class Logic {
 	}
 
 	private static void loadDirectoryLogic(RealPictureCollection currentCollection, List<Pair<Path, RealPictureCollection>> symlinks, ProgressUpdate progress) {
+		// investigate the direct elements of the current directory
 		String baseDir = currentCollection.getFullPath();
 		progress.updateProgressDetails(baseDir, +1.0);
         try {
@@ -262,14 +263,14 @@ public class Logic {
 			    	}
 
 					String childName = name.substring(name.lastIndexOf(File.separator) + 1);
-		    		RealPictureCollection sub = (RealPictureCollection) getCollectionByName(currentCollection, childName, true, false);
-		    		if (sub == null) {
+		    		RealPictureCollection newSubCollection = (RealPictureCollection) getCollectionByName(currentCollection, childName, true, false);
+		    		if (newSubCollection == null) {
 		    			// folder is in file system, but not in model.xmi:
-		    			sub = GalleryFactory.eINSTANCE.createRealPictureCollection();
-		    			sub.setSuperCollection(currentCollection);
-		    			currentCollection.getSubCollections().add(sub);
-		    			sub.setName(childName);
-		    			findByNamePutCollection(sub);
+		    			newSubCollection = GalleryFactory.eINSTANCE.createRealPictureCollection();
+		    			newSubCollection.setSuperCollection(currentCollection);
+		    			currentCollection.getSubCollections().add(newSubCollection);
+		    			newSubCollection.setName(childName);
+		    			findByNamePutCollection(newSubCollection);
 		    			progress.updateProgressMax(progress.getProgressCurrentMax() + 1.0);
 		    		} else {
 		    			// folder is in file system AND in model.xmi
@@ -321,7 +322,7 @@ public class Logic {
 			e.printStackTrace();
 		}
 
-        // handle all sub-collections
+        // handle all sub-collections/folders
     	List<PictureCollection> collectionsToRemove = new ArrayList<>();
     	for (PictureCollection newSubCollection : currentCollection.getSubCollections()) {
     		if (new File(newSubCollection.getFullPath()).exists() == false) { // detect removed real and linked collections!
@@ -337,11 +338,13 @@ public class Logic {
     	// remove collections with all its children which do not exist anymore
     	while (collectionsToRemove.isEmpty() == false) {
     		PictureCollection removed = collectionsToRemove.remove(0);
+    		String msg = "removing collection: " + removed.getFullPath();
+			progress.updateProgressDetails(msg, +1.0);
+			System.out.println(msg);
 
     		findByPathMap.remove(removed.getFullPath());
     		findByNameMap.remove(removed);
 			deleteCollectionEmfSimple(removed);
-			progress.updateProgressDetails(removed.getFullPath(), +1.0);
        	}
 
     	// remove all deleted pictures of this collection
@@ -352,8 +355,11 @@ public class Logic {
     		}
     	}
     	while (picturesToRemove.isEmpty() == false) {
-    		System.out.println("removed picture " + picturesToRemove.get(0).getRelativePath());
-    		deletePictureEmfSimple(picturesToRemove.remove(0));
+    		Picture removed = picturesToRemove.remove(0);
+			String msg = "removing picture: " + removed.getRelativePath();
+			progress.updateProgressDetails(msg, +1.0);
+			System.out.println(msg);
+    		deletePictureEmfSimple(removed);
     	}
 	}
 
