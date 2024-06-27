@@ -92,7 +92,7 @@ public class Logic {
 
 	public final static Map<String, AtomicInteger> extensionMap = new HashMap<>();
 
-	/** (real collection -> ((picture.name + picture.extension) -> Picture)) */
+	/** (real collection -> ((picture.name + picture.extension) -> Picture, i.e. all pictures which are directly contained in the real collection)) */
 	private static Map<RealPictureCollection, Map<String, Picture>> findByNameMap = new HashMap<>();
 	/** (absolute path -> real collection) */
 	private static Map<String, RealPictureCollection> findByPathMap = new HashMap<>();
@@ -157,6 +157,7 @@ public class Logic {
 
     	progress.updateProgressTitle("analyze file system");
     	progress.updateProgressValueMax(0.0, Math.max(1.0, findByNameMap.size()));
+
     	loadDirectoryLogic(baseCollection, symlinks, progress);
 
     	String baseFullPath = baseCollection.getFullPath();
@@ -167,8 +168,11 @@ public class Logic {
     		progress.updateProgressValueMax(0.0, symlinks.size());
     	}
     	// https://stackoverflow.com/questions/28371993/resolving-directory-symlink-in-java
-		for (Pair<Path, RealPictureCollection> symlink : symlinks) {
-			progress.updateProgressDetails(symlink.getValue().getFullPath(), +1.0);
+		for (Pair<Path, RealPictureCollection> symlink : symlinks) { // Path to the linked element (?), parent collection of the link
+			String name = symlink.getKey().toString();
+			progress.updateProgressDetails(name + " :  " + symlink.getValue().getFullPath(), +1.0);
+
+			// resolve the actual/real path of the current link
 			Path real = null;
 			try {
 				real = symlink.getKey().toRealPath();
@@ -179,17 +183,16 @@ public class Logic {
 			}
 			String realPath = real.toAbsolutePath().toString();
 
-			// prüfen, ob die Datei überhaupt in dieser Library liegt!
+			// is the real element within the current library?
 			if (!realPath.startsWith(baseFullPath)) {
 				System.err.println("Found symlink to something which is not part of this library!");
 				continue; // => ignore it!
 			}
 
-			String name = symlink.getKey().toString();
 			if (Files.isDirectory(real)) {
 				// found symlink onto a directory in the file system
-				RealPictureCollection ref = findByPathGet(realPath, false);
-				if (ref == null) {
+				RealPictureCollection referrencedCollection = findByPathGet(realPath, false);
+				if (referrencedCollection == null) {
 					String message = "missing link on directory: " + realPath + " of " + symlink.toString();
 					System.err.println(message);
 				} else {
@@ -198,8 +201,8 @@ public class Logic {
 					if (linkedCollection == null) {
 						// linked collection is in file system, but not in model.xmi
 						linkedCollection = GalleryFactory.eINSTANCE.createLinkedPictureCollection();
-						ref.getLinkedBy().add(linkedCollection);
-						linkedCollection.setRealCollection(ref);
+						referrencedCollection.getLinkedBy().add(linkedCollection);
+						linkedCollection.setRealCollection(referrencedCollection);
 						symlink.getValue().getSubCollections().add(linkedCollection);
 						linkedCollection.setSuperCollection(symlink.getValue());
 						linkedCollection.setName(linkedCollectionName);
@@ -209,18 +212,28 @@ public class Logic {
 				}
 			} else {
 				// found symlink onto a picture in the file system
-				RealPicture ref = (RealPicture) findByNameGet(realPath);
-				if (ref == null) {
+				RealPicture referrencedPicture = (RealPicture) findByNameGet(realPath);
+				if (referrencedPicture == null) {
 					String message = "missing link: " + realPath + " of " + symlink.toString();
 					System.err.println(message);
 				} else {
 					String linkedPictureNameWithExtension = name.substring(name.lastIndexOf(File.separator) + 1);
-					LinkedPicture linkedPicture = (LinkedPicture) findByNameGet(symlink.getValue(), linkedPictureNameWithExtension);
+					Picture foundPicture = findByNameGet(symlink.getValue(), linkedPictureNameWithExtension);
+					if (foundPicture instanceof RealPictureCollection) {
+						// is a RealPicture (probably broken symlink file) => delete it in order to replace it with a correct one
+						System.out.println("found broken(?) symlink file: " + name);
+						findByNameMap.get(symlink.getValue()).remove(linkedPictureNameWithExtension);
+						deletePictureEmfSimple(foundPicture);
+					}
+					LinkedPicture linkedPicture = null;
+					if (foundPicture instanceof LinkedPicture) {
+						linkedPicture = (LinkedPicture) foundPicture;
+					}
 					if (linkedPicture == null) {
 						// found linked picture in file system, but not in model.xmi
 						linkedPicture = GalleryFactory.eINSTANCE.createLinkedPicture();
-						ref.getLinkedBy().add(linkedPicture);
-						linkedPicture.setRealPicture(ref);
+						referrencedPicture.getLinkedBy().add(linkedPicture);
+						linkedPicture.setRealPicture(referrencedPicture);
 						initPicture(symlink.getValue(), name, linkedPicture);
 					} else {
 						// found linked picture both in file system and in model.xmi
