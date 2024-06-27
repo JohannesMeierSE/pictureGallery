@@ -1,5 +1,9 @@
 package picturegallery.action;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /*-
  * BEGIN-LICENSE
  * picturegallery
@@ -25,9 +29,6 @@ package picturegallery.action;
 import gallery.Picture;
 import gallery.PictureCollection;
 import gallery.RealPictureCollection;
-
-import java.util.Collections;
-
 import javafx.scene.input.KeyCode;
 import picturegallery.MainApp;
 import picturegallery.state.SinglePictureSwitchingState;
@@ -35,7 +36,7 @@ import picturegallery.state.State;
 import picturegallery.state.TempCollectionState;
 import picturegallery.ui.JavafxHelper;
 
-public class MovePictureAction extends Action {
+public class MoveMultiPictureAction extends Action {
 
 	@Override
 	public void run(State currentState) {
@@ -46,7 +47,7 @@ public class MovePictureAction extends Action {
 
 		PictureCollection currentCollection = state.getCurrentCollection();
 		RealPictureCollection movetoCollection = state.getMovetoCollection();
-		Picture currentPicture = state.getCurrentPicture();
+		int currentIndex = state.getCurrentIndex();
 
 		// choose the target (if not already set)
 		if (movetoCollection == null) {
@@ -64,19 +65,32 @@ public class MovePictureAction extends Action {
 			return;
 		}
 
+		// choose the number of wanted pictures to move
+		Integer numberPictures = JavafxHelper.askForInteger("Move ? pictures", "Select how many pictures should be moved together",
+				"Insert the wanted number of pictures to move, starting at the current picture.", false, 1);
+		if (numberPictures == null || numberPictures <= 0 || currentIndex + numberPictures > state.getSize()) {
+			// don't move pictures which are left of the current index/picture
+			return;
+		}
+		// remember all pictures to move
+		List<Picture> picturesToMove = new ArrayList<>(numberPictures);
+		for (int i = 0; i < numberPictures; i++) {
+			picturesToMove.add(state.getPictureAtIndex(currentIndex + i));
+		}
+
 		// close temp mode (only one level)
 		if (state instanceof TempCollectionState) {
 			// exit and clear TEMP collection => see ShowOrExitTempCollectionAction
 			MainApp.get().switchToParentState(false);
 		} else {
-			// go directly to the next picture
-			if (state.getSize() >= 2) {
-				state.gotoPictureDiff(1, true);
+			// go directly to the picture after the last picture to move
+			if (state.getSize() > numberPictures) {
+				state.gotoPictureDiff(numberPictures, true);
 			}
 		}
 
-		// move the pictures
-		MainApp.get().movePicture(currentPicture, movetoCollection, true);
+		// move all pictures
+		MainApp.get().movePictures(picturesToMove, movetoCollection);
 	}
 
 	@Override
@@ -85,7 +99,12 @@ public class MovePictureAction extends Action {
 	}
 
 	@Override
+	public boolean requiresCtrl() {
+		return true;
+	}
+
+	@Override
 	public String getDescription() {
-		return "move the current (real or linked) picture into another real collection (and closes the temp collection)";
+		return "move the current N pictures into another real collection (and closes the temp collection)";
 	}
 }

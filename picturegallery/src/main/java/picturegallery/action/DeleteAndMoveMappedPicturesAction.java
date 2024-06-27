@@ -81,7 +81,7 @@ public class DeleteAndMoveMappedPicturesAction extends Action {
 				// 2. move all keys
 				for (Entry<RealPicture, List<RealPicture>> e : map.entrySet()) {
 					progress.updateProgressDetails("move " + e.getKey().getRelativePath(), +1);
-					MainApp.get().movePicture(e.getKey(), movetoCollection);
+					MainApp.get().movePicture(e.getKey(), movetoCollection, true);
 				}
 
 				// close the waiting state!

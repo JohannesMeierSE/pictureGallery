@@ -626,7 +626,26 @@ public class MainApp extends Application {
 		imageCacheSmall.remove(real);
 	}
 
-	public void movePicture(Picture picture, RealPictureCollection newCollection) {
+	public void movePictures(List<Picture> pictures, RealPictureCollection newCollection) {
+		if (pictures.size() <= 0) {
+			return;
+		}
+		if (pictures.size() == 1) {
+			movePicture(pictures.get(0), newCollection, true);
+			return;
+		}
+		// move all pictures together in the same NON-UI thread
+		JavafxHelper.runNotOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				for (Picture pictureToMove : pictures) {
+					movePicture(pictureToMove, newCollection, false);
+				}
+			}
+		});
+	}
+
+	public void movePicture(Picture picture, RealPictureCollection newCollection, boolean askUserForPicturesWithLinks) {
 		// check input
 		if (picture == null || newCollection == null) {
 			throw new IllegalArgumentException();
@@ -655,7 +674,7 @@ public class MainApp extends Application {
 			}
 		}
 
-		if (picture instanceof RealPicture && !((RealPicture) picture).getLinkedBy().isEmpty()) {
+		if (askUserForPicturesWithLinks && picture instanceof RealPicture && !((RealPicture) picture).getLinkedBy().isEmpty()) {
 			// if this (real) picture is linked by other pictures => ask the user for confirmation before moving!!
 			String content = "";
 			for (LinkedPicture link : ((RealPicture) picture).getLinkedBy()) {
@@ -743,9 +762,7 @@ public class MainApp extends Application {
 		}
 
 		// move directly contained pictures
-		for (Picture child : new ArrayList<>(source.getPictures())) {
-			movePicture(child, target);
-		}
+		movePictures(new ArrayList<>(source.getPictures()), target);
 
 		// move/merge contained collections
 		List<RealPictureCollection> realCollections = new ArrayList<>();

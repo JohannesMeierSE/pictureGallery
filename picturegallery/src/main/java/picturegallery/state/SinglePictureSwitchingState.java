@@ -47,6 +47,7 @@ import picturegallery.action.DeletePictureAction;
 import picturegallery.action.FindSimilarPicturesAction;
 import picturegallery.action.JumpFirstAction;
 import picturegallery.action.LinkPictureAction;
+import picturegallery.action.MoveMultiPictureAction;
 import picturegallery.action.MovePictureAction;
 import picturegallery.action.NextPictureAction;
 import picturegallery.action.PreviousPictureAction;
@@ -62,7 +63,7 @@ import picturegallery.ui.JavafxHelper;
  */
 public abstract class SinglePictureSwitchingState extends PicturesShowingState {
 	protected final SimpleObjectProperty<Picture> currentPicture;
-	protected int indexCurrentCollection;
+	protected int indexCurrentCollection; // this index is 0-based!
 
 	protected boolean jumpedBefore = false;
 	private final Adapter adapterCurrentPicture;
@@ -461,6 +462,7 @@ public abstract class SinglePictureSwitchingState extends PicturesShowingState {
 		registerAction(new LinkPictureAction());
 		registerAction(new ClearLinktoCollectionAction());
 		registerAction(new MovePictureAction());
+		registerAction(new MoveMultiPictureAction());
 		registerAction(new ClearMovetoCollectionAction());
 		registerAction(new DeletePictureAction());
 		registerAction(new PrintMetadataAction());
