@@ -37,17 +37,10 @@ public class JumpParticularPictureAction extends Action {
 		SinglePictureSwitchingState state = (SinglePictureSwitchingState) currentState;
 
 		// ask for the index of the wanted picture, index starts at 1 as shown in the GUI!
-		String newIndexString = JavafxHelper.askForString("Jump to Picture",
+		Integer newIndex = JavafxHelper.askForInteger("Jump to Picture",
 				"Specify the picture to jump to by its index in the current collection!",
-				"Index of Picture: ", false, (state.getCurrentIndex() + 1) + "");
-		if (newIndexString == null || newIndexString.isEmpty()) {
-			return;
-		}
-		// convert to integer
-		int newIndex = 0;
-		try {
-			newIndex = Integer.parseInt(newIndexString);
-		} catch (Throwable e) {
+				"Index of Picture: ", false, state.getCurrentIndex() + 1);
+		if (newIndex == null) {
 			return;
 		}
 		if (newIndex <= 0 || newIndex > state.getSize()) {

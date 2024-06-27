@@ -25,21 +25,17 @@ package picturegallery.fix;
 import picturegallery.ui.JavafxHelper;
 
 public class NumberAtEndFixer implements NumberFixer {
-	protected long diff;
+	protected int diff;
 
 	@Override
 	public void initialize() {
 		NumberFixer.super.initialize();
-		String string = JavafxHelper.askForString("De/Increment picture numbers?", "If you want to increase all picture numbers by e.g. 2 ('two'), insert '2' into the field!",
-				"Any numbers (including negative values) are allowed:", false, "0");
-		if (string == null || string.isEmpty()) {
+		Integer string = JavafxHelper.askForInteger("De/Increment picture numbers?", "If you want to increase all picture numbers by e.g. 2 ('two'), insert '2' into the field!",
+				"Any numbers (including negative values) are allowed:", false, 0);
+		if (string == null) {
 			diff = 0;
 		} else {
-			try {
-				diff = Long.parseLong(string);
-			} catch (Throwable e) {
-				diff = 0;
-			}
+			diff = string;
 		}
 	}
 

@@ -74,6 +74,34 @@ public class JavafxHelper {
 		}
 	}
 
+	public static Integer askForInteger(String title, String header, String content,
+			boolean userHaveToSelectAValue, Integer defaultValue) {
+		return askForInteger(title, header, content, userHaveToSelectAValue, defaultValue, null);
+	}
+	public static Integer askForInteger(String title, String header, String content,
+			boolean userHaveToSelectAValue, Integer defaultValue, RememberDecisionInformation<Integer> rememberInfos) { // TODO noch einbauen
+		while (true) {
+			// this could be improved with validations for integer signs directly in the TextEdit in the dialog!
+			String inputString = askForString(title, header, content, userHaveToSelectAValue, defaultValue == null ? null : defaultValue.toString());
+			if (inputString == null || inputString.isBlank()) {
+				if (userHaveToSelectAValue == false) {
+					return null;
+				} else {
+					// ask again
+				}
+			} else {
+				try {
+					int selectedInteger = Integer.parseInt(inputString);
+					// return the found and parsed integer
+					return selectedInteger;
+				} catch (Throwable e) {
+					// no integer => ask again
+				}
+
+			}
+		}
+	}
+
 	public static String askForString(String title, String header, String content,
 			boolean nullAndEmptyAreForbidden, String defaultValue) {
 		return askForString(title, header, content, nullAndEmptyAreForbidden, defaultValue, null);
@@ -93,7 +121,7 @@ public class JavafxHelper {
 			Optional<String> result = dialog.showAndWait();
 			if (result.isPresent()) {
 				String res = result.get();
-				if (nullAndEmptyAreForbidden && (res == null || res.isEmpty())) {
+				if (nullAndEmptyAreForbidden && (res == null || res.isBlank())) {
 					// next iteration
 				} else {
 					return result.get();
