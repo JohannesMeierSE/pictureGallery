@@ -158,6 +158,7 @@ public class Logic {
     	progress.updateProgressTitle("analyze file system");
     	progress.updateProgressValueMax(0.0, Math.max(1.0, findByNameMap.size()));
 
+    	// recursively handles the folder and all its sub-folders
     	loadDirectoryLogic(baseCollection, symlinks, progress);
 
     	String baseFullPath = baseCollection.getFullPath();
@@ -269,7 +270,9 @@ public class Logic {
 				// this method does not follow symbolic links!
 			    @Override
 				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-			    	// ignore sub-folders, but accept the initial base path!
+			    	// ignore sub-folders of the current folder, but accept the initial base path!
+
+			    	// exception: the root directory
 			    	String name = dir.toString();
 					if (name.equals(baseDir)) {
 			    		return FileVisitResult.CONTINUE;
@@ -314,22 +317,35 @@ public class Logic {
 		        		// 138.258 = 38.6 GB
 		        		// 138.202 = 38.6 GB
 		        		String pictureNameWithExtension = name.substring(name.lastIndexOf(File.separator) + 1);
-		        		RealPicture pic = (RealPicture) findByNameGet(currentCollection, pictureNameWithExtension);
-		        		if (pic == null) {
+		        		Picture pictureFromMap = findByNameGet(currentCollection, pictureNameWithExtension);
+		        		if (pictureFromMap == null) {
 		        			// found real picture in file system, but not in model.xmi
-		        			pic = GalleryFactory.eINSTANCE.createRealPicture();
+		        			RealPicture pic = GalleryFactory.eINSTANCE.createRealPicture();
 		        			initPicture(currentCollection, name, pic);
 			    			findByNamePutPicture(pic);
+			        		analyzePictureInitial(pic);
 		        		} else {
-		        			// found real picture, both in file system and model.xmi
+			        		if (pictureFromMap instanceof RealPicture) {
+			        			// found real picture, both in file system and model.xmi
+								RealPicture pic = (RealPicture) pictureFromMap;
+				        		analyzePictureInitial(pic);
+			        		} else {
+			        			// found a LinkedPicture in the model.xmi, but the file is not detected as symlink
+					        	System.err.println("corrupt linked file? " + file.toString());			        			
+			        		}
 		        		}
-		        		analyzePictureInitial(pic);
 			        } else {
 			        	// file with different file extension => ignore it
 			        	System.err.println("ignored: " + file.toString());
 			        }
 			        return FileVisitResult.CONTINUE;
 			    }
+
+				@Override
+				public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+		        	System.err.println("file visit failed: " + file.toString());
+					return FileVisitResult.CONTINUE;
+				}
 			});
 		} catch (IOException e) {
 			e.printStackTrace();

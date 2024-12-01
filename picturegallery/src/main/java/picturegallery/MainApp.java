@@ -350,6 +350,18 @@ public class MainApp extends Application {
         		switchState(newState, false);
         	}
         });
+        task.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent arg0) {
+				System.err.println("directory initialization failed: " + arg0);
+			}
+		});
+        task.setOnCancelled(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent arg0) {
+				System.err.println("directory initialization cancelled: " + arg0);
+			}
+		});
         new Thread(task).start();
     }
 
