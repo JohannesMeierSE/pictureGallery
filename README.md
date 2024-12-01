@@ -26,7 +26,7 @@ An individual picture viewer written in Java.
 * show some meta data of images
 * fix names of multiple images at once
 
-## How to start the pictureGallery
+## How to run the pictureGallery
 1. Get the sourcecode: `git clone https://github.com/JohannesMeierSE/pictureGallery.git`
 2. `cd pictureGallery/picturegallery`
 3. Use Maven to
@@ -35,6 +35,13 @@ An individual picture viewer written in Java.
     1. `mvn jfx:jar`
     2. `java -jar target/jfx/app/picturegallery-jfx.jar`, or to
   * create a native bundle with `mvn jfx:native`
+
+## How to debug the pictureGallery in Eclipse
+
+* Follow this [JavaFX tutorial](https://openjfx.io/openjfx-docs/#IDE-Eclipse)
+* Create a user library called "JavaFX" which points to your local installation of the JavaFX SDK (-> Preferences -> Java -> Build Path -> User Libraries -> New)
+* This user library should already be added to the build path
+* Run/debug the project as usual
 
 ## Used Technology
 * Java 11
