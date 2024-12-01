@@ -1,5 +1,5 @@
-#Tue Jun 25 21:34:19 CEST 2024
-org.eclipse.jdt.core.compiler.codegen.targetPlatform=17
-org.eclipse.jdt.core.compiler.source=17
+#Sun Dec 01 10:52:27 CET 2024
 eclipse.preferences.version=1
-org.eclipse.jdt.core.compiler.compliance=17
+org.eclipse.jdt.core.compiler.codegen.targetPlatform=21
+org.eclipse.jdt.core.compiler.compliance=21
+org.eclipse.jdt.core.compiler.source=21
