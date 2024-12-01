@@ -200,7 +200,7 @@ public class MainApp extends Application {
     	StackPane.setAlignment(labelKeys, Pos.CENTER_RIGHT);
 
     	// Label for License hint
-    	Label labelLicense = new Label("Copyright (C) 2016-2023 Johannes Meier.\n"
+    	Label labelLicense = new Label("Copyright (C) 2016-2024 Johannes Meier.\n"
     			+ "This program is distributed under the terms of the GNU General Public License v3.0.");
     	labelLicense.visibleProperty().bind(labelsVisible);
     	styleLabel(labelLicense);
