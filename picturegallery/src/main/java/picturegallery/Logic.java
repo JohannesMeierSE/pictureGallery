@@ -433,13 +433,19 @@ public class Logic {
 			// delete the meta data
 			realPicture.setMetadata(null);
 		} else {
-			// nothing special is required for LinkedPictures
+			// un-set its real picture
+			LinkedPicture linkedPicture = (LinkedPicture) pictureToDelete;
+			linkedPicture.setRealPicture(null);
 		}
 
 		// remove the picture from its collection
 		if (pictureToDelete.getCollection() != null) {
 			pictureToDelete.getCollection().getPictures().remove(pictureToDelete);
 		}
+
+		// remove tags (since they link to the tag category)
+		pictureToDelete.getTags().forEach(tag -> tag.setCategory(null));
+		pictureToDelete.getTags().clear();
 	}
 
 	private static void initPicture(RealPictureCollection currentCollection, String name, Picture pic) {
