@@ -294,6 +294,7 @@ public class MainApp extends Application {
         			modelResource = rset.getResource(uri, true);
         		} catch (Throwable e) {
         			// no "model.xmi" is available => no problem
+        			e.printStackTrace();
         			modelResource = null;
         		}
 
